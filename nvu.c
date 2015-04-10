@@ -82,7 +82,7 @@ nvu_workspace *nvu_init(void) {
     		              0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,
     		              0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,
     		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,
-    		              0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,
+    		              0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,
     		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,
     		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,
     		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,1,1,1,1,1,1,1,1,1,
@@ -273,7 +273,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     const double v_rest		= -31.1;
     const double k_j		= 0.1;
 
-    const double J_PLC 		= 0.18; //0.18
+    const double J_PLC 		= 0.4; //0.18
 
     const double g_hat      = 0.5;
     const double p_hat      = 0.05;
@@ -617,10 +617,10 @@ return p0;
 double nvu_Glu(double t, double x, double y) {
     double Glu_min = 0;    
     double Glu_max = 1846; // uM - one vesicle (Santucci)
-    double t_up   = 50;
-    double t_down = 800;
-    double blocks_activated_x = 4;
-    double blocks_activated_y = 4;
+    double t_up   = 100;
+    double t_down = 1000;
+    double blocks_activated_x = 3;
+    double blocks_activated_y = 1;
     double Glu = ((0.5 + 0.5 *(tanh(100000*(x-0.0004*blocks_activated_x)+1))) *(0.5 + 0.5 *(tanh(100000*(y-0.0004*blocks_activated_y)+1))))        *          ((Glu_min + (Glu_max - Glu_min) / 2.0 * (1 + tanh(10*(t - t_up))) + (Glu_min - Glu_max) / 2.0 * (1 + tanh(10*(t - t_down)))));
     return Glu;
 }
