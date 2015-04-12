@@ -681,7 +681,7 @@ double flux_ft(double t, double x, double y) {
 double PLC_input(double t, double x, double y) {
     double PLC_min = 0.18;
     double PLC_max = 0.4;
-    double t_up   = 20;
+    double t_up   = 200;
     double t_down = 800;
     double ramp = 0.001;//0.002;
     double x_centre = 0.0008; // 0.0008 -> n_bif = 7; python: ((((2**(n_bif-1))**0.5)/4)*0.0004)

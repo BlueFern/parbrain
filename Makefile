@@ -9,7 +9,7 @@ ifeq ($(UNAME_M), ppc64)
 	MPCC = mpcc -compiler gcc
 	INC = 
 	LIB = 
-endif
+#endif
 #ifeq ($(UNAME_S), Darwin)             # Mac
 #	CFARCHDEP = -Wall -std=c99 -g
 #	MPCC = mpicc
