@@ -54,7 +54,20 @@ void  *nvu_free(nvu_workspace *w);
 // Time-varying input pressure function
 double nvu_p0(double t);
 
-double nvu_Glu(double t, double x, double y);
+//time- and space-dependent Glu input
+//double nvu_Glu(double t, double x, double y);
+
+//time- and space-dependent K+ input
+double K_input(double t, double x, double y);
+	
+//time- and space-dependent flux_ft input
+double flux_ft(double t, double x, double y);
+	
+//time- and space-dependent PLC input
+double PLC_input(double t, double x, double y);
+	
+//factorial
+double factorial(int c);
 
 // Initial conditions
 void   nvu_ics(double *u0, double x, double y, nvu_workspace *w);

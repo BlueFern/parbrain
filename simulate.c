@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
     // Problem parameters
     ws->gamma  = 1e-5; // time step  1e-5
     ws->t0     = 0.;   // initial time 0
-    ws->tf     = 3;  // final time  10
+    ws->tf     = 150;  // final time  10
     ws->ftol   = 1e-3; // function evaluation tolerance for Newton convergence 1e-3
     ws->ytol   = 1e-3; // relative error tolerance for Newton convergence 1e-3
     ws->nconv  = 5;    // Newton iteration threshold for Jacobian reevaluation 5
@@ -185,7 +185,7 @@ void solver_init(odews *ws, int argc, char **argv) {
 }
 int sizecheck(double *x, int n, double tol) { // n - no of equ total (nblocks*nequs)
     int smallenough = 1;
-    double x0[34] = 	{1,   	// 0
+    double x0[24] = 	{1,   	// 0
 		 	1e-7,	// 1
 			1e-4,	// 2
 			1e-3,	// 3
@@ -208,24 +208,25 @@ int sizecheck(double *x, int n, double tol) { // n - no of equ total (nblocks*ne
 			1.,	// 20 **
 			1e-1,	// 21
 			1e-1,	// 22
-			1e-1,	// 23
+			1e-1	// 23
 
-			1e-2, 	// 24 NO pathway
-			1e-2,	// 25 
-			1e-1,	// 26
-			1,	// 27
-			1e-1,	// 28
-			1e-4,	// 29 
-			1e-1,	// 30
-			1e-1,	// 31
-			1e-1,	// 32
-			1e+1};	// 33
-
+			//1e-2, 	// 24 NO pathway
+			//1e-2,	// 25 
+			//1e-1,	// 26
+			//1,	// 27
+			//1e-1,	// 28
+			//1e-4,	// 29 
+			//1e-1,	// 30
+			//1e-1,	// 31
+			//1e-1,	// 32
+			//1e+1	// 33
+			};
+			
     for (int i = 0; i < n; i++) {
- 	    for (int la = 0; la < 34; la++) {
+ 	    for (int la = 0; la < 24; la++) {
                 // printf("***** tolerance check: var = %d: %e %e  %e \n", la, x[la], x0[la % 24], fabs(x[la] / x0[la % 24])); // TEST
             }
-        smallenough &= (fabs(x[i] / x0[i % 34]) < tol);  // W->nequ hardcoded
+        smallenough &= (fabs(x[i] / x0[i % 24]) < tol);  // W->nequ hardcoded
         //smallenough &= (fabs(x[i]) < tol);
         //printf("%f \n", x[i]);
         if (!smallenough)

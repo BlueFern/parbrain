@@ -5,18 +5,18 @@ UNAME_S = $(shell uname -s)
 # CFALL = $(CFLAGS) $(TARGET_ARCH) -g 
 CFALL = $(CFLAGS) $(TARGET_ARCH)  
 ifeq ($(UNAME_M), ppc64)
-	CFARCHDEP = -q64 -qtune=pwr7 -qarch=pwr7 -qhot
-	MPCC = mpcc
+	CFARCHDEP = -m64 -mtune=power7 -mcpu=power7 -pthread -std=c99 -O2
+	MPCC = mpcc -compiler gcc
 	INC = 
 	LIB = 
 endif
-ifeq ($(UNAME_S), Darwin)
-	CFARCHDEP = -Wall -std=c99 -g
-	MPCC = mpicc
-	INC = -I/usr/local/include
-	LIB = -L/usr/local/lib
+#ifeq ($(UNAME_S), Darwin)             # Mac
+#	CFARCHDEP = -Wall -std=c99 -g
+#	MPCC = mpicc
+#	INC = -I/usr/local/include
+#	LIB = -L/usr/local/lib
 else
-	CFARCHDEP = -Wall -std=c99 -g
+	CFARCHDEP = -Wall -std=c99 -g  # Ubuntu
 	MPCC = mpicc
 	INC = -I/usr/include/suitesparse 
 	LIB =
