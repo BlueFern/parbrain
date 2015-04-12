@@ -634,7 +634,7 @@ double K_input(double t, double x, double y) {
 	double gab = factorial(alpha + beta - 1);
 	double ga = factorial(alpha - 1);
 	double gb = factorial(beta - 1);
-    double K_space = K_input_min + (K_input_max-K_input_min) * exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2)))); 
+    double K_space = (K_input_max-K_input_min) * exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2)))); 
 	double K_time;
 	if (t >= t0 && t <= t1) {
 		K_time = F_input * gab / (ga * gb) * pow((1-(t-t0) / deltat),(beta - 1)) * pow(((t - t0) / deltat),(alpha-1));  
@@ -645,7 +645,7 @@ double K_input(double t, double x, double y) {
 	else {
 		K_time = 0;
 	}
-	double K_out = K_space * K_time;
+	double K_out = K_input_min + K_space * K_time;
     return K_out;
 }
 
@@ -672,8 +672,8 @@ double flux_ft(double t, double x, double y) {
     double y_centre = 0; //0.0008;
 	double flux_time = 0.5 * tanh((t-t0)/0.0005) - 0.5 * tanh((t-t1-lengthpulse)/0.0005);
 	//double flux_time = 0.5 * tanh((t-t0)/0.005) - 0.5 * tanh((t-t1-lengthpulse)/0.005);
-	double flux_space = flux_min + (flux_max-flux_min) * exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2)))); 
-	double flux_out = flux_time * flux_space;
+	double flux_space = (flux_max-flux_min) * exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2)))); 
+	double flux_out = flux_min + flux_time * flux_space;
 	return flux_out;
 }
 
@@ -686,9 +686,9 @@ double PLC_input(double t, double x, double y) {
     double ramp = 0.001;//0.002;
     double x_centre = 0.0008; // 0.0008 -> n_bif = 7; python: ((((2**(n_bif-1))**0.5)/4)*0.0004)
     double y_centre = 0.0008;
-    double PLC_space = PLC_min + (PLC_max-PLC_min) * exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2)))); 
+    double PLC_space = (PLC_max-PLC_min) * exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2)))); 
     double PLC_time = 0.5 * tanh((t-t_up)/0.05) - 0.5 * tanh((t-t_down)/0.05);
-	double PLC_out = PLC_space * PLC_time;
+	double PLC_out = PLC_min + PLC_space * PLC_time;
 	//double PLC_out = PLC_space; // no time-dependeny
 	return PLC_out;
 }
