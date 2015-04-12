@@ -67,7 +67,7 @@ nvu_workspace *nvu_init(void) {
     // drop) or flow term
     int dfdp_pattern[] = {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; // neq * 1 column vector
 	//TODO: double-check pattern!!!
-    int dfdx_pattern[] =     {1,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,1,0,0,0,0,0,0,
+    int dfdx_pattern[] = {1,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,1,0,0,0,0,0,0,
     		              0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,
     		              0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,
     		              0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -78,13 +78,13 @@ nvu_workspace *nvu_init(void) {
     		              0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,
     		              0,0,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,
     		              0,0,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    		              0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,1,0,0,0,0,1,1,1,
+    		              1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,1,0,0,0,0,1,1,1,
     		              0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,
     		              0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,
     		              0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,
     		              0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,1,0,0,0,0,0,0,
     		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,
-    		              0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,0,0,0,0,
+    		              1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,0,0,0,0,
     		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,
     		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,
     		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,
@@ -224,7 +224,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     const double lam 		= 45;
     const double c_w		= 0;
     const double bet		= 0.13;
-    const double v_Ca3		= -27;
+    const double v_Ca3		= -27; // correct
     const double R_K		= 12;
     const double k_i		= 0.1;
 //    const double K_d         = 1;            // = 1e3 nM Gonzalez
@@ -232,11 +232,11 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 //    const double Kinf_i      = 1e5;          // 100 mM K+ concentration in SMC
 
 	// stretch-activated channels
-//    const double G_stretch   = 0.0061;       // uM mV-1 s-1   (stretch activated channels)
-//    const double P_str       = 30;
-//    const double Esac        = -18;          // mV
-//    const double alpha1      = 0.0074;
-//    const double sig0        = 500;
+    const double G_stretch   = 0.0061;       // uM mV-1 s-1   (stretch activated channels)
+    const double P_str       = 30;
+    const double Esac        = -18;          // mV
+    const double alpha1      = 0.0074;
+    const double sig0        = 500;
 
 
 
@@ -449,7 +449,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     // SMC fluxes
     flu_M               = 1 - state_Mp - state_AM - state_AMp;
     flu_E_K_i           = ( R_gas * Temp ) / ( z_K  * Farad ) * unitcon * log( state_K_p / state_K_i );
-    flu_h_r             = 0.1 * state_r;
+    flu_h_r             = 0.1 * state_r; //(non-dimensional!)
     flu_v_cpl_i		    = - g_hat * ( state_v_i - state_v_j );
     flu_c_cpl_i         = - p_hat * ( state_ca_i - state_ca_j );
     flu_I_cpl_i         = - p_hatIP3 * ( state_ip3_i - state_ip3_j );
@@ -467,7 +467,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     flu_Kactivation_i   = pow((state_ca_i + c_w),2) / ( pow((state_ca_i + c_w),2) + bet*exp(-(state_v_i - v_Ca3)/R_K) );  // see NO pathway!
     flu_degrad_i	    = k_i * state_ip3_i;
 
-    flu_J_stretch_i     = 0; //G_stretch/(1+exp(-alpha1*(P_str*state_r / flu_h_r - sig0))) * (state_v_i - Esac); // *** careful! flu_h_r is non-dimensionalised! + dfdt matrix!
+    flu_J_stretch_i     = G_stretch/(1+exp(-alpha1*(P_str*state_r*R0 / flu_h_r*R0 - sig0))) * (state_v_i - Esac); // *** careful! r & flu_h_r are non-dimensionalised! + dfdt matrix!
 
     flu_v_KIR_i    = z_1 * state_K_p / unitcon + z_2;                                  // mV           state_K_p,
     flu_G_KIR_i    = exp( z_5 * state_v_i + z_3 * state_K_p / unitcon + z_4 );        // pS pF-1 =s-1  state_v_i, state_K_p
@@ -496,7 +496,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     flu_R_j 		= G_R * ( state_v_j - v_rest);
     flu_degrad_j 	= k_j * state_ip3_j;
 
-    flu_J_stretch_j       = 0;// G_stretch / (1 + exp(-alpha1*(P_str * state_r / flu_h_r - sig0))) * (state_v_j - Esac);//careful!flu_h_r is non-dimensionalised! + dfdtmatrix!
+    flu_J_stretch_j       = G_stretch / (1 + exp(-alpha1*(P_str * state_r*R0 / flu_h_r*R0 - sig0))) * (state_v_j - Esac);// careful! state_r & flu_h_r are non-dimensionalised! + dfdtmatrix!
 
 // Mech fluxes
     flu_K1_c       = gam_cross * pow(state_ca_i,3);
@@ -531,7 +531,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 
 
 // Differential Equations:
-    du[i_radius]  = -w->a1 * e * (state_r / r0 - 1.) + w->a2 * state_r * pt; //Radius
+    du[i_radius]  = -w->a1 * e * (state_r / r0 - 1.) + w->a2 * state_r * pt; //Radius (non-dimensional!)
 
     //AC:
     du[ R_k     ] = L_p * (flu_Na_k + flu_K_k + flu_Cl_k + flu_HCO3_k - flu_Na_s - flu_K_s - flu_Cl_s - flu_HCO3_s + X_k / state_R_k);  // m s-1
