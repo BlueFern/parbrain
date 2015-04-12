@@ -1,25 +1,23 @@
 UNAME_M = $(shell uname -m)
 UNAME_S = $(shell uname -s)
 
-# -g is for debugging symbols
-# CFALL = $(CFLAGS) $(TARGET_ARCH) -g 
 CFALL = $(CFLAGS) $(TARGET_ARCH)  
+# by default leave those empty. We don't need an entry on power7
+# on mac /usr/local is in the standard path by default
+INC=
+LIB=
 ifeq ($(UNAME_M), ppc64)
 	CFARCHDEP = -m64 -mtune=power7 -mcpu=power7 -pthread -std=c99 -O2
+	# using poe on ppc64
 	MPCC = mpcc -compiler gcc
-	INC = 
-	LIB = 
-#endif
-#ifeq ($(UNAME_S), Darwin)             # Mac
-#	CFARCHDEP = -Wall -std=c99 -g
-#	MPCC = mpicc
-#	INC = -I/usr/local/include
-#	LIB = -L/usr/local/lib
 else
-	CFARCHDEP = -Wall -std=c99 -g  # Ubuntu
+	CFARCHDEP = -Wall -std=c99 -g  
+	# regular wrapper everywhere else
 	MPCC = mpicc
-	INC = -I/usr/include/suitesparse 
-	LIB =
+	# Need to adjust INC on ubuntu
+	ifeq ($(UNAME_S), Linux)
+		INC= -I/usr/include/suitesparse
+	endif
 endif
 
 CF = $(CFALL) $(CFARCHDEP)
