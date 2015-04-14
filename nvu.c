@@ -617,10 +617,10 @@ double K_input(double t, double x, double y) {
     double K_input_min = 0;
     double K_input_max = 2.5;
 	double ramp = 0.001; // 0.004; 
-    double x_centre = 0; //0.0008; // 0;
-    double y_centre = 0; //0.0008; // 0;
-    double t_up   = 10020;
-    double t_down = 100800;
+    double x_centre = -0.0008; // 0;
+    double y_centre = -0.0008; // 0;
+    double t_up   = 200;
+    double t_down = 800;
 	double lengthpulse = t_down - t_up;	
 	double lengtht1 = 10;
 	double F_input = 2.5;
@@ -661,15 +661,15 @@ double factorial(int c) {
 double flux_ft(double t, double x, double y) {
     double flux_min = 0;
     double flux_max = 1;  
-    double t_up   = 10020;
-    double t_down = 100800;
+    double t_up   = 200;
+    double t_down = 800;
 	double lengthpulse = t_down - t_up;
 	double lengtht1 = 10;
 	double t0 = t_up;	
 	double t1 = t0 + lengtht1;
     double ramp = 0.001;	
-    double x_centre = 0; //0.0008;
-    double y_centre = 0; //0.0008;
+    double x_centre = -0.0008;
+    double y_centre = -0.0008;
 	double flux_time = 0.5 * tanh((t-t0)/0.0005) - 0.5 * tanh((t-t1-lengthpulse)/0.0005);
 	//double flux_time = 0.5 * tanh((t-t0)/0.005) - 0.5 * tanh((t-t1-lengthpulse)/0.005);
 	double flux_space = (flux_max-flux_min) * exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2)))); 
