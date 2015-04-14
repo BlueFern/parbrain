@@ -467,7 +467,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     flu_Kactivation_i   = pow((state_ca_i + c_w),2) / ( pow((state_ca_i + c_w),2) + bet*exp(-(state_v_i - v_Ca3)/R_K) );  // see NO pathway!
     flu_degrad_i	    = k_i * state_ip3_i;
 
-    flu_J_stretch_i     = G_stretch/(1+exp(-alpha1*(P_str*state_r*R0 / flu_h_r*R0 - sig0))) * (state_v_i - Esac); // *** careful! r & flu_h_r are non-dimensionalised! + dfdt matrix!
+    flu_J_stretch_i     = G_stretch/(1+exp(-alpha1*(P_str*state_r / flu_h_r - sig0))) * (state_v_i - Esac); 
 
     flu_v_KIR_i    = z_1 * state_K_p / unitcon + z_2;                                  // mV           state_K_p,
     flu_G_KIR_i    = exp( z_5 * state_v_i + z_3 * state_K_p / unitcon + z_4 );        // pS pF-1 =s-1  state_v_i, state_K_p
@@ -496,7 +496,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     flu_R_j 		= G_R * ( state_v_j - v_rest);
     flu_degrad_j 	= k_j * state_ip3_j;
 
-    flu_J_stretch_j       = G_stretch / (1 + exp(-alpha1*(P_str * state_r*R0 / flu_h_r*R0 - sig0))) * (state_v_j - Esac);// careful! state_r & flu_h_r are non-dimensionalised! + dfdtmatrix!
+    flu_J_stretch_j       = G_stretch / (1 + exp(-alpha1*(P_str * state_r / flu_h_r - sig0))) * (state_v_j - Esac);
 
 // Mech fluxes
     flu_K1_c       = gam_cross * pow(state_ca_i,3);
