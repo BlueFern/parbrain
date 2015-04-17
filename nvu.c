@@ -651,7 +651,7 @@ double K_input(double t, double x, double y) {
 
 double factorial(int c) {
     double result = 1;
-    for (int n = 1; n <= c; n++) {
+    for (int n = 1; n < c; n++) {
         result = result * n;
     }
     return result;
