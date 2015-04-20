@@ -30,44 +30,51 @@
 int main(int argc, char *argv[]) {
 	// general parameters
 	#define BLOCK_LENGTH 4e-4	// length of one tissue block (m) 4e-4
-    int time_fin = 777;  // final time 400
-    //TODO: write/read final time in/from configuration file!
+	int time_fin = 1000;  // final time 400
+	char Prefix[] = "/hpc/home/kdo40/Frontiers_in_Physiology/parbrain/"; 
+	char *dirName=argv[1];
+	// read in configuration file
+	char iSuffix[] = "/info.dat";
+	char iOutfile[128];
+	sprintf(iOutfile, "%s%s%s",Prefix,dirName,iSuffix);
+	std::ifstream conf_file(iOutfile, std::ifstream::binary);
 
-//  read in configuration file
-    std::ifstream conf_file("/hpc/home/kdo40/Frontiers_in_Physiology/parbrain/ATP_input/np64_nlev13_sbtr03/info.dat", std::ifstream::binary);
+	std::string header;
+	std::getline(conf_file, header); // skip header line
 
-    std::string header;
-    std::getline(conf_file, header); // skip header line
-
-    int temp_array[7];
-    int b;
-    int i = 0;
-    while (conf_file >> b) {
-    	temp_array[i] = b;
-    	i++;
-    }
-    int n_procs  = temp_array[0];
-    int n_blocks_per_rank = temp_array[1];
-    int n_state_vars = temp_array[2];
-    int m_local = temp_array[3];
-    int n_local = temp_array[4];
-    int m_global = temp_array[5];
-    int n_global = temp_array[6];
-    int n_blocks = n_procs * n_blocks_per_rank;
-    int n_cols = n_local * n_global;  				// number of columns of tissue blocks (j)
-    int n_rows = m_local * m_global;  				// number of rows of tissue blocks (i)
+	int temp_array[7];
+	int b;
+	int i = 0;
+	while (conf_file >> b) {
+	temp_array[i] = b;
+	i++;
+	}
+	int n_procs  = temp_array[0];
+	int n_blocks_per_rank = temp_array[1];
+	int n_state_vars = temp_array[2];
+	int m_local = temp_array[3];
+	int n_local = temp_array[4];
+	int m_global = temp_array[5];
+	int n_global = temp_array[6];
+	int n_blocks = n_procs * n_blocks_per_rank;
+	int n_cols = n_local * n_global;  				// number of columns of tissue blocks (j)
+	int n_rows = m_local * m_global;  				// number of rows of tissue blocks (i)
 
 	//read tissue block state binary file
-//	std::ifstream is("/home/katharina/workspace_GitHub/parbrain/np02_nlev07_sbtr03_3/tissueBlocks.dat", std::ifstream::binary);
-	std::ifstream is("/hpc/home/kdo40/Frontiers_in_Physiology/parbrain/ATP_input/np64_nlev13_sbtr03/tissueBlocks.dat", std::ifstream::binary);
+	char tbSuffix[] = "/tissueBlocks.dat";	
+	char tbOutfile[128];
+	sprintf(tbOutfile, "%s%s%s",Prefix,dirName,tbSuffix);
+	std::ifstream is(tbOutfile, std::ifstream::binary);
 	if (!is) {
 		std::cerr << "Cannot read tissueBlock.dat file." << std::endl;
 		return EXIT_FAILURE;
 	}
 
 	//read flow binary file
-//	std::ifstream is_flow("/home/katharina/workspace_GitHub/parbrain/np02_nlev07_sbtr03_3/flow.dat", std::ifstream::binary);
-	std::ifstream is_flow("/hpc/home/kdo40/Frontiers_in_Physiology/parbrain/ATP_input/np64_nlev13_sbtr03/flow.dat", std::ifstream::binary);
+	char fSuffix[] = "/flow.dat";	
+	char fOutfile[128];
+	sprintf(fOutfile, "%s%s%s",Prefix,dirName,fSuffix);
+	std::ifstream is_flow(fOutfile, std::ifstream::binary);
 	if (!is_flow) {
 		std::cerr << "Cannot read flow.dat file." << std::endl;
 		return EXIT_FAILURE;
@@ -419,7 +426,10 @@ int main(int argc, char *argv[]) {
 		// Tissue blocks:
 		std::ostringstream filename_buffer;
 		//filename_buffer << "/home/katharina/workspace_GitHub/parbrain/np02_nlev07_sbtr03_3/paraView_blocks" << i << ".vtu";
-		filename_buffer << "/hpc/home/kdo40/Frontiers_in_Physiology/parbrain/ATP_input/np64_nlev13_sbtr03/paraView_blocks" << i << ".vtu";
+		char tbVtuSuffix[] = "/paraView_blocks";					// TODO: all this needs to go outside loop!!!
+		char tbVtuOutfile[128];							// TODO: all this needs to go outside loop!!!
+		sprintf(tbVtuOutfile, "%s%s%s",Prefix,dirName,tbVtuSuffix);		// TODO: all this needs to go outside loop!!!
+		filename_buffer << tbVtuOutfile << i << ".vtu";				// TODO: all this needs to go outside loop!!!
 		vtkSmartPointer<vtkXMLUnstructuredGridWriter> writer = vtkSmartPointer<vtkXMLUnstructuredGridWriter>::New(); // save uGrid to file
 		writer->SetFileName(filename_buffer.str().c_str());
 		writer->SetInputData(uGrid);
@@ -436,7 +446,10 @@ int main(int argc, char *argv[]) {
 //		 H-Tree (tubeFilter):
 		std::ostringstream filename_buffer2;
 //		filename_buffer2 << "/home/katharina/workspace_GitHub/parbrain/np02_nlev07_sbtr03_3/paraView_Htree_tube" << i << ".vtp";
-		filename_buffer2 << "/hpc/home/kdo40/Frontiers_in_Physiology/parbrain/ATP_input/np64_nlev13_sbtr03/paraView_Htree_tube" << i << ".vtp";
+		char fVtuSuffix[] = "/paraView_Htree_tube";					// TODO: all this needs to go outside loop!!!
+		char fVtuOutfile[128];							// TODO: all this needs to go outside loop!!!
+		sprintf(fVtuOutfile, "%s%s%s",Prefix,dirName,fVtuSuffix);		// TODO: all this needs to go outside loop!!!
+		filename_buffer2 << fVtuOutfile << i << ".vtp";				// TODO: all this needs to go outside loop!!!
 		vtkSmartPointer<vtkXMLPolyDataWriter> writer2 = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
 		writer2->SetFileName(filename_buffer2.str().c_str());
 		writer2->SetInputConnection(appendFilter->GetOutputPort());
