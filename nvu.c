@@ -2,6 +2,7 @@
 // / unitcon instead of *
 // switch stretch channels on
 #include "nvu.h"
+#include <math.h>
 
 // Constants
 static const double HRR        = 0.1   ;  // Nondimensional (thickness to radius ratio)
@@ -616,36 +617,37 @@ return p0;
 double K_input(double t, double x, double y) {
     double K_input_min = 0;
     double K_input_max = 2.5;
-	double ramp = 0.001; // 0.004; 
-    double x_centre = -0.0008; // 0;
-    double y_centre = -0.0008; // 0;
+    double ramp = 0.003; // 0.004; 
+    double ampl = 3;
+    double x_centre = 0;//-0.0008; // 0;
+    double y_centre = 0;//-0.0008; // 0;
     double t_up   = 200;
     double t_down = 800;
-	double lengthpulse = t_down - t_up;	
-	double lengtht1 = 10;
-	double F_input = 2.5;
-	double t0 = t_up;
-	double t1 = t0 + lengtht1;
-	double t2 = t0 + lengthpulse;
-	double t3 = t1 + lengthpulse;
-	int alpha = 2;
-	int beta = 5;
-	double deltat= 10; 	
-	double gab = factorial(alpha + beta - 1);
-	double ga = factorial(alpha - 1);
-	double gb = factorial(beta - 1);
-    double K_space = (K_input_max-K_input_min) * exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2)))); 
-	double K_time;
-	if (t >= t0 && t <= t1) {
-		K_time = F_input * gab / (ga * gb) * pow((1-(t-t0) / deltat),(beta - 1)) * pow(((t - t0) / deltat),(alpha-1));  
-	}
-	else if (t >= t2 && t <= t3) {
-		K_time = - F_input;
-	}	
-	else {
-		K_time = 0;
-	}
-	double K_out = K_input_min + K_space * K_time;
+    double lengthpulse = t_down - t_up;	
+    double lengtht1 = 10;
+    double F_input = 2.5;
+    double t0 = t_up;
+    double t1 = t0 + lengtht1;
+    double t2 = t0 + lengthpulse;
+    double t3 = t1 + lengthpulse;
+    int alpha = 2;
+    int beta = 5;
+    double deltat= 10; 	
+    double gab = factorial(alpha + beta - 1);
+    double ga = factorial(alpha - 1);
+    double gb = factorial(beta - 1);
+    double K_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
+    double K_time;
+    if (t >= t0 && t <= t1) {
+        K_time = F_input * gab / (ga * gb) * pow((1-(t-t0) / deltat),(beta - 1)) * pow(((t - t0) / deltat),(alpha-1));  
+    }
+    else if (t >= t2 && t <= t3) {
+    	K_time = - F_input;
+    }	
+    else {
+    	K_time = 0;
+    }
+    double K_out = K_input_min + (K_input_max-K_input_min) * K_space * K_time;
     return K_out;
 }
 
@@ -663,18 +665,19 @@ double flux_ft(double t, double x, double y) {
     double flux_max = 1;  
     double t_up   = 200;
     double t_down = 800;
-	double lengthpulse = t_down - t_up;
-	double lengtht1 = 10;
-	double t0 = t_up;	
-	double t1 = t0 + lengtht1;
-    double ramp = 0.001;	
-    double x_centre = -0.0008;
-    double y_centre = -0.0008;
-	double flux_time = 0.5 * tanh((t-t0)/0.0005) - 0.5 * tanh((t-t1-lengthpulse)/0.0005);
-	//double flux_time = 0.5 * tanh((t-t0)/0.005) - 0.5 * tanh((t-t1-lengthpulse)/0.005);
-	double flux_space = (flux_max-flux_min) * exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2)))); 
-	double flux_out = flux_min + flux_time * flux_space;
-	return flux_out;
+    double lengthpulse = t_down - t_up;
+    double lengtht1 = 10;
+    double t0 = t_up;	
+    double t1 = t0 + lengtht1;
+    double ampl = 3;
+    double ramp = 0.003;	
+    double x_centre = 0;//-0.0008;
+    double y_centre = 0;//-0.0008;
+    double flux_time = 0.5 * tanh((t-t0)/0.0005) - 0.5 * tanh((t-t1-lengthpulse)/0.0005);
+    //double flux_time = 0.5 * tanh((t-t0)/0.005) - 0.5 * tanh((t-t1-lengthpulse)/0.005);
+    double flux_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
+    double flux_out = flux_min + (flux_max-flux_min) * flux_time * flux_space;
+    return flux_out;
 }
 
 // Space- & time-varying PLC input signal
@@ -683,14 +686,15 @@ double PLC_input(double t, double x, double y) {
     double PLC_max = 0.4;
     double t_up   = 200;
     double t_down = 800;
-    double ramp = 0.001;//0.002;
-    double x_centre = 0.0008; // 0.0008 -> n_bif = 7; python: ((((2**(n_bif-1))**0.5)/4)*0.0004)
-    double y_centre = 0.0008;
-    double PLC_space = (PLC_max-PLC_min) * exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2)))); 
+    double ampl = 3;
+    double ramp = 0.003;//0.002;
+    double x_centre = 0; // 0.0008 -> n_bif = 7; python: ((((2**(n_bif-1))**0.5)/4)*0.0004)
+    double y_centre = 0;
+    double PLC_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
     double PLC_time = 0.5 * tanh((t-t_up)/0.05) - 0.5 * tanh((t-t_down)/0.05);
-	double PLC_out = PLC_min + PLC_space * PLC_time;
-	//double PLC_out = PLC_space; // no time-dependeny
-	return PLC_out;
+    double PLC_out = PLC_min + (PLC_max-PLC_min) * PLC_space * PLC_time;
+    //double PLC_out = PLC_space; // no time-dependeny
+    return PLC_out;
 }
 
 // Initial conditions. If you want spatial inhomegeneity, make it a
