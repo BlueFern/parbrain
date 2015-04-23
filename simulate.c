@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
     // Problem parameters
     ws->gamma  = 1e-5; // time step  1e-5
     ws->t0     = 0.;   // initial time 0
-    ws->tf     = 500;  // final time  10
+    ws->tf     = 1000;  // final time  10
     ws->ftol   = 1e-3; // function evaluation tolerance for Newton convergence 1e-3
     ws->ytol   = 1e-3; // relative error tolerance for Newton convergence 1e-3
     ws->nconv  = 5;    // Newton iteration threshold for Jacobian reevaluation 5
@@ -133,7 +133,7 @@ void back_euler(odews *ws) {
             dcopy(ny, w, x);
             daxpy(ny, -1, beta, x);
             daxpy(ny, -ws->gamma, ws->f, x);
-            for (int la = 0; la < 24; la++) {
+            for (int la = 0; la < 27; la++) {
 		//printf("iteration %d, state variable %2d - x: %e w: %e\n", k, la, x[la], w[la] );
 	    } // TEST x[0] = radius etc. - w is the state var value, x is passed on to Newton
             W->flag[W->rank] = sizecheck(x, ny, ws->ftol); // function value size check
@@ -185,7 +185,7 @@ void solver_init(odews *ws, int argc, char **argv) {
 }
 int sizecheck(double *x, int n, double tol) { // n - no of equ total (nblocks*nequs)
     int smallenough = 1;
-    double x0[24] = 	{1,   	// 0
+    double x0[27] = 	{1,   	// 0
 		 	1e-7,	// 1
 			1e-4,	// 2
 			1e-3,	// 3
@@ -208,8 +208,10 @@ int sizecheck(double *x, int n, double tol) { // n - no of equ total (nblocks*ne
 			1.,	// 20 **
 			1e-1,	// 21
 			1e-1,	// 22
-			1e-1	// 23
-
+			1e-1,	// 23
+			1,
+			1,
+			1
 			//1e-2, 	// 24 NO pathway
 			//1e-2,	// 25 
 			//1e-1,	// 26
@@ -223,10 +225,10 @@ int sizecheck(double *x, int n, double tol) { // n - no of equ total (nblocks*ne
 			};
 			
     for (int i = 0; i < n; i++) {
- 	    for (int la = 0; la < 24; la++) {
-                // printf("***** tolerance check: var = %d: %e %e  %e \n", la, x[la], x0[la % 24], fabs(x[la] / x0[la % 24])); // TEST
+ 	    for (int la = 0; la < 27; la++) {
+                // printf("***** tolerance check: var = %d: %e %e  %e \n", la, x[la], x0[la % 27], fabs(x[la] / x0[la % 27])); // TEST
             }
-        smallenough &= (fabs(x[i] / x0[i % 24]) < tol);  // W->nequ hardcoded
+        smallenough &= (fabs(x[i] / x0[i % 27]) < tol);  // W->nequ hardcoded
         //smallenough &= (fabs(x[i]) < tol);
         //printf("%f \n", x[i]);
         if (!smallenough)
