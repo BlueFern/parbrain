@@ -234,17 +234,22 @@ int main(int argc, char *argv[]) {
 	cellArray_tree->InsertNextCell(lines); // Create a cell array to store hexaedrons in and add them to it
 
 
-
-
 // 3. Create unstructured grid
 	// 3.1 Tissue blocks:
 	vtkSmartPointer<vtkUnstructuredGrid> uGrid = vtkSmartPointer<vtkUnstructuredGrid>::New();
 	uGrid->SetPoints(points_tb);
 	uGrid->SetCells(VTK_HEXAHEDRON, cellArray_tb);
 
-	char *var_names[] = {"radius_terminating_arteriole","R_k","N_Na_k","N_K_k","N_HCO3_k","N_Cl_k","N_Na_s","N_K_s","N_HCO3_s","K_p","w_k","ca_i","ca_sr_i","v_i","w_i","ip3_i","K_i","ca_j","ca_er_j","v_j","ip3_j","Mp","AMp","AM","NOi","NOj","NOn","cGMP","eNOS","nNOS","ca_n","E_b","E_6c","E_5c"};
+	// 3.3 H-Tree_lines:
+	vtkSmartPointer<vtkUnstructuredGrid> uGrid2 = vtkSmartPointer<vtkUnstructuredGrid>::New();
+	uGrid2->SetPoints(points_tree);
+	uGrid2->SetCells(VTK_LINE, cellArray_tree); //     uGrid2->SetLines(cellArray2);
+
+
 
 // 4. Add binary data as attributes to cells:
+	char *var_names[] = {"radius_terminating_arteriole","R_k","N_Na_k","N_K_k","N_HCO3_k","N_Cl_k","N_Na_s","N_K_s","N_HCO3_s","K_p","w_k","ca_i","ca_sr_i","v_i","w_i","ip3_i","K_i","ca_j","ca_er_j","v_j","ip3_j","Mp","AMp","AM","NOi","NOj","NOn","cGMP","eNOS","nNOS","ca_n","E_b","E_6c","E_5c"};
+
     // Time step loop:
 	double time_tb, time_tree;
 	for (int i = 0; i <= time_fin; i++) {
@@ -292,6 +297,10 @@ int main(int argc, char *argv[]) {
 	    polyData->SetPoints(points_tree);
 	    polyData->SetLines(cellArray_tree);
 	    polyData->GetCellData()->AddArray(flowVar[0]);
+
+		// 4.2.2 H-Tree_lines:
+		uGrid2->GetCellData()->AddArray(flowVar[0]);
+
 
 	    // H-Tree (tubeFilter):
 	    // a) Leaf branches:
@@ -381,6 +390,17 @@ int main(int argc, char *argv[]) {
 		writer_tree->SetFileName(filename_buffer_tree.str().c_str());
 		writer_tree->SetInputConnection(appendFilter->GetOutputPort());
 		writer_tree->Write();
+
+		// 5.3 H-Tree_lines:
+		std::ostringstream filename_buffer_tree2;
+		char fVtuSuffix2[] = "/paraView_Htree_lines";
+		char fVtuOutfile2[128];
+		sprintf(fVtuOutfile2, "%s%s%s",Prefix,dirName,fVtuSuffix2);
+		filename_buffer_tree2 << fVtuOutfile2 << i << ".vtu";
+		vtkSmartPointer<vtkXMLUnstructuredGridWriter> writer2 = vtkSmartPointer<vtkXMLUnstructuredGridWriter>::New(); // save uGrid2 to file
+		writer2->SetFileName(filename_buffer_tree2.str().c_str());
+		writer2->SetInputData(uGrid2);
+		writer2->Write();
 
 	} // time loop
 
