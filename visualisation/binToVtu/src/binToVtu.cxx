@@ -289,11 +289,15 @@ int main(int argc, char *argv[]) {
 		}
 
 		// 4.2.2 H-Tree:
-		for (int k2 = 0; k2 < n_branches; k2++) {
-			double tmpArr_tree[1];
-			is_flow.read((char *) tmpArr_tree, sizeof(tmpArr_tree));  // Read flow variables from binary file.
-			flowVar[0]->InsertNextValue(tmpArr_tree[0]);
+		for (int level = 0; level < n_bifr; level++) {
+			double n_lines = pow(2,(n_bifr-level-1));
+			for(int i = 0; i < n_lines; i++) {
+				double tmpArr_tree[1];
+				is_flow.read((char *) tmpArr_tree, sizeof(tmpArr_tree));  // Read flow variables from binary file.
+				flowVar[0]->InsertNextValue( tmpArr_tree[0] * pow(2,((n_bifr - level - 1) )) );
+			}
 		}
+
 		vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
 	    polyData->SetPoints(points_tree);
 	    polyData->SetLines(cellArray_tree);
