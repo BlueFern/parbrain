@@ -6,6 +6,8 @@ const int NSUBDEFAULT   = 3;
 const int NSYMBOLS      = 4;
 
 const double RMIN  = 10e-6 ;  // m
+//const double BIFURCATION_SCALE = 1.4142135623730951;
+const double BIFURCATION_SCALE = 1.2;
 const double R0    = 10e-6 ;  // m (for nondimensionalising)
 const double L0    = 200e-6;  // m (for nondimensionalising)
 const double LRR   = 20    ;  // Nondimensional (length to radius ratio)
@@ -235,8 +237,7 @@ void write_data(workspace *W, double t, double *y) {
 
 
 void write_flow(workspace *W, double t, double *q, double *q0) {  
-    int displ0, displ1, displ2;
-    int chunk_size;
+    int displ0, displ1;
    
     int xbranch = 1;  
     int pos = W->QglobalPos;   // rank-specific position in Qtot
@@ -256,25 +257,21 @@ void write_flow(workspace *W, double t, double *q, double *q0) {
     MPI_Barrier(MPI_COMM_WORLD); //Just in case, leave the barrier here. May not be necessary.
 
     for (int level = 0; level < W->Np; level++) {  // subtrees
-       displ0 = (W->rank/mg) * mg * nl * ml + (W->rank % mg) * ml; //skip all elements until we reach the portion of data we are interested in
-       pos = pos + displ0;
-       chunk_size = ml;
+        displ0 = (W->rank/mg) * mg * nl * ml + (W->rank % mg) * ml; //skip all elements until we reach the portion of data we are interested in
+		displ1 = 0;
 
-        for (int i = 0; i < nl; i++) {
-	    MPI_File_set_view(W->Qoutfile, pos*sizeof(double), MPI_DOUBLE, MPI_DOUBLE,"native", MPI_INFO_NULL);
-	    MPI_File_write_all(W->Qoutfile, &q[pos_q], chunk_size, MPI_DOUBLE, MPI_STATUS_IGNORE);
-	    pos = pos+chunk_size;
-	    pos_q = pos_q + chunk_size;
-            
-            displ1 = (mg - 1) * ml; //to jump to the next chunk of data in this level
-            pos = pos + displ1;
+        for (int j = 0; j < nl; j++) {
+	    	MPI_File_set_view(W->Qoutfile, (pos + displ0 + displ1)*sizeof(double), MPI_DOUBLE, MPI_DOUBLE,"native", MPI_INFO_NULL);
+	    	MPI_File_write_all(W->Qoutfile, &q[pos_q], ml, MPI_DOUBLE, MPI_STATUS_IGNORE);
+	    	pos_q = pos_q + ml;
+            displ1 += mg * ml; //to jump to the next chunk of data in this level
         }
+		pos += mg * ng * ml * nl;
 
-        displ2 = (ng - 1 - W->rank / mg) * mg * nl * ml - (W->rank % mg) * ml; //skip the remaining elements
-        pos = pos + displ2;
-
-        ml = ml / (2 - xbranch);
-        nl = nl / (1 + xbranch);
+	if (xbranch)
+	    ml = ml / 2;
+	else
+	    nl = nl / 2;
         xbranch = !xbranch;
     }
 
@@ -293,48 +290,44 @@ void write_flow(workspace *W, double t, double *q, double *q0) {
 }
 
 void write_pressure(workspace *W, double t, double *p, double *p0) {
-    int displ0, displ1, displ2;
-    int chunk_size;
-    
-    int xbranch = 1;
+	int displ0, displ1;
+   
+    int xbranch = 0;  // different from q, because we don't have leaf level
     int pos = W->PglobalPos;   // rank-specific position in Ptot
-    int pos_p = 0;     // position in p vector
-    
-    int nl = W->nlocal/2; // because the values will get updated here
-    int ml = W->mlocal; ///2; // !
+    int pos_p = 0;     // position in p vector 
+
+    int nl = W->nlocal; 
+    int ml = W->mlocal/2;  // half as many rows, because p only holds internal node pressure values
     int ng = W->nglobal;
     int mg = W->mglobal;
-    
+
     MPI_File_set_view(W->Poutfile, pos*sizeof(double), MPI_DOUBLE, MPI_DOUBLE,"native", MPI_INFO_NULL);
     if (W->rank == 0) {
         MPI_File_write(W->Poutfile, &t, 1, MPI_DOUBLE, MPI_STATUS_IGNORE);
     }
-    
+
     pos += 1; //increase due to timestamp written above
     MPI_Barrier(MPI_COMM_WORLD); //Just in case, leave the barrier here. May not be necessary.
-    
+
     for (int level = 0; level < W->Np; level++) {  // subtrees
         displ0 = (W->rank/mg) * mg * nl * ml + (W->rank % mg) * ml; //skip all elements until we reach the portion of data we are interested in
-        pos = pos + displ0;
-        chunk_size = ml;
-        
-        for (int i = 0; i < nl; i++) {
-            MPI_File_set_view(W->Poutfile, pos*sizeof(double), MPI_DOUBLE, MPI_DOUBLE,"native", MPI_INFO_NULL);
-            MPI_File_write_all(W->Poutfile, &p[pos_p], chunk_size, MPI_DOUBLE, MPI_STATUS_IGNORE);
-            pos = pos+chunk_size;
-            pos_p = pos_p + chunk_size;
-            
-            displ1 = (mg - 1) * ml; //to jump to the next chunk of data in this level
-            pos = pos + displ1;
+		displ1 = 0;
+
+        for (int j = 0; j < nl; j++) {
+	    	MPI_File_set_view(W->Poutfile, (pos + displ0 + displ1)*sizeof(double), MPI_DOUBLE, MPI_DOUBLE,"native", MPI_INFO_NULL);
+	    	MPI_File_write_all(W->Poutfile, &p[pos_p], ml, MPI_DOUBLE, MPI_STATUS_IGNORE);
+	    	pos_p = pos_p + ml;
+            displ1 += mg * ml; //to jump to the next chunk of data in this level
         }
-        
-        displ2 = (ng - 1 - W->rank / mg) * mg * nl * ml - (W->rank % mg) * ml; //skip the remaining elements
-        pos = pos + displ2;
-        
-        ml = ml / (2 - xbranch);
-        nl = nl / (1 + xbranch);
+	pos += mg * ng * ml * nl;
+
+	if (xbranch)
+	    ml = ml / 2;
+	else
+	    nl = nl / 2;
         xbranch = !xbranch;
     }
+
     
     // write data from roottree
     MPI_File_set_view(W->Poutfile, pos*sizeof(double), MPI_DOUBLE, MPI_DOUBLE,"native", MPI_INFO_NULL);
@@ -558,7 +551,8 @@ double compute_length(int level, int n_levels) {
 }
 double compute_radius(int level, int n_levels) {
     double r;
-    r = RMIN * pow(2., ((double) (n_levels - level - 1)) / 2.);
+    //r = RMIN * pow(2., ((double) (n_levels - level - 1)) / 2.);
+    r = RMIN * pow(BIFURCATION_SCALE, ((double) (n_levels - level - 1)));
     return (r);
 }
 void init_jacobians(workspace *W) {
