@@ -248,7 +248,8 @@ void write_flow(workspace *W, double t, double *q, double *q0) {
     int ng = W->nglobal;
     int mg = W->mglobal;
 
-    MPI_File_set_view(W->Qoutfile, pos*sizeof(double), MPI_DOUBLE, MPI_DOUBLE,"native", MPI_INFO_NULL);
+    MPI_File_set_view(W->Qoutfile, pos*sizeof(double), MPI_DOUBLE,
+            MPI_DOUBLE, "native", MPI_INFO_NULL);
     if (W->rank == 0) {
         MPI_File_write(W->Qoutfile, &t, 1, MPI_DOUBLE, MPI_STATUS_IGNORE);
     }
@@ -257,40 +258,43 @@ void write_flow(workspace *W, double t, double *q, double *q0) {
     MPI_Barrier(MPI_COMM_WORLD); //Just in case, leave the barrier here. May not be necessary.
 
     for (int level = 0; level < W->Np; level++) {  // subtrees
-        displ0 = (W->rank/mg) * mg * nl * ml + (W->rank % mg) * ml; //skip all elements until we reach the portion of data we are interested in
-		displ1 = 0;
+        //skip all elements until we reach the portion of data we are interested in
+        displ0 = (W->rank/mg) * mg * ml * nl + (W->rank % mg) * ml; 
+        displ1 = 0;
 
         for (int j = 0; j < nl; j++) {
-	    	MPI_File_set_view(W->Qoutfile, (pos + displ0 + displ1)*sizeof(double), MPI_DOUBLE, MPI_DOUBLE,"native", MPI_INFO_NULL);
-	    	MPI_File_write_all(W->Qoutfile, &q[pos_q], ml, MPI_DOUBLE, MPI_STATUS_IGNORE);
-	    	pos_q = pos_q + ml;
+            MPI_File_set_view(W->Qoutfile, (pos + displ0 + displ1)*sizeof(double), 
+                    MPI_DOUBLE, MPI_DOUBLE,"native", MPI_INFO_NULL);
+            MPI_File_write_all(W->Qoutfile, &q[pos_q], ml, MPI_DOUBLE,
+                    MPI_STATUS_IGNORE);
+            pos_q = pos_q + ml;
             displ1 += mg * ml; //to jump to the next chunk of data in this level
         }
-		pos += mg * ng * ml * nl;
+        pos += mg * ng * ml * nl;
 
-	if (xbranch)
-	    ml = ml / 2;
-	else
-	    nl = nl / 2;
+        if (xbranch)
+            ml = ml / 2;
+        else
+            nl = nl / 2;
+
         xbranch = !xbranch;
     }
 
     // write data from roottree
 //    MPI_Barrier(MPI_COMM_WORLD); //Just in case, leave the barrier here. May not be necessary.
-    MPI_File_set_view(W->Qoutfile, pos*sizeof(double), MPI_DOUBLE, MPI_DOUBLE,"native", MPI_INFO_NULL);
+    MPI_File_set_view(W->Qoutfile, pos*sizeof(double), MPI_DOUBLE,
+            MPI_DOUBLE,"native", MPI_INFO_NULL);
     int roottreeSize = (1<<W->N0) - 1;
     if (W->rank == 0) {
         MPI_File_write(W->Qoutfile, &q0[0], roottreeSize, MPI_DOUBLE, MPI_STATUS_IGNORE);
 
     }
-    pos = pos+ roottreeSize;
-
+    pos += roottreeSize;
     W->QglobalPos = pos;
-    
 }
 
 void write_pressure(workspace *W, double t, double *p, double *p0) {
-	int displ0, displ1;
+    int displ0, displ1;
    
     int xbranch = 0;  // different from q, because we don't have leaf level
     int pos = W->PglobalPos;   // rank-specific position in Ptot
@@ -311,20 +315,20 @@ void write_pressure(workspace *W, double t, double *p, double *p0) {
 
     for (int level = 0; level < W->Np; level++) {  // subtrees
         displ0 = (W->rank/mg) * mg * nl * ml + (W->rank % mg) * ml; //skip all elements until we reach the portion of data we are interested in
-		displ1 = 0;
+        displ1 = 0;
 
         for (int j = 0; j < nl; j++) {
-	    	MPI_File_set_view(W->Poutfile, (pos + displ0 + displ1)*sizeof(double), MPI_DOUBLE, MPI_DOUBLE,"native", MPI_INFO_NULL);
-	    	MPI_File_write_all(W->Poutfile, &p[pos_p], ml, MPI_DOUBLE, MPI_STATUS_IGNORE);
-	    	pos_p = pos_p + ml;
+            MPI_File_set_view(W->Poutfile, (pos + displ0 + displ1)*sizeof(double), MPI_DOUBLE, MPI_DOUBLE,"native", MPI_INFO_NULL);
+            MPI_File_write_all(W->Poutfile, &p[pos_p], ml, MPI_DOUBLE, MPI_STATUS_IGNORE);
+            pos_p = pos_p + ml;
             displ1 += mg * ml; //to jump to the next chunk of data in this level
         }
-	pos += mg * ng * ml * nl;
+    pos += mg * ng * ml * nl;
 
-	if (xbranch)
-	    ml = ml / 2;
-	else
-	    nl = nl / 2;
+    if (xbranch)
+        ml = ml / 2;
+    else
+        nl = nl / 2;
         xbranch = !xbranch;
     }
 
@@ -349,9 +353,9 @@ void write_info(workspace *W) {
     if (W->rank == 0) {
         FILE *fp;
         // Write the data file
-	char iSuffix[] = "/info.dat";	
-	//infofilename = malloc((sizeof(W->dirName)+sizeof(iSuffix))*sizeof(*infofilename));
-	infofilename = malloc(FILENAMESIZE*sizeof(*infofilename));
+    char iSuffix[] = "/info.dat";   
+    //infofilename = malloc((sizeof(W->dirName)+sizeof(iSuffix))*sizeof(*infofilename));
+    infofilename = malloc(FILENAMESIZE*sizeof(*infofilename));
         sprintf(infofilename, "%s%s",W->dirName,iSuffix);
 
         fp = fopen(infofilename, "w");
@@ -400,8 +404,13 @@ void set_spatial_coordinates(workspace *W) {
 
     // Work out arrangement of workers, again, if rectangular, set more
     // rows than columns
-    mg = 1 << ((l2P/2) + l2P%2);
-    ng = 1 << (l2P/2);
+    if (W->N % 2 == 1) {
+        mg = 1 << (l2P/2);
+        ng = 1 << ((l2P/2) + l2P%2);
+    } else {
+        mg = 1 << ((l2P/2) + l2P%2);
+        ng = 1 << (l2P/2);
+    }
     
     // Work out how many rows / columns of blocks we have for each worker
     //ml = 1 << ((W->Np - 1) / 2 + (W->Np - 1) % 2);
