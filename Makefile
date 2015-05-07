@@ -23,7 +23,8 @@ endif
 CF = $(CFALL) $(CFARCHDEP)
 CS = -lcxsparse
 OBJ = matops.o brain.o nvu.o adjacency.o 
-EXE = testmatops testmat2 simulate testbrain
+#EXE = testmatops testmat2 simulate testbrain
+EXE = simulate
 
 all: tags $(OBJ) $(EXE)
 
@@ -51,7 +52,7 @@ testmat2: testmat2.c matops.o Makefile
 testbrain: testbrain.c matops.o brain.o adjacency.o nvu.o Makefile
 	$(MPCC) $(CF) $(INC) $(LIB) -o testbrain testbrain.c $(OBJ) $(CS) -lm
 
-simulate: simulate.c matops.o brain.o nvu.o Makefile
+simulate: simulate.c matops.o brain.o nvu.o adjacency.o Makefile
 	$(MPCC) $(CF) $(INC) $(LIB) -o simulate simulate.c $(OBJ) $(CS) -lm
 
 clean:

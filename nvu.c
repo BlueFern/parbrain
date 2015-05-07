@@ -42,7 +42,7 @@ static const int Mp        = 21;
 static const int AMp       = 22;
 static const int AM        = 23;
 static const int PLC_i     = 24; //!
-static const int K_df_i       = 25; //!
+static const int K_df_i    = 25; //!
 static const int K_flux_i  = 26; //!
 
 
@@ -640,7 +640,7 @@ double K_input(double t, double x, double y) {
     double ampl = 3;
     double x_centre = 0;//-0.0008; // 0;
     double y_centre = 0;//-0.0008; // 0;
-    double t_up   = 200;
+    double t_up   = 100;
     double t_down = 800;
     double lengthpulse = t_down - t_up;	
     double lengtht1 = 10;
@@ -655,7 +655,8 @@ double K_input(double t, double x, double y) {
     double gab = factorial(alpha + beta - 1);
     double ga = factorial(alpha - 1);
     double gb = factorial(beta - 1);
-    double K_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
+//    double K_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
+    double K_space =((0.5 + 0.5 *(tanh(1e5 * (x-0.0004)+1))) *(0.5 + 0.5 *(tanh(1e5 *(y-0.0004)+1))));
     double K_time;
     if (t >= t0 && t <= t1) {
         K_time = F_input * gab / (ga * gb) * pow((1-(t-t0) / deltat),(beta - 1)) * pow(((t - t0) / deltat),(alpha-1));  
@@ -682,7 +683,7 @@ double factorial(int c) {
 double flux_ft(double t, double x, double y) {
     double flux_min = 0;
     double flux_max = 1;  
-    double t_up   = 200;
+    double t_up   = 100;
     double t_down = 800;
     double lengthpulse = t_down - t_up;
     double lengtht1 = 10;
@@ -694,8 +695,9 @@ double flux_ft(double t, double x, double y) {
     double y_centre = 0;//-0.0008;
     double flux_time = 0.5 * tanh((t-t0)/0.0005) - 0.5 * tanh((t-t1-lengthpulse)/0.0005);
     //double flux_time = 0.5 * tanh((t-t0)/0.005) - 0.5 * tanh((t-t1-lengthpulse)/0.005);
-    double flux_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
-    double flux_out = flux_min + (flux_max-flux_min) * flux_time * flux_space;
+    //double flux_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
+	double flux_space =((0.5 + 0.5 *(tanh(1e5 * (x-0.0004)+1))) *(0.5 + 0.5 *(tanh(1e5 *(y-0.0004)+1))));    
+	double flux_out = flux_min + (flux_max-flux_min) * flux_time * flux_space;
     return flux_out;
 }
 
@@ -703,7 +705,7 @@ double flux_ft(double t, double x, double y) {
 double PLC_input(double t, double x, double y) {
     double PLC_min = 0.18;
     double PLC_max = 0.4;
-    double t_up   = 200;
+    double t_up   = 1200;
     double t_down = 800;
     double ampl = 3;
     double ramp = 0.003;//0.002;

@@ -11,7 +11,6 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-
 #define FILENAMESIZE 128
 
 #ifndef M_PI

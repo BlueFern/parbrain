@@ -88,6 +88,16 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 
+	// Read pressure binary file:
+	char pSuffix[] = "/pressure.dat";
+	char pOutfile[128];
+	sprintf(pOutfile, "%s%s%s",Prefix,dirName,pSuffix);
+	std::ifstream is_pressure(pOutfile, std::ifstream::binary);
+	if (!is_pressure) {
+		std::cerr << "Cannot read " << pOutfile << " file." << std::endl;
+		return EXIT_FAILURE;
+	}
+
     // Read x and y coordinates from tissue_block binary file:
 	double xCoord[n_blocks];
 	double yCoord[n_blocks];
