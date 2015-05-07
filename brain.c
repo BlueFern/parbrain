@@ -6,8 +6,8 @@ const int NSUBDEFAULT   = 3;
 const int NSYMBOLS      = 4;
 
 const double RMIN  = 10e-6 ;  // m
-//const double BIFURCATION_SCALE = 1.4142135623730951;
-const double BIFURCATION_SCALE = 1.2;
+const double BIFURCATION_SCALE = 1.4142135623730951;
+//const double BIFURCATION_SCALE = 1.2;
 const double R0    = 10e-6 ;  // m (for nondimensionalising)
 const double L0    = 200e-6;  // m (for nondimensionalising)
 const double LRR   = 20    ;  // Nondimensional (length to radius ratio)

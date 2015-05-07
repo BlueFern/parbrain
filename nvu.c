@@ -243,7 +243,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 
 	// stretch-activated channels
     const double G_stretch   = 0.0061;       // uM mV-1 s-1   (stretch activated channels)
-    const double P_str       = 30;
+//    const double P_str       = 30;  // Pressure will now come from vasculature
     const double Esac        = -18;          // mV
     const double alpha1      = 0.0074;
     const double sig0        = 500;
@@ -481,7 +481,8 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     flu_K_i			    = G_K * state_w_i * ( state_v_i - vK_i );
     flu_Kactivation_i   = pow((state_ca_i + c_w),2) / ( pow((state_ca_i + c_w),2) + bet*exp(-(state_v_i - v_Ca3)/R_K) );  // see NO pathway!
     flu_degrad_i	    = k_i * state_ip3_i;
-
+	double P_str;
+	P_str = (p*P0 + PCAP) / 2.0 * PA2MMHG;
     flu_J_stretch_i     = G_stretch/(1+exp(-alpha1*(P_str*state_r / flu_h_r - sig0))) * (state_v_i - Esac); 
 
     flu_v_KIR_i    = z_1 * state_K_p / unitcon + z_2;                                  // mV           state_K_p,
