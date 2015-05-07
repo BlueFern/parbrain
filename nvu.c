@@ -12,6 +12,7 @@ static const double EPASSIVE   = 66e3  ;  // Pa
 static const double EACTIVE    = 233e3 ;  // Pa
 static const double ETA        = 2.8e2 ;  // Pa s
 static const double T0         = 1     ;  // s
+static const double PA2MMHG    = 0.00750061683;
 
 static const int i_radius  = 0; // radius has to be 0, this is assumed elsewhere
 // AC
