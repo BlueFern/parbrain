@@ -24,7 +24,7 @@ then
 	echo "Error: wrong argument. $num_procs != $node * $tasks_per_node"
 	exit
 fi
-wall_clock_limit=72:00:00
+wall_clock_limit=24:00:00
 llscript_name=simulate
 queuetime=`date +%G%m%d_%H%M%S`
 outputdir=${basedir}/out-${queuetime}
