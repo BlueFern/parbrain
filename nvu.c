@@ -643,7 +643,7 @@ double K_input(double t, double x, double y) {
     double x_centre = 0;//-0.0008; // 0;
     double y_centre = 0;//-0.0008; // 0;
     double t_up   = 100;
-    double t_down = 800;
+    double t_down = 900;
     double lengthpulse = t_down - t_up;	
     double lengtht1 = 10;
     double F_input = 2.5;
@@ -657,14 +657,16 @@ double K_input(double t, double x, double y) {
     double gab = factorial(alpha + beta - 1);
     double ga = factorial(alpha - 1);
     double gb = factorial(beta - 1);
-//    double K_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
-    double K_space =((0.5 + 0.5 *(tanh(1e5 * (x-0.0004)+1))) *(0.5 + 0.5 *(tanh(1e5 *(y-0.0004)+1))));
+    double K_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
+    //double K_space =((0.5 + 0.5 *(tanh(1e5 * (x-0.0004)+1))) *(0.5 + 0.5 *(tanh(1e5 *(y-0.0004)+1))));
     double K_time;
     if (t >= t0 && t <= t1) {
-        K_time = F_input * gab / (ga * gb) * pow((1-(t-t0) / deltat),(beta - 1)) * pow(((t - t0) / deltat),(alpha-1));  
+        //K_time = F_input * gab / (ga * gb) * pow((1-(t-t0) / deltat),(beta - 1)) * pow(((t - t0) / deltat),(alpha-1));  
+        K_time = 1 * gab / (ga * gb) * pow((1-(t-t0) / deltat),(beta - 1)) * pow(((t - t0) / deltat),(alpha-1));  
     }
     else if (t >= t2 && t <= t3) {
-    	K_time = - F_input;
+    	//K_time = - F_input;
+    	K_time = - 1;
     }	
     else {
     	K_time = 0;
@@ -681,12 +683,12 @@ double factorial(int c) {
     return result;
 }
 
-// Block function to switch channels on and off
+// Block function to switch cotransporter channels on and off (K+ input)
 double flux_ft(double t, double x, double y) {
     double flux_min = 0;
     double flux_max = 1;  
     double t_up   = 100;
-    double t_down = 800;
+    double t_down = 900;
     double lengthpulse = t_down - t_up;
     double lengtht1 = 10;
     double t0 = t_up;	
@@ -697,8 +699,8 @@ double flux_ft(double t, double x, double y) {
     double y_centre = 0;//-0.0008;
     double flux_time = 0.5 * tanh((t-t0)/0.0005) - 0.5 * tanh((t-t1-lengthpulse)/0.0005);
     //double flux_time = 0.5 * tanh((t-t0)/0.005) - 0.5 * tanh((t-t1-lengthpulse)/0.005);
-    //double flux_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
-	double flux_space =((0.5 + 0.5 *(tanh(1e5 * (x-0.0004)+1))) *(0.5 + 0.5 *(tanh(1e5 *(y-0.0004)+1))));    
+    double flux_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
+	//double flux_space =((0.5 + 0.5 *(tanh(1e5 * (x-0.0004)+1))) *(0.5 + 0.5 *(tanh(1e5 *(y-0.0004)+1))));    
 	double flux_out = flux_min + (flux_max-flux_min) * flux_time * flux_space;
     return flux_out;
 }
@@ -707,8 +709,8 @@ double flux_ft(double t, double x, double y) {
 double PLC_input(double t, double x, double y) {
     double PLC_min = 0.18;
     double PLC_max = 0.4;
-    double t_up   = 1200;
-    double t_down = 800;
+    double t_up   = 100;
+    double t_down = 900;
     double ampl = 3;
     double ramp = 0.003;//0.002;
     double x_centre = 0; // 0.0008 -> n_bif = 7; python: ((((2**(n_bif-1))**0.5)/4)*0.0004)
@@ -755,7 +757,7 @@ void nvu_ics(double *u0, double x, double y, nvu_workspace *w) {
     u0[AMp]       = 0.25;                      //22
     u0[AM]        = 0.25;                      //23
     u0[PLC_i]     = PLC_input(300,x,y);
-    u0[K_df_i]    = K_input(202,x,y);
+    u0[K_df_i]    = K_input(105,x,y);
     u0[K_flux_i]  = flux_ft(300,x,y);
 
 // NO pathway*****************
