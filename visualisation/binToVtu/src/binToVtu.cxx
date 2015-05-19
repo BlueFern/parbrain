@@ -255,10 +255,10 @@ int main(int argc, char *argv[]) {
 	uGrid2->SetPoints(points_tree);
 	uGrid2->SetCells(VTK_LINE, cellArray_tree); //     uGrid2->SetLines(cellArray2);
 
-
+	//char *var_names[] = {"radius_coupled","radius_decoupled","R_k","N_Na_k","N_K_k","N_HCO3_k","N_Cl_k","N_Na_s","N_K_s","N_HCO3_s","K_p","w_k","ca_i","ca_sr_i","v_i","w_i","ip3_i","K_i","ca_j","ca_er_j","v_j","ip3_j","Mp","AMp","AM","input_PLC","input_K_df","input_K_flux","NOi","NOj","NOn","cGMP","eNOS","nNOS","ca_n","E_b","E_6c","E_5c"};
+	char *var_names[] = {"radius_coupled","R_k","N_Na_k","N_K_k","N_HCO3_k","N_Cl_k","N_Na_s","N_K_s","N_HCO3_s","K_p","w_k","ca_i","ca_sr_i","v_i","w_i","ip3_i","K_i","ca_j","ca_er_j","v_j","ip3_j","Mp","AMp","AM","input_PLC","input_K_df","input_K_flux","NOi","NOj","NOn","cGMP","eNOS","nNOS","ca_n","E_b","E_6c","E_5c"};
 
 // 4. Add binary data as attributes to cells:
-	char *var_names[] = 	char *var_names[] = {"radius_coupled","radius_decoupled","R_k","N_Na_k","N_K_k","N_HCO3_k","N_Cl_k","N_Na_s","N_K_s","N_HCO3_s","K_p","w_k","ca_i","ca_sr_i","v_i","w_i","ip3_i","K_i","ca_j","ca_er_j","v_j","ip3_j","Mp","AMp","AM","input_PLC","input_K_df","input_K_flux","NOi","NOj","NOn","cGMP","eNOS","nNOS","ca_n","E_b","E_6c","E_5c"};
 
 
     // Time step loop:
@@ -279,8 +279,14 @@ int main(int argc, char *argv[]) {
 		// 4.1.2 H-Tree:
 		std::vector<vtkSmartPointer<vtkDoubleArray> > flowVar; 	//Create vector of arrays for each state variable.
 		vtkSmartPointer<vtkDoubleArray> array_tree = vtkSmartPointer<vtkDoubleArray>::New(); // Create array.
-		//array_tree->SetName("blood_flow"); // Only one array for flow variables.
+		array_tree->SetName("blood_flow"); // Only one array for flow variables.
 		flowVar.push_back(array_tree);
+
+		// 4.1.3 H-Tree - unscaled
+		std::vector<vtkSmartPointer<vtkDoubleArray> > flowVar_unscaled; 	//Create vector of arrays for each state variable.
+		vtkSmartPointer<vtkDoubleArray> array_tree_unscaled = vtkSmartPointer<vtkDoubleArray>::New(); // Create array.
+		array_tree_unscaled->SetName("blood_flow_unscaled"); // Only one array for flow variables.
+		flowVar_unscaled.push_back(array_tree_unscaled);
 
 
 		// 4.2 Read state variables and add as attributes to uGrid.
@@ -300,11 +306,13 @@ int main(int argc, char *argv[]) {
 
 		// 4.2.2 H-Tree:
 		for (int level = 0; level < n_bifr; level++) {
+			// Scale flow variables: Each level times by 2^(nlevels-level-1)
 			double n_lines = pow(2,(n_bifr-level-1));
 			for(int i = 0; i < n_lines; i++) {
 				double tmpArr_tree[1];
 				is_flow.read((char *) tmpArr_tree, sizeof(tmpArr_tree));  // Read flow variables from binary file.
 				flowVar[0]->InsertNextValue( tmpArr_tree[0] * pow(2,((n_bifr - level - 1) )) );
+				flowVar_unscaled[0]->InsertNextValue( tmpArr_tree[0] );
 			}
 		}
 
@@ -312,9 +320,11 @@ int main(int argc, char *argv[]) {
 	    polyData->SetPoints(points_tree);
 	    polyData->SetLines(cellArray_tree);
 	    polyData->GetCellData()->AddArray(flowVar[0]);
+	    polyData->GetCellData()->AddArray(flowVar_unscaled[0]);
 
 		// 4.2.2 H-Tree_lines:
 		uGrid2->GetCellData()->AddArray(flowVar[0]);
+		uGrid2->GetCellData()->AddArray(flowVar_unscaled[0]);
 
 
 	    // H-Tree (tubeFilter):
