@@ -378,6 +378,8 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     double flu_K1_c, flu_K6_c; // Mech fluxes   
 //    double flu_P_NR2AO, flu_P_NR2BO, flu_openProbTerm, flu_I_Ca, flu_phi_N, flu_dphi_N, flu_N, flu_CaM, flu_W_tau_w, flu_F_tau_w, flu_k4, flu_R_cGMP1, flu_R_NO, flu_v_Ca3, flu_P_O, flu_R_cGMP2, flu_K2_c, flu_K5_c, flu_kmlcp;    // NO pathway fluxes
 
+    double flu_diff_K_0, flu_diff_K_1, flu_diff_K_2, flu_diff_K_3;
+
 // State Variables:
     state_r  = u[i_radius];
 
@@ -519,6 +521,15 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     flu_K1_c       = gam_cross * pow(state_ca_i,3);
     flu_K6_c       = flu_K1_c;
 
+// Diffusion
+    double neighbours[4];
+    map_block_to_neighbours(i, neighbours);
+
+    flu_diff_K_0 = (u[-"offset"+neighbours[0]] - state_K_p ) / tau;
+    flu_diff_K_1 = (u[-"offset"+neighbours[1]] - state_K_p ) / tau;
+	flu_diff_K_2 = (u[-"offset"+neighbours[2]] - state_K_p ) / tau;
+	flu_diff_K_3 = (u[-"offset"+neighbours[3]] - state_K_p ) / tau;
+
 // NO pathway fluxes
 
 //   flu_P_NR2AO         = nvu_Glu(t,x,y)/(betA+nvu_Glu(t,x,y)); 
@@ -542,7 +553,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 //   flu_K2_c           = 16.88*k_mlcp_b+16.88*k_mlcp_c*flu_R_cGMP2;  // 17.64 / 16.75 errechnet sich aus dem Shift, um K2_c = 0.5 bei der baseline zu bekommen - muss vllt noch geaendert werden! 
 //   flu_K5_c           = flu_K2_c;
 //   flu_kmlcp          = k_mlcp_b + k_mlcp_c * flu_R_cGMP2;
-//   flu_Kactivation_i  = 0.075*(1+tanh((state_cGMP-9.7)))+ (pow((state_ca_i + c_w ),2) / ( pow((state_ca_i + c_w),2) + bet*exp(-(state_v_i - v_Ca3)/R_K) ));
+    //   flu_Kactivation_i  = 0.075*(1+tanh((state_cGMP-9.7)))+ (pow((state_ca_i + c_w ),2) / ( pow((state_ca_i + c_w),2) + bet*exp(-(state_v_i - v_Ca3)/R_K) ));
 
 
 
@@ -556,10 +567,12 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     du[ N_K_k   ] = -flu_J_K_k + 2 * flu_J_NaK_k + flu_J_NKCC1_k + flu_J_KCC1_k -flu_J_BK_k; // uMm s-1
     du[ N_HCO3_k] = 2 * flu_J_NBC_k;                                                // uMm s-1
     du[ N_Cl_k  ] = du[ N_Na_k] + du[ N_K_k] - du[ N_HCO3_k];                       // uMm s-1, modified equation compared to the one of Ostby  //
-    	du[ N_Na_s  ] = - k_C * K_input(t,x,y) - du[ N_Na_k];                                        // uMm s-1
-    	du[ N_K_s   ] = k_C * K_input(t,x,y) - du[ N_K_k] - flu_J_BK_k;                 // uMm s-1
+    du[ N_Na_s  ] = - k_C * K_input(t,x,y) - du[ N_Na_k];                                        // uMm s-1
+    du[ N_K_s   ] = k_C * K_input(t,x,y) - du[ N_K_k] - flu_J_BK_k;                 // uMm s-1
     du[ N_HCO3_s] = - du[ N_HCO3_k];                                                // uMm s-1
-    	du[ K_p     ] = flu_J_BK_k / (VR_pa * state_R_k) + flu_J_KIR_i / VR_ps - R_decay * (state_K_p - K_p_min);         // uM s-1
+    //du[ K_p     ] = flu_J_BK_k / (VR_pa * state_R_k) + flu_J_KIR_i / VR_ps - R_decay * (state_K_p - K_p_min);         // uM s-1
+    du[ K_p     ] = ( flu_J_BK_k / (VR_pa * state_R_k) + flu_J_KIR_i / VR_ps - R_decay * (state_K_p - K_p_min) ) + flu_diff_K_0 + flu_diff_K_1 + flu_diff_K_2 + flu_diff_K_3  ;         // uM s-1
+
     du[ w_k     ] = flu_phi_w * (flu_w_inf - state_w_k);                            // s-1
 
     //SMC:
