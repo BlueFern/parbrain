@@ -1,60 +1,76 @@
 #include <stdio.h>
 
-double b0[4] = {0.000001, 0.100001, 0.200001, 0.300001};
-double b1[4] = {1.000001, 1.100001, 1.200001, 1.300001};
-double b2[4] = {2.000001, 2.100001, 2.200001, 2.300001};
-double b3[4] = {3.000001, 3.100001, 3.200001, 3.300001};
-
-
 
 int main(int argc, char **argv) {
 
-int ml = atoi(argv[1]);
-int nl = atoi(argv[2]);
+	int mlocal = atoi(argv[1]);
+	int nlocal = atoi(argv[2]);
 
-double N[ml * nl];
-double E[ml * nl];
-double S[ml * nl];
-double W[ml * nl];
+	int neighbours[4*nlocal * mlocal];
 
-int i = 0;
-int j = 0;
+	int b0[mlocal];
+	int b1[nlocal];
+	int b2[mlocal];
+	int b3[nlocal];
 
-	for (j = 0; j < nl; j++) {
-		for (i = 0; i < ml; i++) {
-
-			if ((i + ml * j) < ml) {
-				W[i + ml * j] = b0[i];
-			} else {
-			    W[i + ml * j] = i + ml * j - ml;
-			}
-
-			if (((i + ml * j + 1) % ml) == 0) {
-				N[i + ml * j] = b1[j];
-			} else {
-			    N[i + ml * j] = i + ml * j + 1; 
-			}
-
-			if ((i + ml * j) >= (ml * (nl - 1))) {
-				E[i + ml * j] = b2[i];
-			} else {
-			    E[i + ml * j] = i + ml * j + ml; 
-			}
-
-			if (((i + ml * j) % ml) == 0) {
-				S[i + ml * j] = b3[j];
-			} else {
-			    S[i + ml * j] = i + ml * j - 1;
-			}
-		}
-	
+	for (int j = 0; j < mlocal; j++) {
+		b0[j] = -1 * (j + 1);
+		b2[j] = -1 * (mlocal + nlocal + j + 1);
 	}
 
-	int k = 0;
+	for (int k = 0; k < nlocal; k++) {
+		b1[k] = -1 * (mlocal + k + 1);
+		b3[k] = -1 * (mlocal + 2*nlocal + k + 1);
+	}
 
-	for (k = 0; k < (ml * nl); k++) {
-		printf("block: %d \t W: %f \t N: %f \t E: %f \t S: %f \n", k, W[k], N[k], E[k], S[k]);
+	//int direction_offset_m = mlocal; //
+	//int direction_offset_n = nlocal;
+
+	int block_offset = 4; // neighbours per block
+
+	int i = 0;
+	int j = 0;
+
+	for (j = 0; j < nlocal; j++) {
+		for (i = 0; i < mlocal; i++) {
+
+			if ((i + mlocal * j) < mlocal) {
+				neighbours[block_offset * (i + mlocal * j)] = b0[i]; //W
+			} else {
+			    neighbours[block_offset * (i + mlocal * j)] = i + mlocal * j - mlocal; //W
+			}
+
+			if (((i + mlocal * j + 1) % mlocal) == 0) {
+				neighbours[1 + block_offset * (i + mlocal * j)] = b1[j]; //N
+			} else {
+			    neighbours[1 + block_offset * (i + mlocal * j)] = i + mlocal * j + 1; //N
+			}
+
+			if ((i + mlocal * j) >= (mlocal * (nlocal - 1))) {
+				neighbours[2 + block_offset * (i + mlocal * j)] = b2[i]; //E
+			} else {
+			    neighbours[2 + block_offset * (i + mlocal * j)] = i + mlocal * j + mlocal; //E
+			}
+
+			if (((i + mlocal * j) % mlocal) == 0) {
+				neighbours[3 + block_offset * (i + mlocal * j)] = b3[j]; //S
+			} else {
+			    neighbours[3 + block_offset * (i + mlocal * j)] = i + mlocal * j - 1; //S
+			}
+		}
+	}
+	
+	int l = 0;
+
+	for (l = 0; l < (mlocal * nlocal); l++) {
+		printf("block: %d \t W: %d \t N: %d \t E: %d \t S: %d \n", l, neighbours[block_offset * l], neighbours[1+block_offset * l], neighbours[2+block_offset * l],neighbours[3+block_offset * l]);
 	} 
-
+	
+	int m = 0;
+	printf("neighbours array: ");
+	for (m = 0; m < (4 * mlocal * nlocal); m++) {
+		printf("%d \t", neighbours[m]);
+	} 
+	
 }
 

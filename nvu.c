@@ -752,9 +752,60 @@ double PLC_input(double t, double x, double y) {
 }
 
 // Get the indices for all neighbours for all tissue blocks in the given MPI domain.
-void set_block_neighbours(int nlocal, int mlocal, int *neighbours)
-{
+void set_block_neighbours(int nlocal, int mlocal, int *neighbours) {
 	printf("A stub for %s in %s\n", __FUNCTION__, __FILE__);
+
+	// Boundary conditions (later ghost blocks) 
+	int b0[mlocal]; //W (directions only make sense when origin is seen as lower left corner!)
+	int b1[nlocal]; //N
+	int b2[mlocal]; //E
+	int b3[nlocal]; //S
+	
+	// Filled with negative numbers to differentiate from block neighbour indices
+	for (int j = 0; j < mlocal; j++) {
+		b0[j] = -1 * (j + 1);
+		b2[j] = -1 * (mlocal + nlocal + j + 1);
+	}
+
+	for (int k = 0; k < nlocal; k++) {
+		b1[k] = -1 * (mlocal + k + 1);
+		b3[k] = -1 * (mlocal + 2*nlocal + k + 1);
+	}
+	
+	int block_offset = 4; // neighbours per block
+	
+	// neighbours array gets filled in the following way:
+	// W0, N0, E0, S0, W1, N1, ... etc.
+	for (int j = 0; j < nlocal; j++) {
+		for (int i = 0; i < mlocal; i++) {
+
+			if ((i + mlocal * j) < mlocal) {
+				neighbours[block_offset * (i + mlocal * j)] = b0[i]; //W
+			} else {
+			    neighbours[block_offset * (i + mlocal * j)] = i + mlocal * j - mlocal; //W
+			}
+
+			if (((i + mlocal * j + 1) % mlocal) == 0) {
+				neighbours[1 + block_offset * (i + mlocal * j)] = b1[j]; //N
+			} else {
+			    neighbours[1 + block_offset * (i + mlocal * j)] = i + mlocal * j + 1; //N
+			}
+
+			if ((i + mlocal * j) >= (mlocal * (nlocal - 1))) {
+				neighbours[2 + block_offset * (i + mlocal * j)] = b2[i]; //E
+			} else {
+			    neighbours[2 + block_offset * (i + mlocal * j)] = i + mlocal * j + mlocal; //E
+			}
+
+			if (((i + mlocal * j) % mlocal) == 0) {
+				neighbours[3 + block_offset * (i + mlocal * j)] = b3[j]; //S
+			} else {
+			    neighbours[3 + block_offset * (i + mlocal * j)] = i + mlocal * j - 1; //S
+			}
+			// to access: neighbours[block_offset * i], neighbours[1+block_offset * i],
+			// neighbours[2+block_offset * i],neighbours[3+block_offset * i], i being block index
+		}
+	}
 }
 
 // Initial conditions. If you want spatial inhomegeneity, make it a
