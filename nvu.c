@@ -756,6 +756,8 @@ void set_block_neighbours(int nlocal, int mlocal, nvu_workspace* w) {
 	// Each block has four neighbours.
     w->neighbours = malloc(nlocal * mlocal * 4 * sizeof(int));
 
+    // TODO: This also needs to be freed somewhere along with ghost blocks.
+
 	// Boundary conditions (later ghost blocks) 
 	int b0[mlocal]; //W (directions only make sense when origin is seen as lower left corner!)
 	int b1[nlocal]; //N
