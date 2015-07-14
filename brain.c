@@ -33,14 +33,14 @@ workspace * init(int argc, char **argv) {
     init_parallel(W, argc, argv);   // Initialise splitting into subtrees and MPI stuff
     init_subtree(W);                // Init adjacency matrix and workspace for subtree
     init_roottree(W);               // Same, but for root tree
-    init_ghost_blocks(W);           // Initialise the ghost block structs.
 
     set_spatial_coordinates(W);
 
     compute_symbchol(W);            // Precompute symbolic factorisations 
     W->nvu = nvu_init();            // Initialise ODE parameter workspace
 
-    set_block_neighbours(W->nlocal, W->mlocal, W->nvu->neighbours);
+    set_block_neighbours(W->nlocal, W->mlocal, W->nvu); // Calculate neighbours indices for each block.
+    init_ghost_blocks(W->nlocal, W->mlocal, W->nvu); // Initialise the ghost block structs.
 
     W->neq = W->nvu->neq;
     W->nu  = W->neq * W->nblocks;   // no of state variables per rank
@@ -481,22 +481,6 @@ void init_subtree(workspace *W) {
     // These vectors seem to be sitting there without use.
     W->xn = malloc(W->A->n * sizeof(*W->xn));
     W->xm = malloc(W->A->m * sizeof(*W->xm));
-}
-
-void init_ghost_blocks(workspace *W)
-{
-	// Ghost block surround the perimeter of the MPI domain.
-	W->num_ghost_blocks = 2 * (W->nlocal + W->mlocal);
-
-    W->ghost_blocks = malloc(W->num_ghost_blocks * sizeof(ghost_block));
-
-    for(int i = 0; i < W->num_ghost_blocks; i++)
-    {
-    	W->ghost_blocks[i].vars = malloc(NUM_DIFF_VARS * sizeof(double));
-    }
-
-    // TODO: Free the space in a function deallocating the space for nvu_workspace,
-    // which is to be written and called at the right place.
 }
 
 void compute_symbchol(workspace *W) {

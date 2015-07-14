@@ -30,24 +30,6 @@ extern const double P0      ;
 extern const double PCAP    ;
 extern const double MU      ;
 
-// TODO: Move the ghost block parts to the nvu_workspace struct?
-
-// Number of variables stored in diffusion structs.
-static const int NUM_DIFF_VARS = 1;
-
-// Enumerator to keep track of the diffusion variables positions.
-enum diff_idx
-{
-	DIFF_K
-};
-
-// Ghost block to store diffusion variables. Ghost blocks are placed around
-// the 'perimeter' of the tissue blocks allocated to an MPI process.
-typedef struct ghost_block
-{
-	double *vars;
-} ghost_block;
-
 // Define the workspace that we need to carry around. This is the base
 // workspace for computing the RHS and Jacobian, and performing the solves
 // involved in a Newton step, and as such contains pretty much everything
@@ -97,10 +79,6 @@ typedef struct workspace {
     double  *xn;    // extra n-sized workspace 
     double  *xm;    // extra m-sized workspace
     double  *xn0;   // extra n0-sized workspace
-
-    // Ghost blocks for diffusion.
-    int num_ghost_blocks; // Calculated on the basis of the number of blocks.
-    ghost_block *ghost_blocks;
 
     // MPI Information 
     int     rank;
@@ -178,7 +156,6 @@ void    write_pressure(workspace *W, double t, double *p, double *p0);
 void    write_info(workspace *W);
 int     is_power_of_two(unsigned int x);
 void    init_subtree(workspace *W);
-void    init_ghost_blocks(workspace *W);
 
 //cs     *adjacency(int N);
 void    compute_symbchol(workspace *W);

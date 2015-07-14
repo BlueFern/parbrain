@@ -139,9 +139,6 @@ nvu_workspace *nvu_init(void) {
     w->pcap  = PCAP / P0;
     w->l  = 1; // normalised away
 
-    // TODO: Calculate the neighbour indices here and store them.
-    // w->neighbours = malloc();
-
     return w;
 }
 // This frees the nvu_workspace structure. If you have allocated any memory
@@ -535,11 +532,13 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     // Use negative indices for neighbours (naughty?) to indicate ghost blocks.
     if(W_neighbour < 0)
     {
-    	flu_diff_K_0 = (w->ghost_blocks[ghost_offset] - state_K_p) / tau;
+    	// TODO: Complete this.
+    	// flu_diff_K_0 = (w->ghost_blocks[ghost_offset] - state_K_p) / tau;
     }
     else
     {
-    	flu_diff_K_0 = (u[-state_offset + N_neighbour] - state_K_p) / tau;
+    	// TODO: Complete this.
+    	// flu_diff_K_0 = (u[-state_offset + N_neighbour] - state_K_p) / tau;
     }
 
     flu_diff_K_1 = (u[-state_offset + w->neighbours[neigh_offset + 1]] - state_K_p) / tau;
@@ -752,8 +751,10 @@ double PLC_input(double t, double x, double y) {
 }
 
 // Get the indices for all neighbours for all tissue blocks in the given MPI domain.
-void set_block_neighbours(int nlocal, int mlocal, int *neighbours) {
-	printf("A stub for %s in %s\n", __FUNCTION__, __FILE__);
+void set_block_neighbours(int nlocal, int mlocal, nvu_workspace* w) {
+
+	// Each block has four neighbours.
+    w->neighbours = malloc(nlocal * mlocal * 4 * sizeof(int));
 
 	// Boundary conditions (later ghost blocks) 
 	int b0[mlocal]; //W (directions only make sense when origin is seen as lower left corner!)
@@ -780,32 +781,50 @@ void set_block_neighbours(int nlocal, int mlocal, int *neighbours) {
 		for (int i = 0; i < mlocal; i++) {
 
 			if ((i + mlocal * j) < mlocal) {
-				neighbours[block_offset * (i + mlocal * j)] = b0[i]; //W
+				w->neighbours[block_offset * (i + mlocal * j)] = b0[i]; //W
 			} else {
-			    neighbours[block_offset * (i + mlocal * j)] = i + mlocal * j - mlocal; //W
+			    w->neighbours[block_offset * (i + mlocal * j)] = i + mlocal * j - mlocal; //W
 			}
 
 			if (((i + mlocal * j + 1) % mlocal) == 0) {
-				neighbours[1 + block_offset * (i + mlocal * j)] = b1[j]; //N
+				w->neighbours[1 + block_offset * (i + mlocal * j)] = b1[j]; //N
 			} else {
-			    neighbours[1 + block_offset * (i + mlocal * j)] = i + mlocal * j + 1; //N
+			    w->neighbours[1 + block_offset * (i + mlocal * j)] = i + mlocal * j + 1; //N
 			}
 
 			if ((i + mlocal * j) >= (mlocal * (nlocal - 1))) {
-				neighbours[2 + block_offset * (i + mlocal * j)] = b2[i]; //E
+				w->neighbours[2 + block_offset * (i + mlocal * j)] = b2[i]; //E
 			} else {
-			    neighbours[2 + block_offset * (i + mlocal * j)] = i + mlocal * j + mlocal; //E
+			    w->neighbours[2 + block_offset * (i + mlocal * j)] = i + mlocal * j + mlocal; //E
 			}
 
 			if (((i + mlocal * j) % mlocal) == 0) {
-				neighbours[3 + block_offset * (i + mlocal * j)] = b3[j]; //S
+				w->neighbours[3 + block_offset * (i + mlocal * j)] = b3[j]; //S
 			} else {
-			    neighbours[3 + block_offset * (i + mlocal * j)] = i + mlocal * j - 1; //S
+			    w->neighbours[3 + block_offset * (i + mlocal * j)] = i + mlocal * j - 1; //S
 			}
 			// to access: neighbours[block_offset * i], neighbours[1+block_offset * i],
 			// neighbours[2+block_offset * i],neighbours[3+block_offset * i], i being block index
 		}
 	}
+}
+
+void init_ghost_blocks(int nlocal, int mlocal, nvu_workspace *w)
+{
+	// Ghost block surround the perimeter of the MPI domain.
+	w->num_ghost_blocks = 2 * (nlocal + mlocal);
+
+    w->ghost_blocks = malloc(w->num_ghost_blocks * sizeof(ghost_block));
+
+    for(int i = 0; i < w->num_ghost_blocks; i++)
+    {
+    	w->ghost_blocks[i].vars = malloc(NUM_DIFF_VARS * sizeof(double));
+    }
+
+    // TODO: There needs to be a function to set initial values (boundary conditions) in the ghos blocks.
+
+    // TODO: Free the space in a function deallocating the space for nvu_workspace,
+    // which is to be written and called at the right place.
 }
 
 // Initial conditions. If you want spatial inhomegeneity, make it a
