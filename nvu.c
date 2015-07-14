@@ -61,7 +61,8 @@ static const int K_flux_i  = 26; //!
 //static const int E_5c      = 33;
 
 
-
+// TODO: To be moved to the header file.
+void block_neighbours(double x, double y, int neighbours[4]);
 
 
 // nvu_init: this user-supplied function does any precomputation required
@@ -517,18 +518,21 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 
     flu_J_stretch_j       = G_stretch / (1 + exp(-alpha1*(P_str * state_r / flu_h_r - sig0))) * (state_v_j - Esac);
 
-// Mech fluxes
+    // Mech fluxes
     flu_K1_c       = gam_cross * pow(state_ca_i,3);
     flu_K6_c       = flu_K1_c;
 
-// Diffusion
-    double neighbours[4];
-    map_block_to_neighbours(i, neighbours);
+    // Diffusion.
+    int neighbours[4];
+    // TODO: Instead of calling this function for every iteration,
+    // it would make more sense to have the neighbours calculated
+    // stored in the nvu_workspace during structure initialisation.
+    block_neighbours(x, y, neighbours);
 
-    flu_diff_K_0 = (u[-"offset"+neighbours[0]] - state_K_p ) / tau;
-    flu_diff_K_1 = (u[-"offset"+neighbours[1]] - state_K_p ) / tau;
-	flu_diff_K_2 = (u[-"offset"+neighbours[2]] - state_K_p ) / tau;
-	flu_diff_K_3 = (u[-"offset"+neighbours[3]] - state_K_p ) / tau;
+    // flu_diff_K_0 = (u[-"offset"+neighbours[0]] - state_K_p ) / tau;
+    // flu_diff_K_1 = (u[-"offset"+neighbours[1]] - state_K_p ) / tau;
+	// flu_diff_K_2 = (u[-"offset"+neighbours[2]] - state_K_p ) / tau;
+	// flu_diff_K_3 = (u[-"offset"+neighbours[3]] - state_K_p ) / tau;
 
 // NO pathway fluxes
 
@@ -733,6 +737,12 @@ double PLC_input(double t, double x, double y) {
     double PLC_out = PLC_min + (PLC_max-PLC_min) * PLC_space * PLC_time;
     //double PLC_out = PLC_space; // no time-dependeny
     return PLC_out;
+}
+
+// Get the indices for a block indicated by the x, y coordinates.
+void block_neighbours(double x, double y, int neighbours[4])
+{
+	printf("A stub for %s in %s\n", __FUNCTION__, __FILE__);
 }
 
 // Initial conditions. If you want spatial inhomegeneity, make it a

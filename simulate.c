@@ -69,8 +69,12 @@ int main(int argc, char **argv) {
             printf("%4d%4d%4d%12.4e%4d%4d%12.4e%12.4e%12.4e\n", ws->W->N, ws->W->Nsub, ws->W->n_procs, tf - t0, ws->W->fevals, ws->W->jacupdates, ws->W->tfeval, ws->W->tjacupdate, ws->W->tjacfactorize);
         }
     }
-    // And clean up
+
+    // And clean up.
     close_io(ws->W);
+
+    // TODO: Is there a function to free all members of the workspace struct?
+
     MPI_Finalize();
     return 0;
 }
@@ -183,6 +187,7 @@ void solver_init(odews *ws, int argc, char **argv) {
     ws->W->tjacupdate = (tf - t0) - (tb - ta);
     ws->W->tjacfactorize = (tb - ta);
 }
+
 int sizecheck(double *x, int n, double tol) { // n - no of equ total (nblocks*nequs)
     int smallenough = 1;
     double x0[27] = 	{1,   	// 0
@@ -235,8 +240,8 @@ int sizecheck(double *x, int n, double tol) { // n - no of equ total (nblocks*ne
             break;
     }
     return smallenough;
-
 }
+
 css * newton_sparsity(cs *J) {
     // Perform symbolic analysis of the Jacobian for subsequent LU
     // factorisation
@@ -245,6 +250,7 @@ css * newton_sparsity(cs *J) {
     S = cs_sqr(order, J, 0); // 0 means we're doing LU and not QR
     return S;
 }
+
 void newton_matrix(odews *ws) {
     // Create a Newton matrix from the given step gamma and Jacobian in W
     cs *M, *eye;
@@ -260,6 +266,7 @@ void newton_matrix(odews *ws) {
     ws->N = cs_lu(M, ws->S, 1);
     cs_spfree(M);
 }
+
 int lusoln(odews *ws, double *b) {
     // Can only be called if newton_matrix has been called already 
     double *x;

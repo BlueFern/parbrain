@@ -33,7 +33,10 @@ workspace * init(int argc, char **argv) {
     init_parallel(W, argc, argv);   // Initialise splitting into subtrees and MPI stuff
     init_subtree(W);                // Init adjacency matrix and workspace for subtree
     init_roottree(W);               // Same, but for root tree
+    init_ghost_blocks(W);           // Initialise the ghost block structs.
+
     set_spatial_coordinates(W);
+
     compute_symbchol(W);            // Precompute symbolic factorisations 
     W->nvu = nvu_init();            // Initialise ODE parameter workspace
     W->neq = W->nvu->neq;
@@ -45,7 +48,8 @@ workspace * init(int argc, char **argv) {
     write_info(W);                  // Write summary information to disk
 
     return W;
-} 
+}
+
 void evaluate(workspace *W, double t, double *y, double *dy) {
     W->fevals++;
     double r, l;
@@ -346,7 +350,6 @@ void write_pressure(workspace *W, double t, double *p, double *p0) {
     
 }
 
-
 void write_info(workspace *W) {
     // Write the summary info to disk
     char * infofilename;
@@ -444,6 +447,8 @@ void set_spatial_coordinates(workspace *W) {
 int is_power_of_two (unsigned int x) {
       return ((x != 0) && !(x & (x - 1)));
 }
+
+// TODO: Is there function to free the subtree somewhere?
 void init_subtree(workspace *W) {
     // First construct the local subtree 
     W->A    = adjacency(W->Np);
@@ -468,10 +473,22 @@ void init_subtree(workspace *W) {
     W->ucomm = malloc (W->n_procs * (sizeof *W->ucomm));
     W->vcomm = malloc (W->n_procs * (sizeof *W->vcomm));
     W->gcomm = malloc (W->n_procs * (sizeof *W->gcomm));
-    // Initialise general purpose vectors for workspaces
+
+    // Initialise general purpose vectors for workspaces.
+    // These vectors seem to be sitting there without use.
     W->xn = malloc(W->A->n * sizeof(*W->xn));
     W->xm = malloc(W->A->m * sizeof(*W->xm));
 }
+
+// TODO: Write a function to free the ghost blocks.
+void init_ghost_blocks(workspace *W)
+{
+	// TODO: Calculate the number of ghost blocks for the tissue blocks in this MPI process.
+	W->num_ghost_blocks = 0;
+    W->ghost_blocks = malloc(W->num_ghost_blocks * sizeof(ghost_block));
+    // TODO: Allocate ghost block structs here.
+}
+
 void compute_symbchol(workspace *W) {
     cs *X, *Y;
     X = cs_multiply(W->A, W->G);
@@ -488,6 +505,7 @@ void compute_symbchol(workspace *W) {
     W->symbchol0 = cs_schol(0, Y);
     cs_spfree(Y);
 }
+
 void init_roottree(workspace *W) {
     cs *T;
     int *ikeep;
@@ -513,8 +531,10 @@ void init_roottree(workspace *W) {
 
     W->xn0 = malloc (W->A0->n * sizeof (*W->xn0));
 }
+
 void init_problem(workspace *W) {
 }
+
 void set_conductance(workspace *W, int isunscaled, int computeroot) {
     // if unscaled is true, we can compute the conductances for an unscaled
     // version of the problem.
@@ -547,23 +567,27 @@ void set_conductance(workspace *W, int isunscaled, int computeroot) {
         }
     }
 }
+
 void set_length(workspace *W) {
     // Set lengths of autoregulating vessels
     for (int i = 0; i < W->nblocks; i++) {
         W->l[i] = compute_length(W->level[i], W->N) / L0;
     }
 }
+
 double compute_length(int level, int n_levels) {
     double l;
     l = LRR * RMIN * (double) (1 << ((n_levels - level - 1)/ 2));
     return l;
 }
+
 double compute_radius(int level, int n_levels) {
     double r;
     //r = RMIN * pow(2., ((double) (n_levels - level - 1)) / 2.);
     r = RMIN * pow(BIFURCATION_SCALE, ((double) (n_levels - level - 1)));
     return (r);
 }
+
 void init_jacobians(workspace *W) {
     // Create the data structures for each of the Jacobians
     W->isjac = 0;
@@ -572,6 +596,7 @@ void init_jacobians(workspace *W) {
     init_dfdx(W);
     init_dfdp(W);
 }
+
 void init_dgdx(workspace *W) {
     //conductance depends on the vessel scaled length and radius only. This
     //function simply sets up the n * (nblocks * neq)
@@ -590,6 +615,7 @@ void init_dgdx(workspace *W) {
     W->dgdx = cs_compress(T);
     cs_spfree(T);
 }
+
 void init_dpdg(workspace *W) {
     // In this function we'll figure out A_A, etc, and
     //     * compute the symbolic factorisation of A_A G A_A^T
@@ -628,6 +654,7 @@ void init_dpdg(workspace *W) {
     W->symbchol_reduced = cs_schol(0, T);
     cs_spfree(T);
 }
+
 void init_dfdx(workspace *W) {
     // Load sparsity pattern for one block from file
     int nblocks = W->nblocks;
@@ -636,6 +663,7 @@ void init_dfdx(workspace *W) {
     J = blkdiag(W->nvu->dfdx_pattern, nblocks, nblocks);
     W->dfdx = numjacinit(J);
 }
+
 void init_dfdp(workspace *W) {
     // The ordering of the blocks is such that the first two see the first
     // pressure, the second two see the second, etc.
@@ -645,6 +673,7 @@ void init_dfdp(workspace *W) {
     W->dfdp = numjacinit(J);
     cs_spfree(J);
 }
+
 void compute_uv(workspace *W, double pc) {
     cs *AG, *B;
     csn *Nu;
@@ -690,6 +719,7 @@ void compute_uv(workspace *W, double pc) {
     W->vcomm[W->rank] = W->v[W->A->m-1];
     W->gcomm[W->rank] = W->g[W->A->n-1];
 }
+
 void communicate(workspace *W) {
     double send_buf[NSYMBOLS], *recv_buf;
 
@@ -715,6 +745,7 @@ void communicate(workspace *W) {
         }
     }
 }
+
 void compute_root(workspace *W, double pin) {
     cs *AG, *B, *X, *D;
     csn *Nu;
@@ -768,6 +799,7 @@ void compute_root(workspace *W, double pin) {
         W->q0[i] *= W->g0[i];
     cs_nfree(Nu);
 }
+
 void compute_sub(workspace *W, double pin, double pc) {
     double pk;
     if (W->n_procs == 1)
@@ -788,6 +820,7 @@ void compute_sub(workspace *W, double pin, double pc) {
     for (int i = 0; i < W->A->n; i++)
         W->q[i] = W->w[i] * W->g[i]; // q = w g
 }
+
 void eval_dgdx(workspace *W, double t, double *y) {
     double r, l;
     for (int i = 0; i < W->nblocks; i++) {
@@ -796,6 +829,7 @@ void eval_dgdx(workspace *W, double t, double *y) {
         W->dgdx->x[i] = 4.*pow(r, 3) / l;
     }
 }
+
 void eval_dpdg(workspace *W, double t, double *y) {
     // Free the old one
     if (W->isjac) cs_spfree(W->dpdgneg);
@@ -830,6 +864,7 @@ void eval_dpdg(workspace *W, double t, double *y) {
     cs_spfree(PA);
     cs_spfree(B);
 }
+
 void eval_dfdx(workspace *W, double t, double *y, double *f, double eps) {
     int i, j;
     double *y1, *h, *f1;
@@ -858,6 +893,7 @@ void eval_dfdx(workspace *W, double t, double *y, double *f, double eps) {
     }
     free(y1); free(h); free(f1);
 }
+
 void eval_dfdp(workspace *W, double t, double *y, double *f, double eps) {
     int i, j;
     double *h, *p1, *f1;
@@ -891,6 +927,7 @@ void eval_dfdp(workspace *W, double t, double *y, double *f, double eps) {
     }
     free(h); free(f1); free(p1);
 }
+
 void rhs(workspace *W, double t, double *u, double *p, double *du) {
     // Evaluate the right hand sides. Pressures etc have already been done
     int istart;
@@ -900,6 +937,7 @@ void rhs(workspace *W, double t, double *u, double *p, double *du) {
         nvu_rhs(t, W->x[i], W->y[i], p[i/2], u + istart, du + istart, W->nvu);
     }
 }
+
 void set_initial_conditions(workspace *W, double *u){
     int istart;
     for (int i = 0; i < W->nblocks; i++) {
