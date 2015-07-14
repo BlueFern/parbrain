@@ -39,6 +39,9 @@ workspace * init(int argc, char **argv) {
 
     compute_symbchol(W);            // Precompute symbolic factorisations 
     W->nvu = nvu_init();            // Initialise ODE parameter workspace
+
+    set_block_neighbours(W->nlocal, W->mlocal, W->nvu->neighbours);
+
     W->neq = W->nvu->neq;
     W->nu  = W->neq * W->nblocks;   // no of state variables per rank
     set_conductance(W, 0, 1);       // set scaled conductances
@@ -480,13 +483,20 @@ void init_subtree(workspace *W) {
     W->xm = malloc(W->A->m * sizeof(*W->xm));
 }
 
-// TODO: Write a function to free the ghost blocks.
 void init_ghost_blocks(workspace *W)
 {
-	// TODO: Calculate the number of ghost blocks for the tissue blocks in this MPI process.
-	W->num_ghost_blocks = 0;
+	// Ghost block surround the perimeter of the MPI domain.
+	W->num_ghost_blocks = 2 * (W->nlocal + W->mlocal);
+
     W->ghost_blocks = malloc(W->num_ghost_blocks * sizeof(ghost_block));
-    // TODO: Allocate ghost block structs here.
+
+    for(int i = 0; i < W->num_ghost_blocks; i++)
+    {
+    	W->ghost_blocks[i].vars = malloc(NUM_DIFF_VARS * sizeof(double));
+    }
+
+    // TODO: Free the space in a function deallocating the space for nvu_workspace,
+    // which is to be written and called at the right place.
 }
 
 void compute_symbchol(workspace *W) {

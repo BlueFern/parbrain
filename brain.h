@@ -30,6 +30,8 @@ extern const double P0      ;
 extern const double PCAP    ;
 extern const double MU      ;
 
+// TODO: Move the ghost block parts to the nvu_workspace struct?
+
 // Number of variables stored in diffusion structs.
 static const int NUM_DIFF_VARS = 1;
 

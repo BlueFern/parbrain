@@ -60,11 +60,6 @@ static const int K_flux_i  = 26; //!
 //static const int E_6c      = 32;
 //static const int E_5c      = 33;
 
-
-// TODO: To be moved to the header file.
-void block_neighbours(double x, double y, int neighbours[4]);
-
-
 // nvu_init: this user-supplied function does any precomputation required
 // for the model
 nvu_workspace *nvu_init(void) {
@@ -134,7 +129,6 @@ nvu_workspace *nvu_init(void) {
     w->dfdx_pattern = cs_compress(T);
     cs_spfree(T);
 
-
     double Rstar = R0;
     double hstar = HRR * Rstar;
     w->a1 = E0 * T0 * Rstar / (ETA * R0);
@@ -144,6 +138,9 @@ nvu_workspace *nvu_init(void) {
     w->a5 = EACTIVE / EPASSIVE - 1;
     w->pcap  = PCAP / P0;
     w->l  = 1; // normalised away
+
+    // TODO: Calculate the neighbour indices here and store them.
+    // w->neighbours = malloc();
 
     return w;
 }
@@ -164,10 +161,10 @@ void *nvu_free(nvu_workspace *w) {
 //      du      output vector, in the same order (already allocated)
 void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_workspace *w) {
 // general constants:
-	const double Farad       = 96500         ;// [C mol-1]      Faradays constant
+	const double Farad       = 96500         ;// [C mol-1] Faradays constant.
 	const double R_gas       = 8.315         ;// [J mol-1K-1]
 	const double Temp        = 300           ;// [K]
-    const double unitcon     = 1e3        ;// [-]            Factor to convert equations to another unit
+    const double unitcon     = 1e3           ;// [-] Factor to convert equations to another unit.
 
 // NE & AC constants:
     const double L_p         = 2.1e-9        ;// [m uM-1s-1]
@@ -187,6 +184,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     const double K_Na_k      = 10e3          ;// [uM]
     const double K_K_s       = 1.5e3         ;// [uM]
     const double k_C         = 7.35e-5       ;// [muM s-1]
+
 // Perivascular Space constants:
 	const double R_decay     = 0.05; // s^-1
 	const double K_p_min 	 = 3e3; // uM
@@ -200,7 +198,6 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     const double g_BK_k      = G_BK_k * 1e-12 / A_ef_k ;// ohm-1m-2  Specific capacitance of the BK-Channel in units of Ostby
     const double VR_pa       = 0.001       ; // [-]       The estimated volume ratio of perivascular space to astrocyte: Model estimation
     const double VR_ps       = 0.001       ; // [-]       The estimated volume ratio of perivascular space to SMC: Model Estimation
-
 
 // SMC constants:
     const double F_il = 7.5e2            ;//[-] scalingsfactor to fit the experimental data of Filosa
@@ -250,8 +247,6 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     const double alpha1      = 0.0074;
     const double sig0        = 500;
 
-
-
 // EC constants:
     const double Fmax_j		= 0.23;		// [microM/s]
     const double Kr_j		= 1;
@@ -294,6 +289,10 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     const double K5_c        = 0.5 * C_Hillmann;
     const double K7_c        = 0.1 * C_Hillmann;
     const double gam_cross   = 17 * C_Hillmann;
+
+    // Diffusion.
+    // TODO: Review this value.
+    const double tau         = 1.7; // (sec).
 
 // NO pathway **********
 
@@ -522,17 +521,30 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     flu_K1_c       = gam_cross * pow(state_ca_i,3);
     flu_K6_c       = flu_K1_c;
 
-    // Diffusion.
-    int neighbours[4];
-    // TODO: Instead of calling this function for every iteration,
-    // it would make more sense to have the neighbours calculated
-    // stored in the nvu_workspace during structure initialisation.
-    block_neighbours(x, y, neighbours);
+    // Offset into the array of state variables from the previous iteration.
+    int state_offset = 0; // TODO: Calculate this.
 
-    // flu_diff_K_0 = (u[-"offset"+neighbours[0]] - state_K_p ) / tau;
-    // flu_diff_K_1 = (u[-"offset"+neighbours[1]] - state_K_p ) / tau;
-	// flu_diff_K_2 = (u[-"offset"+neighbours[2]] - state_K_p ) / tau;
-	// flu_diff_K_3 = (u[-"offset"+neighbours[3]] - state_K_p ) / tau;
+    // Offset into the neighbours array to get the indices
+    // of the neighbours for the current tissue block.
+    int neigh_offset = 0; // TODO: Calculate this.
+
+    // TODO: Declare fluxes as a vector to calculate them in a loop.
+
+    // TODO: Differentiate between the cases when the neighbour happens to be a ghost block.
+    int W_neighbour = w->neighbours[neigh_offset + 0];
+    // Use negative indices for neighbours (naughty?) to indicate ghost blocks.
+    if(W_neighbour < 0)
+    {
+    	flu_diff_K_0 = (w->ghost_blocks[ghost_offset] - state_K_p) / tau;
+    }
+    else
+    {
+    	flu_diff_K_0 = (u[-state_offset + N_neighbour] - state_K_p) / tau;
+    }
+
+    flu_diff_K_1 = (u[-state_offset + w->neighbours[neigh_offset + 1]] - state_K_p) / tau;
+	flu_diff_K_2 = (u[-state_offset + w->neighbours[neigh_offset + 2]] - state_K_p) / tau;
+	flu_diff_K_3 = (u[-state_offset + w->neighbours[neigh_offset + 3]] - state_K_p) / tau;
 
 // NO pathway fluxes
 
@@ -739,8 +751,8 @@ double PLC_input(double t, double x, double y) {
     return PLC_out;
 }
 
-// Get the indices for a block indicated by the x, y coordinates.
-void block_neighbours(double x, double y, int neighbours[4])
+// Get the indices for all neighbours for all tissue blocks in the given MPI domain.
+void set_block_neighbours(int nlocal, int mlocal, int *neighbours)
 {
 	printf("A stub for %s in %s\n", __FUNCTION__, __FILE__);
 }
@@ -771,7 +783,7 @@ void nvu_ics(double *u0, double x, double y, nvu_workspace *w) {
 
     u0[K_i]       = 1e5;                       //16
 
-    u0[ca_j]      = 0.1;                         //17
+    u0[ca_j]      = 0.1;                       //17
     u0[ca_er_j]   = 0.1;                       //18
     u0[v_j]       = -75;                       //19
     u0[ip3_j]     = 0.1;                       //20

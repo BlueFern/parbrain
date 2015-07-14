@@ -40,6 +40,8 @@ typedef struct nvu_workspace {
     double gamma, cstar;
     double pcap;
 
+    int *neighbours;
+
 } nvu_workspace;
 
 // Initialisation routine. Gets called once before simulation
@@ -72,5 +74,7 @@ double factorial(int c);
 // Initial conditions
 void   nvu_ics(double *u0, double x, double y, nvu_workspace *w);
 
+// Get the indices for all neighbours for all tissue blocks in the given MPI domain.
+void set_block_neighbours(int nlocal, int mlocal, int *neighbours);
 
 #endif
