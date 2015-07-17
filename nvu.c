@@ -527,7 +527,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 
 	int l = 0;
 	int block_offset = 4;
-	for (l = 0; l < (16); l++) {
+	for (l = 0; l < (4); l++) {
 		printf("block: %d \t W: %d \t N: %d \t E: %d \t S: %d \n", l,
 				w->neighbours[0 + block_offset * l],
 				w->neighbours[1 + block_offset * l],
@@ -535,11 +535,6 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 				w->neighbours[3 + block_offset * l]);
 	}
 
-/*	int m = 0;
-	printf("neighbours array: ");
-	for (m = 0; m < (4 * 16); m++) {
-		printf("%d \t", w->neighbours[m]);
-	}*/
 
     // TODO: Declare fluxes as a vector to calculate them in a loop.
 
