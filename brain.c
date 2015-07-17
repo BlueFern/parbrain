@@ -928,7 +928,7 @@ void rhs(workspace *W, double t, double *u, double *p, double *du) {
     for (int i = 0; i < W->nblocks; i++) {
         istart = W->neq * i;
         // Evaluate the individual right hand side
-        nvu_rhs(t, W->x[i], W->y[i], p[i/2], u + istart, du + istart, W->nvu);
+        nvu_rhs(i, t, W->x[i], W->y[i], p[i/2], u + istart, du + istart, W->nvu);
     }
 }
 

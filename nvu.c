@@ -156,7 +156,7 @@ void *nvu_free(nvu_workspace *w) {
 //      p       the pressure at the top of the vessel, 
 //      u       state variables, the first of which is the vessel radius
 //      du      output vector, in the same order (already allocated)
-void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_workspace *w) {
+void nvu_rhs(int block_number, double t, double x, double y, double p, double *u, double *du, nvu_workspace *w) {
 // general constants:
 	const double Farad       = 96500         ;// [C mol-1] Faradays constant.
 	const double R_gas       = 8.315         ;// [J mol-1K-1]
@@ -289,7 +289,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 
     // Diffusion.
     // TODO: Review this value.
-    const double tau         = 1.7; // (sec).
+    const double tau         = 0.7; // (sec).
 
 // NO pathway **********
 
@@ -519,42 +519,69 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     flu_K6_c       = flu_K1_c;
 
     // Offset into the array of state variables from the previous iteration.
-    int state_offset = 0; // TODO: Calculate this.
+    int state_offset = block_number * w->neq;
 
     // Offset into the neighbours array to get the indices
     // of the neighbours for the current tissue block.
-    int neigh_offset = 0; // TODO: Calculate this.
+    int neigh_offset = block_number * 4; // TODO: Declare the constant where appropriate.
 
+    /*
 	int l = 0;
 	int block_offset = 4;
-	for (l = 0; l < (4); l++) {
+	for (l = 0; l < (16); l++) {
 		printf("block: %d \t W: %d \t N: %d \t E: %d \t S: %d \n", l,
 				w->neighbours[0 + block_offset * l],
 				w->neighbours[1 + block_offset * l],
 				w->neighbours[2 + block_offset * l],
 				w->neighbours[3 + block_offset * l]);
 	}
-
+	*/
 
     // TODO: Declare fluxes as a vector to calculate them in a loop.
 
-    // TODO: Differentiate between the cases when the neighbour happens to be a ghost block.
     int W_neighbour = w->neighbours[neigh_offset + 0];
-    // Use negative indices for neighbours (naughty?) to indicate ghost blocks.
     if(W_neighbour < 0)
     {
-    	// TODO: Complete this.
-    	// flu_diff_K_0 = (w->ghost_blocks[ghost_offset] - state_K_p) / tau;
+    	int ghost_block_idx = - W_neighbour - 1;
+    	flu_diff_K_0 = (w->ghost_blocks[ghost_block_idx].vars[DIFF_K] - state_K_p) / tau;
     }
     else
     {
-    	// TODO: Complete this.
-    	// flu_diff_K_0 = (u[-state_offset + N_neighbour] - state_K_p) / tau;
+    	flu_diff_K_0 = (u[-state_offset + W_neighbour] - state_K_p) / tau;
     }
 
-    flu_diff_K_1 = (u[-state_offset + w->neighbours[neigh_offset + 1]] - state_K_p) / tau;
-	flu_diff_K_2 = (u[-state_offset + w->neighbours[neigh_offset + 2]] - state_K_p) / tau;
-	flu_diff_K_3 = (u[-state_offset + w->neighbours[neigh_offset + 3]] - state_K_p) / tau;
+    int N_neighbour = w->neighbours[neigh_offset + 1];
+    if(N_neighbour < 0)
+    {
+    	int ghost_block_idx = - N_neighbour - 1;
+    	flu_diff_K_1 = (w->ghost_blocks[ghost_block_idx].vars[DIFF_K] - state_K_p) / tau;
+    }
+    else
+    {
+    	flu_diff_K_1 = (u[-state_offset + N_neighbour] - state_K_p) / tau;
+    }
+
+    int E_neighbour = w->neighbours[neigh_offset + 2];
+	if(E_neighbour < 0)
+	{
+		int ghost_block_idx = - E_neighbour - 1;
+		flu_diff_K_2 = (w->ghost_blocks[ghost_block_idx].vars[DIFF_K] - state_K_p) / tau;
+	}
+	else
+	{
+		flu_diff_K_2 = (u[-state_offset + E_neighbour] - state_K_p) / tau;
+	}
+
+    int S_neighbour = w->neighbours[neigh_offset + 3];
+	if(S_neighbour < 0)
+	{
+		int ghost_block_idx = - S_neighbour - 1;
+		flu_diff_K_3 = (w->ghost_blocks[ghost_block_idx].vars[DIFF_K] - state_K_p) / tau;
+	}
+	else
+	{
+		flu_diff_K_3 = (u[-state_offset + S_neighbour] - state_K_p) / tau;
+	}
 
 // NO pathway fluxes
 
@@ -672,6 +699,16 @@ return p0;
 //    double Glu = ((0.5 + 0.5 *(tanh(100000*(x-0.0004)+1))) *(0.5 + 0.5 *(tanh(100000*(y-0.0004)+1))))        *          ((Glu_min + (Glu_max - Glu_min) / 2.0 * (1 + tanh(10*(t - t_up))) + (Glu_min - Glu_max) / 2.0 * (1 + tanh(10*(t - t_down)))));
 //    return Glu;
 //}
+
+double Kp_input(double t, double x, double y) {
+    double Kp_test = 5e3;
+    //double t_up   = 1;
+    //double t_down = 100;
+    double blocks_activated = 4;
+    double Kp_out = ((0.5 + 0.5 *(tanh(100000*(x-0.0004)+1))) *(0.5 + 0.5 *(tanh(100000*(y-0.0004)+1)))); // spatial
+    //*          ((Glu_min + (Glu_max - Glu_min) / 2.0 * (1 + tanh(10*(t - t_up))) + (Glu_min - Glu_max) / 2.0 * (1 + tanh(10*(t - t_down))))); // temporal
+    return Kp_out;
+}
 
 // Space- & time-varying K+ input signal
 double K_input(double t, double x, double y) {
@@ -832,12 +869,11 @@ void init_ghost_blocks(int nlocal, int mlocal, nvu_workspace *w)
     for(int i = 0; i < w->num_ghost_blocks; i++)
     {
     	w->ghost_blocks[i].vars = malloc(NUM_DIFF_VARS * sizeof(double));
+
+    	w->ghost_blocks[i].vars[DIFF_K] = 3e3;
     }
 
-    // TODO: There needs to be a function to set initial values (boundary conditions) in the ghos blocks.
-
-    // TODO: Free the space in a function deallocating the space for nvu_workspace,
-    // which is to be written and called at the right place.
+    // TODO: Free the space in a function deallocating the space for nvu_workspace, which is to be written and called at the right place.
 }
 
 // Initial conditions. If you want spatial inhomegeneity, make it a

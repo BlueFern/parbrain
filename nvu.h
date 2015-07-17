@@ -72,7 +72,7 @@ typedef struct nvu_workspace {
 nvu_workspace* nvu_init(void); 
 
 // Right hand side routine for one block
-void   nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_workspace *w);
+void   nvu_rhs(int block_number, double t, double x, double y, double p, double *u, double *du, nvu_workspace *w);
 
 // Tidy up routine. Free anything allocated in nvu_init here
 void  *nvu_free(nvu_workspace *w); 
