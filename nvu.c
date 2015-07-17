@@ -525,6 +525,22 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     // of the neighbours for the current tissue block.
     int neigh_offset = 0; // TODO: Calculate this.
 
+	int l = 0;
+	int block_offset = 4;
+	for (l = 0; l < (16); l++) {
+		printf("block: %d \t W: %d \t N: %d \t E: %d \t S: %d \n", l,
+				w->neighbours[0 + block_offset * l],
+				w->neighbours[1 + block_offset * l],
+				w->neighbours[2 + block_offset * l],
+				w->neighbours[3 + block_offset * l]);
+	}
+
+/*	int m = 0;
+	printf("neighbours array: ");
+	for (m = 0; m < (4 * 16); m++) {
+		printf("%d \t", w->neighbours[m]);
+	}*/
+
     // TODO: Declare fluxes as a vector to calculate them in a loop.
 
     // TODO: Differentiate between the cases when the neighbour happens to be a ghost block.
