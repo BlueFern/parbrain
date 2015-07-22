@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
 
 	// General parameters:
 	#define BLOCK_LENGTH 4e-4	// Length of one tissue block [m].
-	char Prefix[] = "/hpc/home/kdo40/Frontiers_in_Physiology/parbrain/";
+	char Prefix[] = "";
 //	char Prefix[] = "/power7/Frontiers_in_Physiology/parbrain/";
 
 	char *dirName=argv[1];        // First argument: Folder name.
@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
 	int n_rows = m_local * m_global;  				// Number of rows of tissue blocks (i).
 
 	// Read tissue block state binary file:
-	char tbSuffix[] = "/tissueBlocks.dat";	
+	char tbSuffix[] = "/tissueBlocks.dat";
 	char tbOutfile[128];
 	sprintf(tbOutfile, "%s%s%s",Prefix,dirName,tbSuffix);
 	std::ifstream is(tbOutfile, std::ifstream::binary);
@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Read flow binary file:
-	char fSuffix[] = "/flow.dat";	
+	char fSuffix[] = "/flow.dat";
 	char fOutfile[128];
 	sprintf(fOutfile, "%s%s%s",Prefix,dirName,fSuffix);
 	std::ifstream is_flow(fOutfile, std::ifstream::binary);
@@ -433,4 +433,3 @@ int main(int argc, char *argv[]) {
 
 	return EXIT_SUCCESS;
 }
-

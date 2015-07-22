@@ -540,48 +540,84 @@ void nvu_rhs(int block_number, double t, double x, double y, double p, double *u
     // TODO: Declare fluxes as a vector to calculate them in a loop.
 
     int W_neighbour = w->neighbours[neigh_offset + 0];
+    int W_neighbour_offset = 0;
+    int W_ghost_block_idx = 0;
+    double W_ghost_block_val = 0;
+    double W_neighbour_val = 0;
     if(W_neighbour < 0)
     {
-    	int ghost_block_idx = - W_neighbour - 1;
-    	flu_diff_K_0 = (w->ghost_blocks[ghost_block_idx].vars[DIFF_K] - state_K_p) / tau;
+    	W_ghost_block_idx = - W_neighbour - 1;
+    	W_ghost_block_val = w->ghost_blocks[W_ghost_block_idx].vars[DIFF_K];
+    	flu_diff_K_0 = (W_ghost_block_val - state_K_p) / tau;
     }
     else
     {
-    	flu_diff_K_0 = (u[-state_offset + W_neighbour] - state_K_p) / tau;
+    	W_neighbour_offset =  W_neighbour - block_number;
+    	W_neighbour_val = u[W_neighbour_offset * w->neq + K_p];
+    	flu_diff_K_0 = (W_neighbour_val - state_K_p) / tau;
     }
 
     int N_neighbour = w->neighbours[neigh_offset + 1];
+    int N_neighbour_offset = 0;
+    int N_ghost_block_idx = 0;
+    double N_ghost_block_val = 0;
+    double N_neighbour_val = 0;
     if(N_neighbour < 0)
     {
-    	int ghost_block_idx = - N_neighbour - 1;
-    	flu_diff_K_1 = (w->ghost_blocks[ghost_block_idx].vars[DIFF_K] - state_K_p) / tau;
+    	N_ghost_block_idx = - N_neighbour - 1;
+    	N_ghost_block_val = w->ghost_blocks[N_ghost_block_idx].vars[DIFF_K];
+    	flu_diff_K_1 = (N_ghost_block_val - state_K_p) / tau;
     }
     else
     {
-    	flu_diff_K_1 = (u[-state_offset + N_neighbour] - state_K_p) / tau;
+    	N_neighbour_offset = N_neighbour - block_number;
+    	N_neighbour_val = u[N_neighbour_offset * w->neq + K_p];
+    	flu_diff_K_1 = (N_neighbour_val - state_K_p) / tau;
     }
 
     int E_neighbour = w->neighbours[neigh_offset + 2];
-	if(E_neighbour < 0)
+    int E_neighbour_offset = 0;
+    int E_ghost_block_idx = 0;
+    double E_ghost_block_val = 0;
+    double E_neighbour_val = 0;
+    if(E_neighbour < 0)
 	{
-		int ghost_block_idx = - E_neighbour - 1;
-		flu_diff_K_2 = (w->ghost_blocks[ghost_block_idx].vars[DIFF_K] - state_K_p) / tau;
+		E_ghost_block_idx = - E_neighbour - 1;
+		E_ghost_block_val = w->ghost_blocks[E_ghost_block_idx].vars[DIFF_K];
+		flu_diff_K_2 = (E_ghost_block_val - state_K_p) / tau;
 	}
 	else
 	{
-		flu_diff_K_2 = (u[-state_offset + E_neighbour] - state_K_p) / tau;
+		E_neighbour_offset = E_neighbour - block_number;
+		E_neighbour_val = u[E_neighbour_offset * w->neq + K_p];
+		flu_diff_K_2 = (E_neighbour_val - state_K_p) / tau;
 	}
 
     int S_neighbour = w->neighbours[neigh_offset + 3];
+    int S_neighbour_offset = 0;
+    int S_ghost_block_idx = 0;
+    double S_ghost_block_val = 0;
+    double S_neighbour_val = 0;
 	if(S_neighbour < 0)
 	{
-		int ghost_block_idx = - S_neighbour - 1;
-		flu_diff_K_3 = (w->ghost_blocks[ghost_block_idx].vars[DIFF_K] - state_K_p) / tau;
+		S_ghost_block_idx = - S_neighbour - 1;
+		S_ghost_block_val = w->ghost_blocks[S_ghost_block_idx].vars[DIFF_K];
+		flu_diff_K_3 = (S_ghost_block_val - state_K_p) / tau;
 	}
 	else
 	{
-		flu_diff_K_3 = (u[-state_offset + S_neighbour] - state_K_p) / tau;
+		S_neighbour_offset = S_neighbour - block_number;
+		S_neighbour_val = u[S_neighbour_offset * w->neq + K_p];
+		flu_diff_K_3 = (S_neighbour_val - state_K_p) / tau;
 	}
+
+/*
+	printf("block number: %d, state_offset: %d, neigh_offset: %d, state_K_p: %f\n", block_number, state_offset, neigh_offset, state_K_p);
+	printf("W_neighbour: %d, W_ghost_block_idx: %d, W_ghost_block_val: %f, W_neighbour_offset: %d, W_neighbour_val: %f, flu_diff_K_0: %f\n", W_neighbour, W_ghost_block_idx, W_ghost_block_val, W_neighbour_offset, W_neighbour_val, flu_diff_K_0);
+	printf("N_neighbour: %d, N_ghost_block_idx: %d, N_ghost_block_val: %f, N_neighbour_offset: %d, N_neighbour_val: %f, flu_diff_K_1: %f\n", N_neighbour, N_ghost_block_idx, N_ghost_block_val, N_neighbour_offset, N_neighbour_val, flu_diff_K_1);
+	printf("E_neighbour: %d, E_ghost_block_idx: %d, E_ghost_block_val: %f, E_neighbour_offset: %d, E_neighbour_val: %f, flu_diff_K_2: %f\n", E_neighbour, E_ghost_block_idx, E_ghost_block_val, E_neighbour_offset, E_neighbour_val, flu_diff_K_2);
+	printf("S_neighbour: %d, S_ghost_block_idx: %d, S_ghost_block_val: %f, S_neighbour_offset: %d, S_neighbour_val: %f, flu_diff_K_3: %f\n", S_neighbour, S_ghost_block_idx, S_ghost_block_val, S_neighbour_offset, S_neighbour_val, flu_diff_K_3);
+*/
 
 // NO pathway fluxes
 
@@ -710,17 +746,17 @@ double Kp_input(double t, double x, double y) {
     return Kp_out;
 }
 
-// Space- & time-varying K+ input signal
+// Space- & time-varying K+ input signal.
 double K_input(double t, double x, double y) {
     double K_input_min = 0;
     double K_input_max = 2.5;
-    double ramp = 0.003; // 0.004; 
+    double ramp = 0.003; // 0.004;
     double ampl = 3;
     double x_centre = 0;//-0.0008; // 0;
     double y_centre = 0;//-0.0008; // 0;
-    double t_up   = 100;
+    double t_up   = 10;
     double t_down = 900;
-    double lengthpulse = t_down - t_up;	
+    double lengthpulse = t_down - t_up;
     double lengtht1 = 10;
     double F_input = 2.5;
     double t0 = t_up;
@@ -729,23 +765,30 @@ double K_input(double t, double x, double y) {
     double t3 = t1 + lengthpulse;
     int alpha = 2;
     int beta = 5;
-    double deltat= 10; 	
+    double deltat= 10;
     double gab = factorial(alpha + beta - 1);
     double ga = factorial(alpha - 1);
     double gb = factorial(beta - 1);
-    double K_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
+    //double K_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
     //double K_space =((0.5 + 0.5 *(tanh(1e5 * (x-0.0004)+1))) *(0.5 + 0.5 *(tanh(1e5 *(y-0.0004)+1))));
+    double K_space;
+    if (x<= 0){
+        K_space = 1;
+    }
+    else {
+        K_space = 0;
+    }
     double K_time;
     if (t >= t0 && t <= t1) {
-        //K_time = F_input * gab / (ga * gb) * pow((1-(t-t0) / deltat),(beta - 1)) * pow(((t - t0) / deltat),(alpha-1));  
-        K_time = 1 * gab / (ga * gb) * pow((1-(t-t0) / deltat),(beta - 1)) * pow(((t - t0) / deltat),(alpha-1));  
+        //K_time = F_input * gab / (ga * gb) * pow((1-(t-t0) / deltat),(beta - 1)) * pow(((t - t0) / deltat),(alpha-1));
+        K_time = 1 * gab / (ga * gb) * pow((1-(t-t0) / deltat),(beta - 1)) * pow(((t - t0) / deltat),(alpha-1));
     }
     else if (t >= t2 && t <= t3) {
-    	//K_time = - F_input;
-    	K_time = - 1;
-    }	
+        //K_time = - F_input;
+        K_time = - 1;
+    }
     else {
-    	K_time = 0;
+        K_time = 0;
     }
     double K_out = K_input_min + (K_input_max-K_input_min) * K_space * K_time;
     return K_out;
@@ -759,27 +802,35 @@ double factorial(int c) {
     return result;
 }
 
-// Block function to switch cotransporter channels on and off (K+ input)
+// Block function to switch cotransporter channels on and off (K+ input).
 double flux_ft(double t, double x, double y) {
     double flux_min = 0;
-    double flux_max = 1;  
-    double t_up   = 100;
+    double flux_max = 1;
+    double t_up   = 10;
     double t_down = 900;
     double lengthpulse = t_down - t_up;
     double lengtht1 = 10;
-    double t0 = t_up;	
+    double t0 = t_up;
     double t1 = t0 + lengtht1;
     double ampl = 3;
-    double ramp = 0.003;	
+    double ramp = 0.003;
     double x_centre = 0;//-0.0008;
     double y_centre = 0;//-0.0008;
     double flux_time = 0.5 * tanh((t-t0)/0.0005) - 0.5 * tanh((t-t1-lengthpulse)/0.0005);
     //double flux_time = 0.5 * tanh((t-t0)/0.005) - 0.5 * tanh((t-t1-lengthpulse)/0.005);
-    double flux_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
-	//double flux_space =((0.5 + 0.5 *(tanh(1e5 * (x-0.0004)+1))) *(0.5 + 0.5 *(tanh(1e5 *(y-0.0004)+1))));    
-	double flux_out = flux_min + (flux_max-flux_min) * flux_time * flux_space;
+    //double flux_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
+    //double flux_space =((0.5 + 0.5 *(tanh(1e5 * (x-0.0004)+1))) *(0.5 + 0.5 *(tanh(1e5 *(y-0.0004)+1))));
+    double flux_space;
+    if (x<= 0){
+        flux_space = 1;
+    }
+    else {
+        flux_space = 0;
+    }
+    double flux_out = flux_min + (flux_max-flux_min) * flux_time * flux_space;
     return flux_out;
 }
+
 
 // Space- & time-varying PLC input signal
 double PLC_input(double t, double x, double y) {
