@@ -638,13 +638,13 @@ return p0;
 double K_input(double t, double x, double y) {
     double K_input_min = 0;
     double K_input_max = 2.5;
-    double ramp = 0.003; // 0.004; 
+    double ramp = 0.003; // 0.004;
     double ampl = 3;
     double x_centre = 0;//-0.0008; // 0;
     double y_centre = 0;//-0.0008; // 0;
-    double t_up   = 100;
+    double t_up   = 10;
     double t_down = 900;
-    double lengthpulse = t_down - t_up;	
+    double lengthpulse = t_down - t_up;   
     double lengtht1 = 10;
     double F_input = 2.5;
     double t0 = t_up;
@@ -653,23 +653,30 @@ double K_input(double t, double x, double y) {
     double t3 = t1 + lengthpulse;
     int alpha = 2;
     int beta = 5;
-    double deltat= 10; 	
+    double deltat= 10;    
     double gab = factorial(alpha + beta - 1);
     double ga = factorial(alpha - 1);
     double gb = factorial(beta - 1);
-    double K_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
+    //double K_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
     //double K_space =((0.5 + 0.5 *(tanh(1e5 * (x-0.0004)+1))) *(0.5 + 0.5 *(tanh(1e5 *(y-0.0004)+1))));
+    double K_space;   
+    if (x<= 0){
+        K_space = 1;
+    }
+    else {
+        K_space = 0;
+    }
     double K_time;
     if (t >= t0 && t <= t1) {
-        //K_time = F_input * gab / (ga * gb) * pow((1-(t-t0) / deltat),(beta - 1)) * pow(((t - t0) / deltat),(alpha-1));  
-        K_time = 1 * gab / (ga * gb) * pow((1-(t-t0) / deltat),(beta - 1)) * pow(((t - t0) / deltat),(alpha-1));  
+        //K_time = F_input * gab / (ga * gb) * pow((1-(t-t0) / deltat),(beta - 1)) * pow(((t - t0) / deltat),(alpha-1)); 
+        K_time = 1 * gab / (ga * gb) * pow((1-(t-t0) / deltat),(beta - 1)) * pow(((t - t0) / deltat),(alpha-1)); 
     }
     else if (t >= t2 && t <= t3) {
-    	//K_time = - F_input;
-    	K_time = - 1;
-    }	
+        //K_time = - F_input;
+        K_time = - 1;
+    }   
     else {
-    	K_time = 0;
+        K_time = 0;
     }
     double K_out = K_input_min + (K_input_max-K_input_min) * K_space * K_time;
     return K_out;
@@ -686,22 +693,29 @@ double factorial(int c) {
 // Block function to switch cotransporter channels on and off (K+ input)
 double flux_ft(double t, double x, double y) {
     double flux_min = 0;
-    double flux_max = 1;  
-    double t_up   = 100;
+    double flux_max = 1; 
+    double t_up   = 10;
     double t_down = 900;
     double lengthpulse = t_down - t_up;
     double lengtht1 = 10;
-    double t0 = t_up;	
+    double t0 = t_up;   
     double t1 = t0 + lengtht1;
     double ampl = 3;
-    double ramp = 0.003;	
+    double ramp = 0.003;   
     double x_centre = 0;//-0.0008;
     double y_centre = 0;//-0.0008;
     double flux_time = 0.5 * tanh((t-t0)/0.0005) - 0.5 * tanh((t-t1-lengthpulse)/0.0005);
     //double flux_time = 0.5 * tanh((t-t0)/0.005) - 0.5 * tanh((t-t1-lengthpulse)/0.005);
-    double flux_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
-	//double flux_space =((0.5 + 0.5 *(tanh(1e5 * (x-0.0004)+1))) *(0.5 + 0.5 *(tanh(1e5 *(y-0.0004)+1))));    
-	double flux_out = flux_min + (flux_max-flux_min) * flux_time * flux_space;
+    //double flux_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
+    //double flux_space =((0.5 + 0.5 *(tanh(1e5 * (x-0.0004)+1))) *(0.5 + 0.5 *(tanh(1e5 *(y-0.0004)+1))));  
+    double flux_space;   
+    if (x<= 0){
+        flux_space = 1;
+    }
+    else {
+        flux_space = 0;
+    }
+    double flux_out = flux_min + (flux_max-flux_min) * flux_time * flux_space;
     return flux_out;
 }
 
