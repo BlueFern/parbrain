@@ -53,9 +53,12 @@ workspace * init(int argc, char **argv) {
     return W;
 }
 
-void evaluate(workspace *W, double t, double *y, double *dy) {
+void evaluate(workspace *W, double t, double *y, double *dy)
+{
     W->fevals++;
     double r, l;
+
+    // printf("time: %f", t);
 
     // Update conductances of autoregulating vessels
     for (int i = 0; i < W->nblocks; i++) {
@@ -67,7 +70,19 @@ void evaluate(workspace *W, double t, double *y, double *dy) {
     solve(W, nvu_p0(t), W->nvu->pcap);
     // Evaluate the right hand side equations
     rhs(W, t, y, W->p, dy);
+
+    update_ghost_blocks();
+
+    // Calculate diffusion for every block.
+    int istart;
+    for (int i = 0; i < W->nblocks; i++) {
+    	istart = W->neq * i;
+    	diffusion(i, t, y + istart, dy + istart, W->nvu);
+    }
+
+    // printf(", again, time: %f\n", t);
 }
+
 void solve(workspace *W, double pin, double pc) {
     compute_uv(W, pc);
     if (W->n_procs > 1) {
@@ -76,6 +91,7 @@ void solve(workspace *W, double pin, double pc) {
     }
     compute_sub(W, pin, pc);
 }
+
 void jacupdate(workspace *W, double t, double *u) {
     W->jacupdates++;
     double *f;
@@ -124,10 +140,12 @@ void init_parallel(workspace *W, int argc, char **argv) {
     */
     W->N    = NDEFAULT; 
     W->Nsub = NSUBDEFAULT;
+
     if (argc > 1)
         W->N = atoi(argv[1]); // N has been specified at command line
     if (argc > 2)
         W->Nsub = atoi(argv[2]); // Nsub has been specified at command line
+
     W->N0 = (int) round(log2((double) W->n_procs)); 
     W->Np = W->N - W->N0; 
 
@@ -928,7 +946,7 @@ void rhs(workspace *W, double t, double *u, double *p, double *du) {
     for (int i = 0; i < W->nblocks; i++) {
         istart = W->neq * i;
         // Evaluate the individual right hand side
-        nvu_rhs(i, t, W->x[i], W->y[i], p[i/2], u + istart, du + istart, W->nvu);
+        nvu_rhs(t, W->x[i], W->y[i], p[i/2], u + istart, du + istart, W->nvu);
     }
 }
 

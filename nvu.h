@@ -72,7 +72,7 @@ typedef struct nvu_workspace {
 nvu_workspace* nvu_init(void); 
 
 // Right hand side routine for one block
-void   nvu_rhs(int block_number, double t, double x, double y, double p, double *u, double *du, nvu_workspace *w);
+void   nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_workspace *w);
 
 // Tidy up routine. Free anything allocated in nvu_init here
 void  *nvu_free(nvu_workspace *w); 
@@ -96,12 +96,16 @@ double PLC_input(double t, double x, double y);
 double factorial(int c);
 
 // Initial conditions
-void   nvu_ics(double *u0, double x, double y, nvu_workspace *w);
+void nvu_ics(double *u0, double x, double y, nvu_workspace *w);
 
 // Get the indices for all neighbours for all tissue blocks in the given MPI domain.
 void set_block_neighbours(int nlocal, int mlocal, nvu_workspace* w);
 
 // Allocate the space for ghost blocks.
 void init_ghost_blocks(int nlocal, int mlocal, nvu_workspace *w);
+
+// Calculate diffusion for tissue blocks within given MPI domain.
+void diffusion(int block_number, double t, double *u, double *du, nvu_workspace *w);
+
 
 #endif

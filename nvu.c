@@ -156,7 +156,7 @@ void *nvu_free(nvu_workspace *w) {
 //      p       the pressure at the top of the vessel, 
 //      u       state variables, the first of which is the vessel radius
 //      du      output vector, in the same order (already allocated)
-void nvu_rhs(int block_number, double t, double x, double y, double p, double *u, double *du, nvu_workspace *w) {
+void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_workspace *w) {
 // general constants:
 	const double Farad       = 96500         ;// [C mol-1] Faradays constant.
 	const double R_gas       = 8.315         ;// [J mol-1K-1]
@@ -287,9 +287,7 @@ void nvu_rhs(int block_number, double t, double x, double y, double p, double *u
     const double K7_c        = 0.1 * C_Hillmann;
     const double gam_cross   = 17 * C_Hillmann;
 
-    // Diffusion.
-    // TODO: Review this value.
-    const double tau         = 0.7; // (sec).
+
 
 // NO pathway **********
 
@@ -375,7 +373,6 @@ void nvu_rhs(int block_number, double t, double x, double y, double p, double *u
     double flu_K1_c, flu_K6_c; // Mech fluxes   
 //    double flu_P_NR2AO, flu_P_NR2BO, flu_openProbTerm, flu_I_Ca, flu_phi_N, flu_dphi_N, flu_N, flu_CaM, flu_W_tau_w, flu_F_tau_w, flu_k4, flu_R_cGMP1, flu_R_NO, flu_v_Ca3, flu_P_O, flu_R_cGMP2, flu_K2_c, flu_K5_c, flu_kmlcp;    // NO pathway fluxes
 
-    double flu_diff_K_0, flu_diff_K_1, flu_diff_K_2, flu_diff_K_3;
 
 // State Variables:
     state_r  = u[i_radius];
@@ -410,7 +407,6 @@ void nvu_rhs(int block_number, double t, double x, double y, double p, double *u
     state_PLC_i   = u[PLC_i];
     state_K_df_i  = u[K_df_i];
     state_K_flux_i= u[K_flux_i];
-
 
 // NO pathway
 //    state_ca_n    = u[ca_n];
@@ -488,8 +484,6 @@ void nvu_rhs(int block_number, double t, double x, double y, double p, double *u
     flu_v_KIR_i    = z_1 * state_K_p / unitcon + z_2;                                  // mV           state_K_p,
     flu_G_KIR_i    = exp( z_5 * state_v_i + z_3 * state_K_p / unitcon + z_4 );        // pS pF-1 =s-1  state_v_i, state_K_p
     flu_J_KIR_i    = F_il/gam * (flu_G_KIR_i) * (state_v_i-(flu_v_KIR_i));            // mV s-1 //     state_v_i, state_K_p
-    
-
 
     // EC fluxes
     flu_v_cpl_j		= - g_hat * ( state_v_j - state_v_i );
@@ -518,106 +512,8 @@ void nvu_rhs(int block_number, double t, double x, double y, double p, double *u
     flu_K1_c       = gam_cross * pow(state_ca_i,3);
     flu_K6_c       = flu_K1_c;
 
-    // Offset into the array of state variables from the previous iteration.
-    int state_offset = block_number * w->neq;
 
-    // Offset into the neighbours array to get the indices
-    // of the neighbours for the current tissue block.
-    int neigh_offset = block_number * 4; // TODO: Declare the constant where appropriate.
 
-    /*
-	int l = 0;
-	int block_offset = 4;
-	for (l = 0; l < (16); l++) {
-		printf("block: %d \t W: %d \t N: %d \t E: %d \t S: %d \n", l,
-				w->neighbours[0 + block_offset * l],
-				w->neighbours[1 + block_offset * l],
-				w->neighbours[2 + block_offset * l],
-				w->neighbours[3 + block_offset * l]);
-	}
-	*/
-
-    // TODO: Declare fluxes as a vector to calculate them in a loop.
-
-    int W_neighbour = w->neighbours[neigh_offset + 0];
-    int W_neighbour_offset = 0;
-    int W_ghost_block_idx = 0;
-    double W_ghost_block_val = 0;
-    double W_neighbour_val = 0;
-    if(W_neighbour < 0)
-    {
-    	W_ghost_block_idx = - W_neighbour - 1;
-    	W_ghost_block_val = w->ghost_blocks[W_ghost_block_idx].vars[DIFF_K];
-    	flu_diff_K_0 = (W_ghost_block_val - state_K_p) / tau;
-    }
-    else
-    {
-    	W_neighbour_offset =  W_neighbour - block_number;
-    	W_neighbour_val = u[W_neighbour_offset * w->neq + K_p];
-    	flu_diff_K_0 = (W_neighbour_val - state_K_p) / tau;
-    }
-
-    int N_neighbour = w->neighbours[neigh_offset + 1];
-    int N_neighbour_offset = 0;
-    int N_ghost_block_idx = 0;
-    double N_ghost_block_val = 0;
-    double N_neighbour_val = 0;
-    if(N_neighbour < 0)
-    {
-    	N_ghost_block_idx = - N_neighbour - 1;
-    	N_ghost_block_val = w->ghost_blocks[N_ghost_block_idx].vars[DIFF_K];
-    	flu_diff_K_1 = (N_ghost_block_val - state_K_p) / tau;
-    }
-    else
-    {
-    	N_neighbour_offset = N_neighbour - block_number;
-    	N_neighbour_val = u[N_neighbour_offset * w->neq + K_p];
-    	flu_diff_K_1 = (N_neighbour_val - state_K_p) / tau;
-    }
-
-    int E_neighbour = w->neighbours[neigh_offset + 2];
-    int E_neighbour_offset = 0;
-    int E_ghost_block_idx = 0;
-    double E_ghost_block_val = 0;
-    double E_neighbour_val = 0;
-    if(E_neighbour < 0)
-	{
-		E_ghost_block_idx = - E_neighbour - 1;
-		E_ghost_block_val = w->ghost_blocks[E_ghost_block_idx].vars[DIFF_K];
-		flu_diff_K_2 = (E_ghost_block_val - state_K_p) / tau;
-	}
-	else
-	{
-		E_neighbour_offset = E_neighbour - block_number;
-		E_neighbour_val = u[E_neighbour_offset * w->neq + K_p];
-		flu_diff_K_2 = (E_neighbour_val - state_K_p) / tau;
-	}
-
-    int S_neighbour = w->neighbours[neigh_offset + 3];
-    int S_neighbour_offset = 0;
-    int S_ghost_block_idx = 0;
-    double S_ghost_block_val = 0;
-    double S_neighbour_val = 0;
-	if(S_neighbour < 0)
-	{
-		S_ghost_block_idx = - S_neighbour - 1;
-		S_ghost_block_val = w->ghost_blocks[S_ghost_block_idx].vars[DIFF_K];
-		flu_diff_K_3 = (S_ghost_block_val - state_K_p) / tau;
-	}
-	else
-	{
-		S_neighbour_offset = S_neighbour - block_number;
-		S_neighbour_val = u[S_neighbour_offset * w->neq + K_p];
-		flu_diff_K_3 = (S_neighbour_val - state_K_p) / tau;
-	}
-
-/*
-	printf("block number: %d, state_offset: %d, neigh_offset: %d, state_K_p: %f\n", block_number, state_offset, neigh_offset, state_K_p);
-	printf("W_neighbour: %d, W_ghost_block_idx: %d, W_ghost_block_val: %f, W_neighbour_offset: %d, W_neighbour_val: %f, flu_diff_K_0: %f\n", W_neighbour, W_ghost_block_idx, W_ghost_block_val, W_neighbour_offset, W_neighbour_val, flu_diff_K_0);
-	printf("N_neighbour: %d, N_ghost_block_idx: %d, N_ghost_block_val: %f, N_neighbour_offset: %d, N_neighbour_val: %f, flu_diff_K_1: %f\n", N_neighbour, N_ghost_block_idx, N_ghost_block_val, N_neighbour_offset, N_neighbour_val, flu_diff_K_1);
-	printf("E_neighbour: %d, E_ghost_block_idx: %d, E_ghost_block_val: %f, E_neighbour_offset: %d, E_neighbour_val: %f, flu_diff_K_2: %f\n", E_neighbour, E_ghost_block_idx, E_ghost_block_val, E_neighbour_offset, E_neighbour_val, flu_diff_K_2);
-	printf("S_neighbour: %d, S_ghost_block_idx: %d, S_ghost_block_val: %f, S_neighbour_offset: %d, S_neighbour_val: %f, flu_diff_K_3: %f\n", S_neighbour, S_ghost_block_idx, S_ghost_block_val, S_neighbour_offset, S_neighbour_val, flu_diff_K_3);
-*/
 
 // NO pathway fluxes
 
@@ -660,7 +556,7 @@ void nvu_rhs(int block_number, double t, double x, double y, double p, double *u
     du[ N_K_s   ] = k_C * K_input(t,x,y) - du[ N_K_k] - flu_J_BK_k;                 // uMm s-1
     du[ N_HCO3_s] = - du[ N_HCO3_k];                                                // uMm s-1
     //du[ K_p     ] = flu_J_BK_k / (VR_pa * state_R_k) + flu_J_KIR_i / VR_ps - R_decay * (state_K_p - K_p_min);         // uM s-1
-    du[ K_p     ] = ( flu_J_BK_k / (VR_pa * state_R_k) + flu_J_KIR_i / VR_ps - R_decay * (state_K_p - K_p_min) ) + flu_diff_K_0 + flu_diff_K_1 + flu_diff_K_2 + flu_diff_K_3  ;         // uM s-1
+    du[ K_p     ] = ( flu_J_BK_k / (VR_pa * state_R_k) + flu_J_KIR_i / VR_ps - R_decay * (state_K_p - K_p_min) ); // uM s-1
 
     du[ w_k     ] = flu_phi_w * (flu_w_inf - state_w_k);                            // s-1
 
@@ -984,4 +880,115 @@ void nvu_ics(double *u0, double x, double y, nvu_workspace *w) {
 //    return hill;
 //}
 
+void diffusion(int block_number, double t, double *u, double *du, nvu_workspace *w)
+{
 
+    double flu_diff_K_0, flu_diff_K_1, flu_diff_K_2, flu_diff_K_3;
+
+    // Offset into the neighbours array to get the indices
+    // of the neighbours for the current tissue block.
+    int neigh_offset = block_number * 4; // TODO: Declare the constant where appropriate.
+
+    /*
+	int l = 0;
+	int block_offset = 4;
+	for (l = 0; l < (16); l++) {
+		printf("block: %d \t W: %d \t N: %d \t E: %d \t S: %d \n", l,
+				w->neighbours[0 + block_offset * l],
+				w->neighbours[1 + block_offset * l],
+				w->neighbours[2 + block_offset * l],
+				w->neighbours[3 + block_offset * l]);
+	}
+	*/
+
+    // TODO: Declare fluxes as a vector to calculate them in a loop.
+
+    int W_neighbour = w->neighbours[neigh_offset + 0];
+    int W_neighbour_offset = 0;
+    int W_ghost_block_idx = 0;
+
+    const double tau         = 0.7; // (sec).
+    double state_K_p = u[K_p];
+
+
+    double W_ghost_block_val = 0;
+    double W_neighbour_val = 0;
+    if(W_neighbour < 0)
+    {
+    	W_ghost_block_idx = - W_neighbour - 1;
+    	W_ghost_block_val = w->ghost_blocks[W_ghost_block_idx].vars[DIFF_K];
+    	flu_diff_K_0 = (W_ghost_block_val - state_K_p) / tau;
+    }
+    else
+    {
+    	W_neighbour_offset =  W_neighbour - block_number;
+    	W_neighbour_val = u[W_neighbour_offset * w->neq + K_p];
+    	flu_diff_K_0 = (W_neighbour_val - state_K_p) / tau;
+    }
+
+    int N_neighbour = w->neighbours[neigh_offset + 1];
+    int N_neighbour_offset = 0;
+    int N_ghost_block_idx = 0;
+    double N_ghost_block_val = 0;
+    double N_neighbour_val = 0;
+    if(N_neighbour < 0)
+    {
+    	N_ghost_block_idx = - N_neighbour - 1;
+    	N_ghost_block_val = w->ghost_blocks[N_ghost_block_idx].vars[DIFF_K];
+    	flu_diff_K_1 = (N_ghost_block_val - state_K_p) / tau;
+    }
+    else
+    {
+    	N_neighbour_offset = N_neighbour - block_number;
+    	N_neighbour_val = u[N_neighbour_offset * w->neq + K_p];
+    	flu_diff_K_1 = (N_neighbour_val - state_K_p) / tau;
+    }
+
+    int E_neighbour = w->neighbours[neigh_offset + 2];
+    int E_neighbour_offset = 0;
+    int E_ghost_block_idx = 0;
+    double E_ghost_block_val = 0;
+    double E_neighbour_val = 0;
+    if(E_neighbour < 0)
+	{
+		E_ghost_block_idx = - E_neighbour - 1;
+		E_ghost_block_val = w->ghost_blocks[E_ghost_block_idx].vars[DIFF_K];
+		flu_diff_K_2 = (E_ghost_block_val - state_K_p) / tau;
+	}
+	else
+	{
+		E_neighbour_offset = E_neighbour - block_number;
+		E_neighbour_val = u[E_neighbour_offset * w->neq + K_p];
+		flu_diff_K_2 = (E_neighbour_val - state_K_p) / tau;
+	}
+
+    int S_neighbour = w->neighbours[neigh_offset + 3];
+    int S_neighbour_offset = 0;
+    int S_ghost_block_idx = 0;
+    double S_ghost_block_val = 0;
+    double S_neighbour_val = 0;
+	if(S_neighbour < 0)
+	{
+		S_ghost_block_idx = - S_neighbour - 1;
+		S_ghost_block_val = w->ghost_blocks[S_ghost_block_idx].vars[DIFF_K];
+		flu_diff_K_3 = (S_ghost_block_val - state_K_p) / tau;
+	}
+	else
+	{
+		S_neighbour_offset = S_neighbour - block_number;
+		S_neighbour_val = u[S_neighbour_offset * w->neq + K_p];
+		flu_diff_K_3 = (S_neighbour_val - state_K_p) / tau;
+	}
+
+/*
+	printf("block number: %d, state_offset: %d, neigh_offset: %d, state_K_p: %f\n", block_number, state_offset, neigh_offset, state_K_p);
+	printf("W_neighbour: %d, W_ghost_block_idx: %d, W_ghost_block_val: %f, W_neighbour_offset: %d, W_neighbour_val: %f, flu_diff_K_0: %f\n", W_neighbour, W_ghost_block_idx, W_ghost_block_val, W_neighbour_offset, W_neighbour_val, flu_diff_K_0);
+	printf("N_neighbour: %d, N_ghost_block_idx: %d, N_ghost_block_val: %f, N_neighbour_offset: %d, N_neighbour_val: %f, flu_diff_K_1: %f\n", N_neighbour, N_ghost_block_idx, N_ghost_block_val, N_neighbour_offset, N_neighbour_val, flu_diff_K_1);
+	printf("E_neighbour: %d, E_ghost_block_idx: %d, E_ghost_block_val: %f, E_neighbour_offset: %d, E_neighbour_val: %f, flu_diff_K_2: %f\n", E_neighbour, E_ghost_block_idx, E_ghost_block_val, E_neighbour_offset, E_neighbour_val, flu_diff_K_2);
+	printf("S_neighbour: %d, S_ghost_block_idx: %d, S_ghost_block_val: %f, S_neighbour_offset: %d, S_neighbour_val: %f, flu_diff_K_3: %f\n", S_neighbour, S_ghost_block_idx, S_ghost_block_val, S_neighbour_offset, S_neighbour_val, flu_diff_K_3);
+*/
+
+	du[K_p] += flu_diff_K_0 + flu_diff_K_1 + flu_diff_K_2 + flu_diff_K_3  ;
+
+
+}

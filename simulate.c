@@ -39,6 +39,11 @@ int main(int argc, char **argv) {
     ws->gamma  = 1e-5; // time step  1e-5
     ws->t0     = 0.;   // initial time 0
     ws->tf     = 50;   // final time  10
+
+    // If optional command line argument is passed change the default final time.
+    if (argc > 3)
+    	ws->tf = atoi(argv[3]);
+
     ws->ftol   = 1e-3; // function evaluation tolerance for Newton convergence 1e-3
     ws->ytol   = 1e-3; // relative error tolerance for Newton convergence 1e-3
     ws->nconv  = 5;    // Newton iteration threshold for Jacobian reevaluation 5
@@ -148,6 +153,7 @@ void back_euler(odews *ws) {
             printf("Newton iteration failed to converge\n");
             exit(1);
         }
+
         t = tnext;
         dcopy(ny, w, ws->y); // update y values
         if (fmod(t, ws->dtwrite) < ws->gamma) {
@@ -159,6 +165,7 @@ void back_euler(odews *ws) {
         }
     } // timestep loop
 }
+
 void solver_init(odews *ws, int argc, char **argv) {
     workspace *W;
 
