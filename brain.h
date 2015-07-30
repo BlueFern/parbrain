@@ -95,6 +95,9 @@ typedef struct workspace {
     MPI_File Poutfile;
     char    *dirName;
 
+    // Indices of MPI domain neighbours for diffusion.
+    int domain_neighbours[4];
+
     MPI_Datatype subarray;
     MPI_Datatype subarray_single;
 

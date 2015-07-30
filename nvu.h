@@ -98,6 +98,9 @@ double factorial(int c);
 // Initial conditions
 void nvu_ics(double *u0, double x, double y, nvu_workspace *w);
 
+// Get the indices for the four immediate neighbours of a given block.
+void set_neighbours(int idx, int m, int n, int *neighbours);
+
 // Get the indices for all neighbours for all tissue blocks in the given MPI domain.
 void set_block_neighbours(int nlocal, int mlocal, nvu_workspace* w);
 

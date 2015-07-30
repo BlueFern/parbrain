@@ -36,6 +36,9 @@ workspace * init(int argc, char **argv) {
 
     set_spatial_coordinates(W);
 
+    // Set the indices of the MPI domain neighbours.
+    set_neighbours(W->rank, W->mlocal, W->nlocal, W->domain_neighbours);
+
     compute_symbchol(W);            // Precompute symbolic factorisations 
     W->nvu = nvu_init();            // Initialise ODE parameter workspace
 
@@ -71,7 +74,7 @@ void evaluate(workspace *W, double t, double *y, double *dy)
     // Evaluate the right hand side equations
     rhs(W, t, y, W->p, dy);
 
-    update_ghost_blocks();
+    // update_ghost_blocks();
 
     // Calculate diffusion for every block.
     int istart;
