@@ -750,7 +750,6 @@ void set_block_neighbours(int nlocal, int mlocal, nvu_workspace* w) {
 
 	// Each block has four neighbours.
     w->neighbours = malloc(nlocal * mlocal * 4 * sizeof(int));
-
     // TODO: This also needs to be freed somewhere along with ghost blocks.
 	
 	int block_offset = 4; // neighbours per block

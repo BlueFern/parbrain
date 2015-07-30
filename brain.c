@@ -74,7 +74,7 @@ void evaluate(workspace *W, double t, double *y, double *dy)
     // Evaluate the right hand side equations
     rhs(W, t, y, W->p, dy);
 
-    // update_ghost_blocks();
+    update_ghost_blocks(W, y);
 
     // Calculate diffusion for every block.
     int istart;
@@ -759,6 +759,49 @@ void communicate(workspace *W) {
             W->flag[i]  = (int) recv_buf[NSYMBOLS * i + 3]; 
         }
     }
+}
+
+void update_ghost_blocks(workspace *W, double *y)
+{
+	// For each side post a send-receive call to exchange the edge information.
+	// We are posting information from our four edges and saving it into our ghost blocks.
+
+	// TODO: W, N, E, S must be used in other places in this code. Make them into macros or an enum.
+	typedef enum {WEST, NORTH, EAST, SOUTH} direction;
+
+	// West side.
+	// If neighbour exists.
+	if(W->domain_neighbours[WEST] >= 0)
+	{
+		// TODO: This will have to be a derived type when we have more than one diffusion variable to post.
+
+		// TODO: The arrays should be allocated only once in the workspace struct.
+
+		// Allocate an array for data to be sent.
+		double *send_array = malloc(sizeof(double) * W->mlocal);
+		// Populate the array with values from the state variables array.
+		for(int i = 0; i < W->mlocal; i++)
+		{
+			send_array[i] = y[i];
+		}
+
+		// Allocate an array for data to be received.
+		double *receive_array = malloc(sizeof(double) * W->mlocal);
+
+		// TODO: Catch situations when there are no neighbours on the East side.
+		MPI_Sendrecv(
+				send_array, W->mlocal, MPI_DOUBLE, W->domain_neighbours[WEST], 0,
+				receive_array, W->mlocal, MPI_DOUBLE, W->domain_neighbours[EAST], 0,
+				MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+		// Copy received data into the ghost blocks.
+		for(int i = 0; i < W->mlocal; i++)
+		{
+			W->nvu->ghost_blocks[i].vars[DIFF_K] = send_array[i];
+		}
+	}
+
+	// TODO: North side, East side, South side.
 }
 
 void compute_root(workspace *W, double pin) {
