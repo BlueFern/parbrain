@@ -37,12 +37,13 @@ workspace * init(int argc, char **argv) {
     set_spatial_coordinates(W);
 
     // Set the indices of the MPI domain neighbours.
-    set_neighbours(W->rank, W->mlocal, W->nlocal, W->domain_neighbours);
+    set_domain_neighbours(W->rank, W->mglobal, W->nglobal, W->domain_neighbours);
 
     compute_symbchol(W);            // Precompute symbolic factorisations 
     W->nvu = nvu_init();            // Initialise ODE parameter workspace
 
     set_block_neighbours(W->nlocal, W->mlocal, W->nvu); // Calculate neighbours indices for each block.
+    set_edge_indices(W->nlocal, W->mlocal, W->nvu); // Calculate the indices of all four edges.
     init_ghost_blocks(W->nlocal, W->mlocal, W->nvu); // Initialise the ghost block structs.
 
     W->neq = W->nvu->neq;
@@ -763,6 +764,8 @@ void communicate(workspace *W) {
 
 void update_ghost_blocks(workspace *W, double *y)
 {
+	printf("Entering %s on rank %d\n", __FUNCTION__, W->rank);
+
 	// For each side post a send-receive call to exchange the edge information.
 	// We are posting information from our four edges and saving it into our ghost blocks.
 
@@ -780,18 +783,25 @@ void update_ghost_blocks(workspace *W, double *y)
 		// Allocate an array for data to be sent.
 		double *send_array = malloc(sizeof(double) * W->mlocal);
 		// Populate the array with values from the state variables array.
+
+		printf("edge indices for rank %d: ", W->rank);
 		for(int i = 0; i < W->mlocal; i++)
 		{
-			send_array[i] = y[i];
+			// Get the state variable based on the indices of the edge block for this side (and all other sides).
+			send_array[i] = y[W->neq * W->nvu->edge_indices[i]];
+			printf("%d ", W->nvu->edge_indices[i]);
 		}
+		printf("\n");
 
 		// Allocate an array for data to be received.
 		double *receive_array = malloc(sizeof(double) * W->mlocal);
 
+		printf("destination %d\n", W->domain_neighbours[WEST]);
+
 		// TODO: Catch situations when there are no neighbours on the East side.
 		MPI_Sendrecv(
 				send_array, W->mlocal, MPI_DOUBLE, W->domain_neighbours[WEST], 0,
-				receive_array, W->mlocal, MPI_DOUBLE, W->domain_neighbours[EAST], 0,
+				receive_array, W->mlocal, MPI_DOUBLE, W->domain_neighbours[WEST], 0,
 				MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
 		// Copy received data into the ghost blocks.
@@ -802,6 +812,8 @@ void update_ghost_blocks(workspace *W, double *y)
 	}
 
 	// TODO: North side, East side, South side.
+
+	printf("Leaving %s on rank %d\n", __FUNCTION__, W->rank);
 }
 
 void compute_root(workspace *W, double pin) {

@@ -60,6 +60,9 @@ typedef struct nvu_workspace {
     // with negative indices in counter-clockwise direction.
     int *neighbours;
 
+    // Indices of all edge tissue blocks for one MPI domain.
+    int *edge_indices;
+
     // Ghost blocks for diffusion.
     // The number of ghost blocks is calculated on the basis of the number of blocks.
     int num_ghost_blocks;

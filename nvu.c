@@ -745,24 +745,6 @@ double PLC_input(double t, double x, double y) {
     return PLC_out;
 }
 
-// Get the indices for all neighbours for all tissue blocks in the given MPI domain.
-void set_block_neighbours(int nlocal, int mlocal, nvu_workspace* w) {
-
-	// Each block has four neighbours.
-    w->neighbours = malloc(nlocal * mlocal * 4 * sizeof(int));
-    // TODO: This also needs to be freed somewhere along with ghost blocks.
-	
-	int block_offset = 4; // neighbours per block
-	
-	// neighbours array gets filled in the following way:
-	// W0, N0, E0, S0, W1, N1, ... etc.
-
-	for (int idx = 0; idx < nlocal * mlocal; idx++)
-	{
-		set_neighbours(idx, mlocal, nlocal, w->neighbours + block_offset * idx);
-	}
-}
-
 void set_neighbours(int idx, int m, int n, int *neighbours)
 {
 	// Boundary conditions (later ghost blocks)
@@ -785,7 +767,7 @@ void set_neighbours(int idx, int m, int n, int *neighbours)
 
 	for (int k = 0; k < n; k++) {
 		b1[k] = -1 * (m + k + 1);
-		b3[k] = -1 * (m + 2*n + k + 1);
+		b3[k] = -1 * (m + 2 * n + k + 1);
 	}
 
 	if ((i + m * j) < m) {
@@ -813,11 +795,65 @@ void set_neighbours(int idx, int m, int n, int *neighbours)
 	}
 }
 
+// Get the indices for all neighbours for all tissue blocks in the given MPI domain.
+void set_block_neighbours(int nlocal, int mlocal, nvu_workspace* w) {
+
+	// Each block has four neighbours.
+	// TODO: This also needs to be freed somewhere along with ghost blocks.
+	w->neighbours = malloc(nlocal * mlocal * 4 * sizeof(int));
+
+	int block_offset = 4; // neighbours per block
+
+	// neighbours array gets filled in the following way:
+	// W0, N0, E0, S0, W1, N1, ... etc.
+
+	for (int idx = 0; idx < nlocal * mlocal; idx++)
+	{
+		set_neighbours(idx, mlocal, nlocal, w->neighbours + block_offset * idx);
+	}
+}
+
+void set_domain_neighbours(int idx, int m, int n, int *neighbours)
+{
+	set_neighbours(idx, m, n, neighbours);
+}
+
+void set_edge_indices(int nlocal, int mlocal, nvu_workspace *w)
+{
+	printf("Entering %s...\n", __FUNCTION__);
+
+	// TODO: Free this memory.
+	w->edge_indices = malloc(nlocal * mlocal * sizeof(int));
+
+	for(int i = 0; i < mlocal; i++)
+	{
+		// West side edge.
+		w->edge_indices[i] = i;
+		// East side edge.
+		w->edge_indices[mlocal + nlocal + i] = mlocal * (nlocal - 1) + i;
+
+		// W_gb[i] = i;
+		// E_gb[i] = mlocal * nlocal - mlocal + i;
+	}
+
+	for(int j = 0; j < nlocal; j++)
+	{
+		// North side edge.
+		w->edge_indices[mlocal + j] = j * mlocal + (mlocal - 1);
+		// South side edge.
+		w->edge_indices[2 * mlocal + nlocal + j] = j * mlocal;
+
+		// N_gb[j] = mlocal + j;
+		// S_gb[j] = 2 * mlocal + nlocal + j;
+	}
+}
+
 void init_ghost_blocks(int nlocal, int mlocal, nvu_workspace *w)
 {
 	// Ghost block surround the perimeter of the MPI domain.
 	w->num_ghost_blocks = 2 * (nlocal + mlocal);
 
+	// TODO: Free the space in a function deallocating the space for nvu_workspace, which is to be written and called at the right place.
     w->ghost_blocks = malloc(w->num_ghost_blocks * sizeof(ghost_block));
 
     for(int i = 0; i < w->num_ghost_blocks; i++)
@@ -826,8 +862,6 @@ void init_ghost_blocks(int nlocal, int mlocal, nvu_workspace *w)
 
     	w->ghost_blocks[i].vars[DIFF_K] = 3e3;
     }
-
-    // TODO: Free the space in a function deallocating the space for nvu_workspace, which is to be written and called at the right place.
 }
 
 // Initial conditions. If you want spatial inhomegeneity, make it a
