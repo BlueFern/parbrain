@@ -772,19 +772,23 @@ void update_ghost_blocks(workspace *W, double *y)
 	// TODO: W, N, E, S must be used in other places in this code. Make them into macros or an enum.
 	typedef enum {WEST, NORTH, EAST, SOUTH} direction;
 
+//***********************
+	// TODO: These arrays should be allocated only once in the workspace struct.
+	// Allocate an array for data to be sent.
+	double *send_array = malloc(sizeof(double) * 2 * (W->nlocal + W->mlocal));
+	// Allocate an array for data to be received.
+	double *receive_array = malloc(sizeof(double) 2 * (W->nlocal + W->mlocal));
+//***********************
+
+
 	// West side.
 	// If neighbour exists.
 	if(W->domain_neighbours[WEST] >= 0)
 	{
 		// TODO: This will have to be a derived type when we have more than one diffusion variable to post.
 
-		// TODO: The arrays should be allocated only once in the workspace struct.
-
-		// Allocate an array for data to be sent.
-		double *send_array = malloc(sizeof(double) * W->mlocal);
-		// Populate the array with values from the state variables array.
-
-		printf("edge indices for rank %d: ", W->rank);
+		// Populate send array with values from the state variables array.
+		printf("West edge indices for rank %d: ", W->rank);
 		for(int i = 0; i < W->mlocal; i++)
 		{
 			// Get the state variable based on the indices of the edge block for this side (and all other sides).
@@ -793,10 +797,7 @@ void update_ghost_blocks(workspace *W, double *y)
 		}
 		printf("\n");
 
-		// Allocate an array for data to be received.
-		double *receive_array = malloc(sizeof(double) * W->mlocal);
-
-		printf("destination %d\n", W->domain_neighbours[WEST]);
+		printf("West destination %d\n", W->domain_neighbours[WEST]);
 
 		// TODO: Catch situations when there are no neighbours on the East side.
 		MPI_Sendrecv(
@@ -811,7 +812,96 @@ void update_ghost_blocks(workspace *W, double *y)
 		}
 	}
 
-	// TODO: North side, East side, South side.
+	// North side.
+	// If neighbour exists.
+	if(W->domain_neighbours[NORTH] >= 0)
+	{
+		// TODO: This will have to be a derived type when we have more than one diffusion variable to post.
+
+		// Populate send array with values from the state variables array.
+		printf("North edge indices for rank %d: ", W->rank);
+		for(int j = 0; j < W->nlocal; j++)
+		{
+			// Get the state variable based on the indices of the edge block for this side (and all other sides).
+			send_array[W->mlocal + j] = y[W->neq * W->nvu->edge_indices[W->mlocal + j]];
+			printf("%d ", W->nvu->edge_indices[W->mlocal + j]);
+		}
+		printf("\n");
+
+		printf("North destination %d\n", W->domain_neighbours[NORTH]);
+
+		// TODO: Catch situations when there are no neighbours on the North side.
+		MPI_Sendrecv(
+				send_array, W->nlocal, MPI_DOUBLE, W->domain_neighbours[NORTH], 0,
+				receive_array, W->nlocal, MPI_DOUBLE, W->domain_neighbours[NORTH], 0,
+				MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+		// Copy received data into the ghost blocks.
+		for(int j = 0; j < W->nlocal; j++)
+		{
+			W->nvu->ghost_blocks[W->mlocal + j].vars[DIFF_K] = send_array[W->mlocal + j];
+		}
+	}
+
+	// East side.
+	// If neighbour exists.
+	if(W->domain_neighbours[EAST] >= 0)
+	{
+		// Populate the array with values from the state variables array.
+		printf("East edge indices for rank %d: ", W->rank);
+		for(int i = 0; i < W->mlocal; i++)
+		{
+			// Get the state variable based on the indices of the edge block for this side (and all other sides).
+			send_array[W->mlocal + W->nlocal + i] = y[W->neq * W->nvu->edge_indices[W->mlocal + W->nlocal + i]];
+			printf("%d ", W->nvu->edge_indices[W->mlocal + W->nlocal + i]);
+		}
+		printf("\n");
+
+		printf("East destination %d\n", W->domain_neighbours[EAST]);
+
+		// TODO: Catch situations when there are no neighbours on the North side.
+		MPI_Sendrecv(
+				send_array, W->mlocal, MPI_DOUBLE, W->domain_neighbours[EAST], 0,
+				receive_array, W->mlocal, MPI_DOUBLE, W->domain_neighbours[EAST], 0,
+				MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+		// Copy received data into the ghost blocks.
+		for(int i = 0; i < W->mlocal; i++)
+		{
+			W->nvu->ghost_blocks[W->mlocal + W->nlocal + i].vars[DIFF_K] = send_array[W->mlocal + W->nlocal + i];
+		}
+	}
+
+	// South side.
+	// If neighbour exists.
+	if(W->domain_neighbours[SOUTH] >= 0)
+	{
+		// TODO: This will have to be a derived type when we have more than one diffusion variable to post.
+
+		// Populate send array with values from the state variables array.
+		printf("South edge indices for rank %d: ", W->rank);
+		for(int j = 0; j < W->nlocal; j++)
+		{
+			// Get the state variable based on the indices of the edge block for this side (and all other sides).
+			send_array[2 * W->mlocal + W->nlocal + j] = y[W->neq * W->nvu->edge_indices[2 * W->mlocal + W->nlocal + j]];
+			printf("%d ", W->nvu->edge_indices[W->mlocal + j]);
+		}
+		printf("\n");
+
+		printf("South destination %d\n", W->domain_neighbours[SOUTH]);
+
+		// TODO: Catch situations when there are no neighbours on the North side.
+		MPI_Sendrecv(
+				send_array, W->nlocal, MPI_DOUBLE, W->domain_neighbours[SOUTH], 0,
+				receive_array, W->nlocal, MPI_DOUBLE, W->domain_neighbours[SOUTH], 0,
+				MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+		// Copy received data into the ghost blocks.
+		for(int j = 0; j < W->nlocal; j++)
+		{
+			W->nvu->ghost_blocks[2 * W->mlocal + W->nlocal + j].vars[DIFF_K] = send_array[2 * W->mlocal + W->nlocal + j];
+		}
+	}
 
 	printf("Leaving %s on rank %d\n", __FUNCTION__, W->rank);
 }
