@@ -777,7 +777,7 @@ void update_ghost_blocks(workspace *W, double *y)
 	// Allocate an array for data to be sent.
 	double *send_array = malloc(sizeof(double) * 2 * (W->nlocal + W->mlocal));
 	// Allocate an array for data to be received.
-	double *receive_array = malloc(sizeof(double) 2 * (W->nlocal + W->mlocal));
+	double *receive_array = malloc(sizeof(double) * 2 * (W->nlocal + W->mlocal));
 //***********************
 
 
