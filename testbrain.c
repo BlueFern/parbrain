@@ -27,6 +27,9 @@ int main(int argc, char **argv)
 
     evaluate(W, 0, u, du);
 
+    free(u);
+    free(du);
+
     MPI_Finalize();
     return 0;
 }

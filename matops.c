@@ -460,6 +460,7 @@ cs * mldivide_chol(cs *A, css *S, cs *B) {
     X = cs_compress(T);
     cs_spfree(T);
     cs_spfree(U);
+    cs_spfree(Y);
     cs_nfree(N);
 
     free(x);

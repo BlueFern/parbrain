@@ -26,6 +26,7 @@ css * newton_sparsity(cs *J);
 int sizecheck(double *x, int n, double tol);
 void back_euler(odews *ws);
 void solver_init(odews *ws, int argc, char **argv);
+void free_var(odews *ws); //free remaining variables
 
 // Main simulation program 
 int main(int argc, char **argv) {
@@ -71,6 +72,8 @@ int main(int argc, char **argv) {
     }
     // And clean up
     close_io(ws->W);
+    free_var(ws);
+
     MPI_Finalize();
     return 0;
 }
@@ -155,6 +158,10 @@ void back_euler(odews *ws) {
                 printf("time: %e \n",t);
         }
     } // timestep loop
+
+    free(w); 
+    free(x); 
+    free(beta);
 }
 void solver_init(odews *ws, int argc, char **argv) {
     workspace *W;
@@ -275,3 +282,61 @@ int lusoln(odews *ws, double *b) {
     cs_free (x);
     return ok;
 }
+void free_var(odews *ws){
+
+    if (ws->W->buf != NULL) free(ws->W->buf);
+    if (ws->W->flag != NULL) free(ws->W->flag);
+    if (ws->W->level != NULL) free(ws->W->level);
+    if (ws->W->l != NULL) free(ws->W->l);
+    if (ws->W->x != NULL) free(ws->W->x);
+    if (ws->W->y != NULL) free(ws->W->y);
+    if (ws->W->b != NULL) free(ws->W->b);
+    if (ws->W->u != NULL) free(ws->W->u);
+    if (ws->W->v != NULL) free(ws->W->v);
+    if (ws->W->p != NULL) free(ws->W->p);
+    if (ws->W->q != NULL) free(ws->W->q);
+    if (ws->W->w != NULL) free(ws->W->w);
+    if (ws->W->ucomm != NULL) free(ws->W->ucomm);
+    if (ws->W->vcomm != NULL) free(ws->W->vcomm);
+    if (ws->W->gcomm != NULL) free(ws->W->gcomm);
+    if (ws->W->xn != NULL) free(ws->W->xn);
+    if (ws->W->xm != NULL) free(ws->W->xm);
+    if (ws->W->level0 != NULL) free(ws->W->level0);
+    if (ws->W->b0 != NULL) free(ws->W->b0);
+    if (ws->W->p0 != NULL) free(ws->W->p0);
+    if (ws->W->q0 != NULL) free(ws->W->q0);
+    if (ws->W->xn0 != NULL) free(ws->W->xn0);
+    if (ws->W->J != NULL) cs_spfree(ws->W->J);
+    if (ws->W->dfdx->r != NULL) free(ws->W->dfdx->r);		
+    if (ws->W->dfdx->g != NULL) free(ws->W->dfdx->g);		
+    if (ws->W->dfdx->A != NULL) cs_spfree(ws->W->dfdx->A);		
+    if (ws->W->dfdx != NULL) free(ws->W->dfdx);	
+    if (ws->W->A != NULL) cs_spfree(ws->W->A);
+    if (ws->W->At != NULL) cs_spfree(ws->W->At);
+    if (ws->W->A_A != NULL) cs_spfree(ws->W->A_A);
+    if (ws->W->A_At != NULL) cs_spfree(ws->W->A_At);
+    if (ws->W->dpdgneg != NULL) cs_spfree(ws->W->dpdgneg);		
+    if (ws->W->dfdp->r != NULL) free(ws->W->dfdp->r);		
+    if (ws->W->dfdp->g != NULL) free(ws->W->dfdp->g);
+    if (ws->W->dfdp->A != NULL) cs_spfree(ws->W->dfdp->A);
+    if (ws->W->dfdp != NULL) free(ws->W->dfdp);
+    if (ws->W->G != NULL) cs_spfree(ws->W->G);
+    if (ws->W->dgdx != NULL) cs_spfree(ws->W->dgdx);
+    if (ws->W->Proj != NULL) cs_spfree(ws->W->Proj);
+    if (ws->W->symbchol != NULL) cs_sfree(ws->W->symbchol); 
+    if (ws->W->symbchol_reduced != NULL) cs_sfree(ws->W->symbchol_reduced);
+    if (ws->W->nvu->dfdx_pattern != NULL) cs_spfree(ws->W->nvu->dfdx_pattern);
+    if (ws->W->nvu->dfdp_pattern != NULL) cs_spfree(ws->W->nvu->dfdp_pattern);
+    if (ws->W->nvu != NULL) free(ws->W->nvu);
+    if (ws->W->symbchol0 != NULL) cs_sfree(ws->W->symbchol0);	
+    if (ws->W->G0 != NULL) cs_spfree(ws->W->G0);
+    if (ws->W->A0 != NULL) cs_spfree(ws->W->A0);
+    if (ws->W->A0t != NULL) cs_spfree(ws->W->A0t);
+
+    if (ws->W != NULL) free(ws->W);
+    if (ws->N != NULL) cs_nfree(ws->N);
+    if (ws->y != NULL) free(ws->y);
+    if (ws->f != NULL) free(ws->f);
+}
+
+

@@ -369,6 +369,8 @@ void write_info(workspace *W) {
         fprintf(fp, "%-16d", W->nglobal);
         fprintf(fp, "\n");
         fclose(fp);
+
+        free(infofilename);
     }
 
 
@@ -512,6 +514,8 @@ void init_roottree(workspace *W) {
     W->q0  = malloc (W->A0->n * sizeof (*W->b0));
 
     W->xn0 = malloc (W->A0->n * sizeof (*W->xn0));
+
+    free(ikeep);
 }
 void init_problem(workspace *W) {
 }
@@ -635,6 +639,8 @@ void init_dfdx(workspace *W) {
 
     J = blkdiag(W->nvu->dfdx_pattern, nblocks, nblocks);
     W->dfdx = numjacinit(J);
+
+    cs_spfree(J);
 }
 void init_dfdp(workspace *W) {
     // The ordering of the blocks is such that the first two see the first
@@ -643,7 +649,9 @@ void init_dfdp(workspace *W) {
     B = vertcat(W->nvu->dfdp_pattern, W->nvu->dfdp_pattern);
     J = blkdiag(B, W->nblocks / 2, W->A->m);
     W->dfdp = numjacinit(J);
+    
     cs_spfree(J);
+    cs_spfree(B);
 }
 void compute_uv(workspace *W, double pc) {
     cs *AG, *B;
