@@ -176,6 +176,7 @@ void    init_dpdg(workspace *W);
 
 void    compute_uv(workspace *W, double pc);
 void    communicate(workspace *W);
+void	update_ghost_blocks(workspace *W, double *y);
 void    compute_root(workspace *W, double pin);
 void    compute_sub(workspace *W, double pin, double pc);
 

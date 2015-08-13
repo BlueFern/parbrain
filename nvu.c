@@ -954,12 +954,14 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
 
     double W_ghost_block_val = 0;
     double W_neighbour_val = 0;
+    // If the West neighbour is a ghost block.
     if(W_neighbour < 0)
     {
     	W_ghost_block_idx = - W_neighbour - 1;
     	W_ghost_block_val = w->ghost_blocks[W_ghost_block_idx].vars[DIFF_K];
     	flu_diff_K_0 = (W_ghost_block_val - state_K_p) / tau;
     }
+    // Otherwise it is a proper tissue block.
     else
     {
     	W_neighbour_offset =  W_neighbour - block_number;
