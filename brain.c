@@ -764,22 +764,15 @@ void communicate(workspace *W) {
 
 void update_ghost_blocks(workspace *W, double *y)
 {
-	//printf("Entering %s on rank %d\n", __FUNCTION__, W->rank);
+
 
 	// For each side post a send-receive call to exchange the edge information.
 	// We are posting information from our four edges and saving it into our ghost blocks.
 
+	// TODO: This commented out code can be removeve once we are convinced the replacement code in the loop works as expected.
+	/*
 	// TODO: W, N, E, S must be used in other places in this code. Make them into macros or an enum.
 	typedef enum {WEST, NORTH, EAST, SOUTH} direction;
-
-//***********************
-	// TODO: These arrays should be allocated only once in the workspace struct.
-	// Allocate an array for data to be sent.
-	double *send_array = malloc(sizeof(double) * 2 * (W->nlocal + W->mlocal));
-	// Allocate an array for data to be received.
-	double *receive_array = malloc(sizeof(double) * 2 * (W->nlocal + W->mlocal));
-//***********************
-
 
 	// West side.
 	// If neighbour exists.
@@ -787,13 +780,18 @@ void update_ghost_blocks(workspace *W, double *y)
 	{
 		// TODO: This will have to be a derived type when we have more than one diffusion variable to post.
 
+		// TODO: These arrays should be allocated only once in the workspace struct.
+		double *send_array = malloc(sizeof(double) * W->mlocal);
+		double *receive_array = malloc(sizeof(double) * W->mlocal);
+
 		// Populate send array with values from the state variables array.
-		//printf("West edge indices for rank %d: ", W->rank);
+
+		//printf("West edge indices/values for rank %d: ", W->rank);
 		for(int i = 0; i < W->mlocal; i++)
 		{
 			// Get the state variable based on the indices of the edge block for this side (and all other sides).
-			send_array[i] = y[W->neq * W->nvu->edge_indices[i]];
-			//printf("%d ", W->nvu->edge_indices[i]);
+			send_array[i] = y[W->neq * W->nvu->edge_indices[i] + K_p];
+			//printf("%d: %f\t", W->nvu->edge_indices[i], y[W->neq * W->nvu->edge_indices[i] +  K_p]);
 		}
 		//printf("\n");
 
@@ -806,9 +804,24 @@ void update_ghost_blocks(workspace *W, double *y)
 				MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
 		// Copy received data into the ghost blocks.
+		//printf("Received data: ");
 		for(int i = 0; i < W->mlocal; i++)
 		{
+
 			W->nvu->ghost_blocks[i].vars[DIFF_K] = receive_array[i];
+			//printf("%f ", W->nvu->ghost_blocks[i].vars[DIFF_K]);
+		}
+		//printf("\n");
+
+		free(send_array);
+		free(receive_array);
+	}
+	else
+	{
+		//
+		for(int i = 0; i < W->mlocal; i++)
+		{
+			W->nvu->ghost_blocks[i].vars[DIFF_K] = y[W->neq * W->nvu->edge_indices[i] + K_p];
 		}
 	}
 
@@ -818,12 +831,15 @@ void update_ghost_blocks(workspace *W, double *y)
 	{
 		// TODO: This will have to be a derived type when we have more than one diffusion variable to post.
 
+		double *send_array = malloc(sizeof(double) * W->nlocal);
+		double *receive_array = malloc(sizeof(double) * W->nlocal);
+
 		// Populate send array with values from the state variables array.
 		//printf("North edge indices for rank %d: ", W->rank);
 		for(int j = 0; j < W->nlocal; j++)
 		{
 			// Get the state variable based on the indices of the edge block for this side (and all other sides).
-			send_array[W->mlocal + j] = y[W->neq * W->nvu->edge_indices[W->mlocal + j]];
+			send_array[j] = y[W->neq * W->nvu->edge_indices[W->mlocal + j] + K_p];
 			//printf("%d ", W->nvu->edge_indices[W->mlocal + j]);
 		}
 		//printf("\n");
@@ -839,7 +855,17 @@ void update_ghost_blocks(workspace *W, double *y)
 		// Copy received data into the ghost blocks.
 		for(int j = 0; j < W->nlocal; j++)
 		{
-			W->nvu->ghost_blocks[W->mlocal + j].vars[DIFF_K] = receive_array[W->mlocal + j];
+			W->nvu->ghost_blocks[W->mlocal + j].vars[DIFF_K] = receive_array[j];
+		}
+
+		free(send_array);
+		free(receive_array);
+	}
+	else
+	{
+		for(int j = 0; j < W->nlocal; j++)
+		{
+			W->nvu->ghost_blocks[W->mlocal + j].vars[DIFF_K] = y[W->neq * W->nvu->edge_indices[W->mlocal + j] + K_p];
 		}
 	}
 
@@ -847,12 +873,16 @@ void update_ghost_blocks(workspace *W, double *y)
 	// If neighbour exists.
 	if(W->domain_neighbours[EAST] >= 0)
 	{
+
+		double *send_array = malloc(sizeof(double) * W->mlocal);
+		double *receive_array = malloc(sizeof(double) * W->mlocal);
+
 		// Populate the array with values from the state variables array.
 		//printf("East edge indices for rank %d: ", W->rank);
 		for(int i = 0; i < W->mlocal; i++)
 		{
 			// Get the state variable based on the indices of the edge block for this side (and all other sides).
-			send_array[W->mlocal + W->nlocal + i] = y[W->neq * W->nvu->edge_indices[W->mlocal + W->nlocal + i]];
+			send_array[i] = y[W->neq * W->nvu->edge_indices[W->mlocal + W->nlocal + i] + K_p];
 			//printf("%d ", W->nvu->edge_indices[W->mlocal + W->nlocal + i]);
 		}
 		//printf("\n");
@@ -868,7 +898,17 @@ void update_ghost_blocks(workspace *W, double *y)
 		// Copy received data into the ghost blocks.
 		for(int i = 0; i < W->mlocal; i++)
 		{
-			W->nvu->ghost_blocks[W->mlocal + W->nlocal + i].vars[DIFF_K] = receive_array[W->mlocal + W->nlocal + i];
+			W->nvu->ghost_blocks[W->mlocal + W->nlocal + i].vars[DIFF_K] = receive_array[i];
+		}
+
+		free(send_array);
+		free(receive_array);
+	}
+	else
+	{
+		for(int i = 0; i < W->mlocal; i++)
+		{
+			W->nvu->ghost_blocks[W->mlocal + W->nlocal + i].vars[DIFF_K] = y[W->neq * W->nvu->edge_indices[W->mlocal + W->nlocal + i] + K_p];
 		}
 	}
 
@@ -878,12 +918,15 @@ void update_ghost_blocks(workspace *W, double *y)
 	{
 		// TODO: This will have to be a derived type when we have more than one diffusion variable to post.
 
+		double *send_array = malloc(sizeof(double) * W->nlocal);
+		double *receive_array = malloc(sizeof(double) * W->nlocal);
+
 		// Populate send array with values from the state variables array.
 		//printf("South edge indices for rank %d: ", W->rank);
 		for(int j = 0; j < W->nlocal; j++)
 		{
 			// Get the state variable based on the indices of the edge block for this side (and all other sides).
-			send_array[2 * W->mlocal + W->nlocal + j] = y[W->neq * W->nvu->edge_indices[2 * W->mlocal + W->nlocal + j]];
+			send_array[j] = y[W->neq * W->nvu->edge_indices[2 * W->mlocal + W->nlocal + j] + K_p];
 			//printf("%d ", W->nvu->edge_indices[W->mlocal + j]);
 		}
 		//printf("\n");
@@ -899,11 +942,69 @@ void update_ghost_blocks(workspace *W, double *y)
 		// Copy received data into the ghost blocks.
 		for(int j = 0; j < W->nlocal; j++)
 		{
-			W->nvu->ghost_blocks[2 * W->mlocal + W->nlocal + j].vars[DIFF_K] = receive_array[2 * W->mlocal + W->nlocal + j];
+			W->nvu->ghost_blocks[2 * W->mlocal + W->nlocal + j].vars[DIFF_K] = receive_array[j];
+		}
+
+		free(send_array);
+		free(receive_array);
+	}
+	else
+	{
+		for(int j = 0; j < W->nlocal; j++)
+		{
+			W->nvu->ghost_blocks[2 * W->mlocal + W->nlocal + j].vars[DIFF_K] = y[W->neq * W->nvu->edge_indices[2 * W->mlocal + W->nlocal + j] + K_p];
 		}
 	}
+*/
 
-	//printf("Leaving %s on rank %d\n", __FUNCTION__, W->rank);
+	// All-side loop.
+	int odd_even = 1;
+	int idx_offset = 0;
+
+	for(int side_idx = 0; side_idx < 4; side_idx++)
+	{
+		// Choose length of the side depending on the odd or even value.
+		int side_length = odd_even ? W->mlocal : W->nlocal;
+
+		// If neighbour exists.
+		if(W->domain_neighbours[side_idx] >= 0)
+		{
+			// TODO: This likely will have to be a derived type when we have more than one diffusion variable to post.
+			double *send_array = malloc(sizeof(double) * side_length);
+			double *receive_array = malloc(sizeof(double) * side_length);
+
+			// Populate send array with values from the state variables array.
+			for(int i = 0; i < side_length; i++)
+			{
+				// Get the state variable based on the indices of the edge block for this side (and all other sides).
+				send_array[i] = y[W->neq * W->nvu->edge_indices[idx_offset + i] + K_p];
+			}
+
+			// TODO: Catch situations when there are no neighbours on the North side.
+			MPI_Sendrecv(
+					send_array, side_length, MPI_DOUBLE, W->domain_neighbours[side_idx], 0,
+					receive_array, side_length, MPI_DOUBLE, W->domain_neighbours[side_idx], 0,
+					MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+			// Copy received data into the ghost blocks.
+			for(int i = 0; i < side_length; i++)
+			{
+				W->nvu->ghost_blocks[idx_offset + i].vars[DIFF_K] = receive_array[i];
+			}
+
+			free(send_array);
+			free(receive_array);
+		}
+		else
+		{
+			for(int i = 0; i < side_length; i++)
+			{
+				W->nvu->ghost_blocks[idx_offset + i].vars[DIFF_K] = y[W->neq * W->nvu->edge_indices[idx_offset + i] + K_p];
+			}
+		}
+		idx_offset += side_length;
+		odd_even = !odd_even;
+	}
 }
 
 void compute_root(workspace *W, double pin) {
