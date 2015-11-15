@@ -642,8 +642,8 @@ double K_input(double t, double x, double y) {
     double ampl = 3;
     double x_centre = 0;//-0.0008; // 0;
     double y_centre = 0;//-0.0008; // 0;
-    double t_up   = 100;
-    double t_down = 900;
+    double t_up   = 200;
+    double t_down = 800;
     double lengthpulse = t_down - t_up;   
     double lengtht1 = 10;
     double F_input = 2.5;
@@ -694,8 +694,8 @@ double factorial(int c) {
 double flux_ft(double t, double x, double y) {
     double flux_min = 0;
     double flux_max = 1; 
-    double t_up   = 100;
-    double t_down = 900;
+    double t_up   = 200;
+    double t_down = 800;
     double lengthpulse = t_down - t_up;
     double lengtht1 = 10;
     double t0 = t_up;   
@@ -723,7 +723,7 @@ double flux_ft(double t, double x, double y) {
 double PLC_input(double t, double x, double y) {
     double PLC_min = 0.18;
     double PLC_max = 0.4;
-    double t_up   = 1000;
+    double t_up   = 2000;
     double t_down = 9000;
     double ampl = 3;
     double ramp = 0.003;//0.002;
