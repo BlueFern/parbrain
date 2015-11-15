@@ -55,7 +55,7 @@ void  *nvu_free(nvu_workspace *w);
 double nvu_p0(double t);
 
 //time- and space-dependent Glu input
-//double nvu_Glu(double t, double x, double y);
+double nvu_Glu(double t, double x, double y);
 
 //time- and space-dependent K+ input
 double K_input(double t, double x, double y);

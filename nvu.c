@@ -298,10 +298,10 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     const double p_hat      = 0.05;
     const double p_hatIP3   = 0.05;
     const double C_Hillmann = 1;
-    const double K2_c        = 0.5 * C_Hillmann;
+    //const double K2_c        = 0.5 * C_Hillmann;
     const double K3_c        = 0.4 * C_Hillmann;
     const double K4_c        = 0.1 * C_Hillmann;
-    const double K5_c        = 0.5 * C_Hillmann;
+    //const double K5_c        = 0.5 * C_Hillmann;
     const double K7_c        = 0.1 * C_Hillmann;
     const double gam_cross   = 17 * C_Hillmann;
 
@@ -367,7 +367,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     const double K_m_mlcp    = 5.5;        		// [microM]
     const double k_mlck      = 1180;
     const double v_Ca        = -27; // cGMP and NO dependent
-    const double c_wi        = 0; // translation factor for Ca dependence of KCa channel activation sigmoidal [microM] 
+//    const double c_wi        = 0; // translation factor for Ca dependence of KCa channel activation sigmoidal [microM] 
     const double bet_i       = 0.13; // translation factor for membrane potential dependence of KCa channel activation sigmoidal [microM2] 
     const double m =2;
     const double tau_w       = 1; // will be dynamic later
@@ -395,7 +395,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     double flu_v_cpl_j, flu_c_cpl_j, flu_I_cpl_j, flu_rho_j, flu_O_j, flu_ip3_j, flu_ERuptake_j, flu_CICR_j,
     flu_extrusion_j, flu_leak_j, flu_cation_j, flu_BKCa_j, flu_SKCa_j, flu_K_j, flu_R_j, flu_degrad_j, flu_J_stretch_j; // EC fluxes
     double flu_K1_c, flu_K6_c; // Mech fluxes   
-    double flu_P_NR2AO, flu_P_NR2BO, flu_openProbTerm, flu_I_Ca, flu_phi_N, flu_dphi_N, flu_N, flu_CaM, flu_W_tau_w, flu_F_tau_w, flu_k4, flu_R_cGMP1, flu_R_NO, flu_v_Ca3, flu_P_O, flu_R_cGMP2, flu_K2_c, flu_K5_c, flu_kmlcp;    // NO pathway fluxes
+    double flu_c_w, flu_P_NR2AO, flu_P_NR2BO, flu_openProbTerm, flu_I_Ca, flu_phi_N, flu_dphi_N, flu_N, flu_CaM, flu_W_tau_w, flu_F_tau_w, flu_k4, flu_R_NO, flu_v_Ca3, flu_R_cGMP2, flu_K2_c, flu_K5_c;    // NO pathway fluxes
 
 // State Variables:
     state_r  = u[i_radius];
@@ -500,7 +500,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     flu_NaK_i		    = F_NaK;
     flu_Cl_i		    = G_Cl * (state_v_i - v_Cl);
     flu_K_i			    = G_K * state_w_i * ( state_v_i - vK_i );
-    flu_Kactivation_i   = pow((state_ca_i + c_w),2) / ( pow((state_ca_i + c_w),2) + bet*exp(-(state_v_i - v_Ca3)/R_K) );  // see NO pathway!
+//    flu_Kactivation_i   = pow((state_ca_i + c_w),2) / ( pow((state_ca_i + c_w),2) + bet*exp(-(state_v_i - v_Ca3)/R_K) );  // see NO pathway!
     flu_degrad_i	    = k_i * state_ip3_i;
 	double P_str;
 	P_str = (p*P0 + PCAP) / 2.0 * PA2MMHG;
@@ -541,28 +541,31 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 
 // NO pathway fluxes
 
-   flu_P_NR2AO         = nvu_Glu(t,x,y)/(betA+nvu_Glu(t,x,y)); 
-   flu_P_NR2BO         = nvu_Glu(t,x,y)/(betB+nvu_Glu(t,x,y));
-   flu_openProbTerm    = 0.63 * flu_P_NR2AO + 11 * flu_P_NR2BO;
-   flu_I_Ca            = (-4*v_n*G_M*P_Ca_P_M*(Ca_ex/M))/(1+exp(-0.08*(v_n+20)))*(exp(2*1e-3*v_n*Farad/(R_gas*Temp)))/(1-exp(2*1e-3*v_n*Farad/(R_gas*Temp)))*(0.63*flu_P_NR2AO+11*flu_P_NR2BO); 
-   flu_phi_N           = 1 + Q1*state_ca_n + Q1*Q2*pow(state_ca_n,2) + Q1*Q2*Q3*pow(state_ca_n,3) + Q1*Q2*Q3*Q4*pow(state_ca_n,4);        // (102)
-   flu_dphi_N          = Q1 + 2*Q1*Q2*state_ca_n + 3*Q1*Q2*Q3*pow(state_ca_n,2) + 4*Q1*Q2*Q3*Q4*pow(state_ca_n,3);            // == d(phi_N)/d(ind.Ca_n) ; (part of 101)
-   flu_N               = (state_ca_n/flu_phi_N)*flu_dphi_N;                                                   // number of Ca2+ bound per calmodulin ; (101)
-   flu_CaM             = state_ca_n/flu_N;                                      // concentration of calmodulin / calcium complexes ; (100)            
+    flu_P_NR2AO         = nvu_Glu(t,x,y)/(betA+nvu_Glu(t,x,y)); 
+    flu_P_NR2BO         = nvu_Glu(t,x,y)/(betB+nvu_Glu(t,x,y));
+    flu_openProbTerm    = 0.63 * flu_P_NR2AO + 11 * flu_P_NR2BO;
+    flu_I_Ca            = (-4*v_n*G_M*P_Ca_P_M*(Ca_ex/M))/(1+exp(-0.08*(v_n+20)))*(exp(2*1e-3*v_n*Farad/(R_gas*Temp)))/(1-exp(2*1e-3*v_n*Farad/(R_gas*Temp)))*(0.63*flu_P_NR2AO+11*flu_P_NR2BO); 
+    flu_phi_N           = 1 + Q1*state_ca_n + Q1*Q2*pow(state_ca_n,2) + Q1*Q2*Q3*pow(state_ca_n,3) + Q1*Q2*Q3*Q4*pow(state_ca_n,4);        // (102)
+    flu_dphi_N          = Q1 + 2*Q1*Q2*state_ca_n + 3*Q1*Q2*Q3*pow(state_ca_n,2) + 4*Q1*Q2*Q3*Q4*pow(state_ca_n,3);            // == d(phi_N)/d(ind.Ca_n) ; (part of 101)
+    flu_N               = (state_ca_n/flu_phi_N)*flu_dphi_N;                                                   // number of Ca2+ bound per calmodulin ; (101)
+    flu_CaM             = state_ca_n/flu_N;                                      // concentration of calmodulin / calcium complexes ; (100)            
 
-   flu_W_tau_w         = W_0*pow((tau_w + sqrt(16*pow(delt_wss,2)+pow(tau_w,2))-4*delt_wss),2) / (tau_w+sqrt(16*pow(delt_wss,2)+pow(tau_w,2))) ; 
-   flu_F_tau_w         = (1/(1+alp*exp(-flu_W_tau_w)))-(1/(1+alp)); // -(1/(1+alp)) was added to get no NO at 0 wss (!)
-   flu_k4             = C_4*pow(state_cGMP,m);
-   flu_R_cGMP1        = (pow(state_cGMP,2))/(pow(state_cGMP,2)+pow(K_m_cGMP,2));
-   flu_R_NO           = (state_NOi/(state_NOi+K_m_NO)) ;
-   flu_v_Ca3          = -45*log10(state_ca_i-0.0838) + 223.276*flu_R_cGMP1 - 292.700*flu_R_NO - 198.55;
-   flu_P_O            = pow((state_ca_i + c_wi ),2)/( pow((state_ca_i + c_wi ),2) + bet_i*exp(-(state_v_i - flu_v_Ca3) / (R_Kfit)) );
-   flu_R_cGMP2        = (pow(state_cGMP,2))/(pow(state_cGMP,2)+pow(K_m_mlcp,2));
-   flu_K2_c           = 16.88*k_mlcp_b+16.88*k_mlcp_c*flu_R_cGMP2;  // 17.64 / 16.75 errechnet sich aus dem Shift, um K2_c = 0.5 bei der baseline zu bekommen - muss vllt noch geaendert werden! 
-   flu_K5_c           = flu_K2_c;
-   flu_kmlcp          = k_mlcp_b + k_mlcp_c * flu_R_cGMP2;
-   flu_Kactivation_i  = 0.075*(1+tanh((state_cGMP-9.7)))+ (pow((state_ca_i + c_w ),2) / ( pow((state_ca_i + c_w),2) + bet*exp(-(state_v_i - v_Ca3)/R_K) ));
+    flu_W_tau_w         = W_0*pow((tau_w + sqrt(16*pow(delt_wss,2)+pow(tau_w,2))-4*delt_wss),2) / (tau_w+sqrt(16*pow(delt_wss,2)+pow(tau_w,2))) ; 
+    flu_F_tau_w         = (1/(1+alp*exp(-flu_W_tau_w)))-(1/(1+alp)); // -(1/(1+alp)) was added to get no NO at 0 wss (!)
+    flu_k4              = C_4*pow(state_cGMP,m);
+//    flu_R_cGMP1         = (pow(state_cGMP,2))/(pow(state_cGMP,2)+pow(K_m_cGMP,2));
+//    flu_R_NO            = (state_NOi/(state_NOi+K_m_NO)) ;
+//    flu_v_Ca3           = -45 * log10(state_ca_i - 0.0838) + 223.276 * flu_R_cGMP1 - 292.700 * flu_R_NO - 198.55;
+//    flu_P_O             = pow((state_ca_i + c_wi ),2)/( pow((state_ca_i + c_wi ),2) + bet_i*exp(-(state_v_i - flu_v_Ca3) / (R_Kfit)) );
+    flu_R_cGMP2         = (pow(state_cGMP,2))/(pow(state_cGMP,2)+pow(K_m_mlcp,2));
+    flu_K2_c            = 58.1395 * k_mlcp_b + 58.1395 * k_mlcp_c * flu_R_cGMP2;  // Factor is chosen to relate two-state model of Yang2005 to Hai&Murphy model 
+    flu_K5_c            = flu_K2_c;
+//    flu_kmlcp           = k_mlcp_b + k_mlcp_c * flu_R_cGMP2;
+//    flu_Kactivation_i  = 0.075*(1+tanh((state_cGMP-9.7)))+ (pow((state_ca_i + c_w ),2) / ( pow((state_ca_i + c_w),2) + bet*exp(-(state_v_i - v_Ca3)/R_K) ));
+    flu_c_w             = 1e-7 / (1e-7 + 1e7 * exp(-3 * state_cGMP)); //1 / (epsilon_i + alpha_i * exp(gamma_i * cGMP));
+    flu_Kactivation_i   = pow((state_ca_i + flu_c_w),2) / (pow((state_ca_i + flu_c_w),2) + bet_i * exp(-(state_v_i - v_Ca3) / R_K));
 
+    
 
 
 
@@ -597,9 +600,9 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     du[ip3_j    ] = flu_I_cpl_j + J_PLC - flu_degrad_j ;  // **
 
     // Mech:
-    du[ Mp   ] = K4_c * state_AMp + flu_K1_c * flu_M - (K2_c + K3_c) * state_Mp;
-    du[ AMp  ] = K3_c * state_Mp + flu_K6_c * state_AM - (K4_c + K5_c) * state_AMp;
-    du[ AM   ] = K5_c * state_AMp - ( K7_c + flu_K6_c ) * state_AM;
+    du[ Mp   ] = K4_c * state_AMp + flu_K1_c * flu_M - (flu_K2_c + K3_c) * state_Mp;
+    du[ AMp  ] = K3_c * state_Mp + flu_K6_c * state_AM - (K4_c + flu_K5_c) * state_AMp;
+    du[ AM   ] = flu_K5_c * state_AMp - ( K7_c + flu_K6_c ) * state_AM;
 
     du[PLC_i]    = 0;
     du[K_df_i]   = 0;
@@ -653,11 +656,20 @@ return p0;
 double nvu_Glu(double t, double x, double y) {
     double Glu_min = 0;
     double Glu_max = 1846; // uM - one vesicle (Santucci)
-    double t_up   = 50;
+    double t_up   = 200;
     double t_down = 800;
-    double blocks_activated = 4;
-    double Glu = ((0.5 + 0.5 *(tanh(100000*(x-0.0004)+1))) *(0.5 + 0.5 *(tanh(100000*(y-0.0004)+1))))        *          ((Glu_min + (Glu_max - Glu_min) / 2.0 * (1 + tanh(10*(t - t_up))) + (Glu_min - Glu_max) / 2.0 * (1 + tanh(10*(t - t_down)))));
-    return Glu;
+//    double blocks_activated = 4;
+//    double Glu_out = ((0.5 + 0.5 *(tanh(100000*(x-0.0004)+1))) *(0.5 + 0.5 *(tanh(100000*(y-0.0004)+1))))        *          ((Glu_min + (Glu_max - Glu_min) / 2.0 * (1 + tanh(10*(t - t_up))) + (Glu_min - Glu_max) / 2.0 * (1 + tanh(10*(t - t_down)))));
+    double ampl = 3;
+    double ramp = 0.003;//0.002;
+    double x_centre = 0; // 0.0008 -> n_bif = 7; python: ((((2**(n_bif-1))**0.5)/4)*0.0004)
+    double y_centre = 0;
+    double Glu_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
+    //double PLC_space = 1; // all blocks!
+    double Glu_time = 0.5 * tanh((t-t_up)/0.05) - 0.5 * tanh((t-t_down)/0.05);
+    double Glu_out = Glu_min + (Glu_max-Glu_min) * Glu_space * Glu_time;
+    //double PLC_out = PLC_space; // no time-dependeny
+    return Glu_out;
 }
 
 // Space- & time-varying K+ input signal
@@ -749,8 +761,8 @@ double flux_ft(double t, double x, double y) {
 double PLC_input(double t, double x, double y) {
     double PLC_min = 0.18;
     double PLC_max = 0.4;
-    double t_up   = 0;
-    double t_down = 8000;
+    double t_up   = 10000;
+    double t_down = 80000;
     double ampl = 3;
     double ramp = 0.003;//0.002;
     double x_centre = 0; // 0.0008 -> n_bif = 7; python: ((((2**(n_bif-1))**0.5)/4)*0.0004)
