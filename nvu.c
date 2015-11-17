@@ -370,7 +370,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 //    const double c_wi        = 0; // translation factor for Ca dependence of KCa channel activation sigmoidal [microM] 
     const double bet_i       = 0.13; // translation factor for membrane potential dependence of KCa channel activation sigmoidal [microM2] 
     const double m =2;
-    const double tau_w       = 1; // will be dynamic later
+///    const double tau_w       = 1; // will be dynamic later
     const double gam_eNOS    = 0.1; // [-]
     const double K_mO2_j     = 7.7;
     const double V_NOj_max   = 1.22;
@@ -395,7 +395,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     double flu_v_cpl_j, flu_c_cpl_j, flu_I_cpl_j, flu_rho_j, flu_O_j, flu_ip3_j, flu_ERuptake_j, flu_CICR_j,
     flu_extrusion_j, flu_leak_j, flu_cation_j, flu_BKCa_j, flu_SKCa_j, flu_K_j, flu_R_j, flu_degrad_j, flu_J_stretch_j; // EC fluxes
     double flu_K1_c, flu_K6_c; // Mech fluxes   
-    double flu_c_w, flu_P_NR2AO, flu_P_NR2BO, flu_openProbTerm, flu_I_Ca, flu_phi_N, flu_dphi_N, flu_N, flu_CaM, flu_W_tau_w, flu_F_tau_w, flu_k4, flu_R_NO, flu_v_Ca3, flu_R_cGMP2, flu_K2_c, flu_K5_c;    // NO pathway fluxes
+    double flu_c_w, flu_P_NR2AO, flu_P_NR2BO, flu_openProbTerm, flu_I_Ca, flu_phi_N, flu_dphi_N, flu_N, flu_CaM, flu_W_tau_w, flu_F_tau_w, flu_k4, flu_R_NO, flu_v_Ca3, flu_R_cGMP2, flu_K2_c, flu_K5_c, flu_tau_w;    // NO pathway fluxes
 
 // State Variables:
     state_r  = u[i_radius];
@@ -549,8 +549,8 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     flu_dphi_N          = Q1 + 2*Q1*Q2*state_ca_n + 3*Q1*Q2*Q3*pow(state_ca_n,2) + 4*Q1*Q2*Q3*Q4*pow(state_ca_n,3);            // == d(phi_N)/d(ind.Ca_n) ; (part of 101)
     flu_N               = (state_ca_n/flu_phi_N)*flu_dphi_N;                                                   // number of Ca2+ bound per calmodulin ; (101)
     flu_CaM             = state_ca_n/flu_N;                                      // concentration of calmodulin / calcium complexes ; (100)            
-
-    flu_W_tau_w         = W_0*pow((tau_w + sqrt(16*pow(delt_wss,2)+pow(tau_w,2))-4*delt_wss),2) / (tau_w+sqrt(16*pow(delt_wss,2)+pow(tau_w,2))) ; 
+    flu_tau_w           = 9.1e4 * state_r;
+    flu_W_tau_w         = W_0*pow((flu_tau_w + sqrt(16*pow(delt_wss,2)+pow(flu_tau_w,2))-4*delt_wss),2) / (flu_tau_w+sqrt(16*pow(delt_wss,2)+pow(flu_tau_w,2))) ; 
     flu_F_tau_w         = (1/(1+alp*exp(-flu_W_tau_w)))-(1/(1+alp)); // -(1/(1+alp)) was added to get no NO at 0 wss (!)
     flu_k4              = C_4*pow(state_cGMP,m);
 //    flu_R_cGMP1         = (pow(state_cGMP,2))/(pow(state_cGMP,2)+pow(K_m_cGMP,2));
@@ -664,11 +664,9 @@ double nvu_Glu(double t, double x, double y) {
     double ramp = 0.003;//0.002;
     double x_centre = 0; // 0.0008 -> n_bif = 7; python: ((((2**(n_bif-1))**0.5)/4)*0.0004)
     double y_centre = 0;
-    double Glu_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
-    //double PLC_space = 1; // all blocks!
+    double Glu_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2)))))); // Gauss with plateau
     double Glu_time = 0.5 * tanh((t-t_up)/0.05) - 0.5 * tanh((t-t_down)/0.05);
     double Glu_out = Glu_min + (Glu_max-Glu_min) * Glu_space * Glu_time;
-    //double PLC_out = PLC_space; // no time-dependeny
     return Glu_out;
 }
 
@@ -695,15 +693,15 @@ double K_input(double t, double x, double y) {
     double gab = factorial(alpha + beta - 1);
     double ga = factorial(alpha - 1);
     double gb = factorial(beta - 1);
-    //double K_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
     //double K_space =((0.5 + 0.5 *(tanh(1e5 * (x-0.0004)+1))) *(0.5 + 0.5 *(tanh(1e5 *(y-0.0004)+1))));
-    double K_space;   
+    double K_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2)))))); // Gauss with plateau
+    /*double K_space;   
     if (x<= 0){
         K_space = 1;
     }
     else {
         K_space = 0;
-    }
+    }*/
     double K_time;
     if (t >= t0 && t <= t1) {
         //K_time = F_input * gab / (ga * gb) * pow((1-(t-t0) / deltat),(beta - 1)) * pow(((t - t0) / deltat),(alpha-1)); 
@@ -744,15 +742,15 @@ double flux_ft(double t, double x, double y) {
     double y_centre = 0;//-0.0008;
     double flux_time = 0.5 * tanh((t-t0)/0.0005) - 0.5 * tanh((t-t1-lengthpulse)/0.0005);
     //double flux_time = 0.5 * tanh((t-t0)/0.005) - 0.5 * tanh((t-t1-lengthpulse)/0.005);
-    //double flux_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
+    double flux_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2)))))); // Gauss with plateau
     //double flux_space =((0.5 + 0.5 *(tanh(1e5 * (x-0.0004)+1))) *(0.5 + 0.5 *(tanh(1e5 *(y-0.0004)+1))));  
-    double flux_space;   
-    if (x<= 0){
-        flux_space = 1;
-    }
-    else {
-        flux_space = 0;
-    }
+    //double flux_space;   
+    //if (x<= 0){
+    //    flux_space = 1;
+    //}
+    //else {
+    //    flux_space = 0;
+    //}
     double flux_out = flux_min + (flux_max-flux_min) * flux_time * flux_space;
     return flux_out;
 }
@@ -810,22 +808,21 @@ void nvu_ics(double *u0, double x, double y, nvu_workspace *w) {
     u0[AMp]       = 0.25;                      //22
     u0[AM]        = 0.25;                      //23
     u0[PLC_i]     = PLC_input(300,x,y);
-    u0[K_df_i]    = K_input(105,x,y);
-    u0[K_flux_i]  = flux_ft(300,x,y);
+    u0[K_df_i]    = K_input(205,x,y);
+    u0[K_flux_i]  = flux_ft(201,x,y);
 
 // NO pathway*****************
-    u0[NOn]       = 0.1;                    //24
-    u0[NOk]       = 0.1;                    //25
-    u0[NOi]       = 0.05;                    //26
-    u0[NOj]       = 0.05;
-    u0[cGMP]      = 6;                    //27
-    u0[eNOS]      = 0.7;                    //28
-    u0[nNOS]      = 0.3;                    //29
-    u0[ca_n]      = 0.0001;                    //30
-    u0[E_b]       = 0.3;                    //31  Eb+E6c+E5c=1 !
-    u0[E_6c]      = 0.2;                    //32  
-    u0[E_5c]      = 0.5;                    //33
-
+    u0[NOn]       = 0.1;                    //27
+    u0[NOk]       = 0.1;                    //28
+    u0[NOi]       = 0.05;                   //29
+    u0[NOj]       = 0.05;                   //30
+    u0[cGMP]      = 6;                      //31
+    u0[eNOS]      = 0.7;                    //32
+    u0[nNOS]      = 0.3;                    //33
+    u0[ca_n]      = 0.0001;                 //33
+    u0[E_b]       = 0.3;                    //34  Eb+E6c+E5c=1 !
+    u0[E_6c]      = 0.2;                    //35  
+    u0[E_5c]      = 0.5;                    //36
 }
 
 //double Hill(double conc, double Hconst, double power) {

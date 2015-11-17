@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
 
 	// General parameters:
 	#define BLOCK_LENGTH 4e-4	// Length of one tissue block [m].
-	char Prefix[] = "/hpc/home/kdo40/Frontiers_in_Physiology/parbrain/";
+	char Prefix[] = ""; //"/hpc/home/kdo40/Frontiers_in_Physiology/parbrain/";
 //	char Prefix[] = "/power7/Frontiers_in_Physiology/parbrain/";
 
 	char *dirName=argv[1];        // First argument: Folder name.
@@ -256,7 +256,7 @@ int main(int argc, char *argv[]) {
 	uGrid2->SetCells(VTK_LINE, cellArray_tree); //     uGrid2->SetLines(cellArray2);
 
 	//char *var_names[] = {"radius_coupled","radius_decoupled","R_k","N_Na_k","N_K_k","N_HCO3_k","N_Cl_k","N_Na_s","N_K_s","N_HCO3_s","K_p","w_k","ca_i","ca_sr_i","v_i","w_i","ip3_i","K_i","ca_j","ca_er_j","v_j","ip3_j","Mp","AMp","AM","input_PLC","input_K_df","input_K_flux","NOi","NOj","NOn","cGMP","eNOS","nNOS","ca_n","E_b","E_6c","E_5c"};
-	char *var_names[] = {"radius_coupled","R_k","N_Na_k","N_K_k","N_HCO3_k","N_Cl_k","N_Na_s","N_K_s","N_HCO3_s","K_p","w_k","ca_i","ca_sr_i","v_i","w_i","ip3_i","K_i","ca_j","ca_er_j","v_j","ip3_j","Mp","AMp","AM","input_PLC","input_K_df","input_K_flux","NOi","NOj","NOn","cGMP","eNOS","nNOS","ca_n","E_b","E_6c","E_5c"};
+	char *var_names[] = {"radius_coupled","R_k","N_Na_k","N_K_k","N_HCO3_k","N_Cl_k","N_Na_s","N_K_s","N_HCO3_s","K_p","w_k","ca_i","ca_sr_i","v_i","w_i","ip3_i","K_i","ca_j","ca_er_j","v_j","ip3_j","Mp","AMp","AM","input_PLC","input_K_df","input_K_flux","NOn","NOk","NOi","NOj","cGMP","eNOS","nNOS","ca_n","E_b","E_6c","E_5c"};
 
 // 4. Add binary data as attributes to cells:
 

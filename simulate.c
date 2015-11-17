@@ -192,7 +192,7 @@ void solver_init(odews *ws, int argc, char **argv) {
 }
 int sizecheck(double *x, int n, double tol) { // n - no of equ total (nblocks*nequs)
     int smallenough = 1;
-    double x0[27] = 	{1,   	// 0
+    double x0[38] = 	{1,   	// 0
 		 	1e-7,	// 1
 			1e-4,	// 2
 			1e-3,	// 3
@@ -216,26 +216,27 @@ int sizecheck(double *x, int n, double tol) { // n - no of equ total (nblocks*ne
 			1e-1,	// 21
 			1e-1,	// 22
 			1e-1,	// 23
-			1,
-			1,
-			1
-			//1e-2, 	// 24 NO pathway
-			//1e-2,	// 25 
-			//1e-1,	// 26
-			//1,	// 27
-			//1e-1,	// 28
-			//1e-4,	// 29 
-			//1e-1,	// 30
-			//1e-1,	// 31
-			//1e-1,	// 32
-			//1e+1	// 33
+			1,		// 24
+			1,		// 25
+			1,		// 26 
+			1e-1, 	// 27 NO pathway
+			1e-1,	// 28 
+			1e-2,	// 29
+			1e-2,	// 30
+			1,      // 31
+			1,      // 32 
+			1,      // 33
+			1e-4,   // 34
+			1e-1,   // 35
+			1e-1,   // 36
+            1       // 37
 			};
 			
     for (int i = 0; i < n; i++) {
- 	    for (int la = 0; la < 27; la++) {
-                // printf("***** tolerance check: var = %d: %e %e  %e \n", la, x[la], x0[la % 27], fabs(x[la] / x0[la % 27])); // TEST
+ 	    for (int la = 0; la < 38; la++) {
+                // printf("***** tolerance check: var = %d: %e %e  %e \n", la, x[la], x0[la % 38], fabs(x[la] / x0[la % 38])); // TEST
             }
-        smallenough &= (fabs(x[i] / x0[i % 27]) < tol);  // W->nequ hardcoded
+        smallenough &= (fabs(x[i] / x0[i % 38]) < tol);  // W->nequ hardcoded
         //smallenough &= (fabs(x[i]) < tol);
         //printf("%f \n", x[i]);
         if (!smallenough)
