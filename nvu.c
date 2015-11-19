@@ -342,7 +342,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     const double K_dis       = 9e-2;  
     const double K_eNOS      = 4.5e-1; 
     const double mu2         = 0.0167; 
-    const double g_max       = 0.3;    	
+    const double g_max       = 0.06;    	
     const double alp         = 2;    
     const double W_0         = 1.4;        
     const double delt_wss    = 2.86 ;  
@@ -453,7 +453,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     pt = 0.5 * (p + w->pcap);
     q  = (p - w->pcap) * g; //brauchen wir das noch?
     e  = 1. + w->a5 * f;
-    r0 = w->a3 * (1. - w->a4 * f);
+    r0 = w->a3 * (1. - w->a4 * f); // = 0.6 * f
     // AC fluxes
     flu_R_s            = R_tot - state_R_k;                            //
     flu_N_Cl_s         = state_N_Na_s + state_N_K_s - state_N_HCO3_s;  //
@@ -485,7 +485,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     // SMC fluxes
     flu_M               = 1 - state_Mp - state_AM - state_AMp;
     flu_E_K_i           = ( R_gas * Temp ) / ( z_K  * Farad ) * unitcon * log( state_K_p / state_K_i );
-    flu_h_r             = 0.1 * state_r; //(non-dimensional!)
+    flu_h_r             = HRR * state_r; //(non-dimensional!)
     flu_v_cpl_i		    = - g_hat * ( state_v_i - state_v_j );
     flu_c_cpl_i         = - p_hat * ( state_ca_i - state_ca_j );
     flu_I_cpl_i         = - p_hatIP3 * ( state_ip3_i - state_ip3_j );
@@ -504,7 +504,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     flu_degrad_i	    = k_i * state_ip3_i;
 	double P_str;
 	P_str = (p*P0 + PCAP) / 2.0 * PA2MMHG;
-    flu_J_stretch_i     = G_stretch/(1+exp(-alpha1*(P_str*state_r / flu_h_r - sig0))) * (state_v_i - Esac); 
+    flu_J_stretch_i     = G_stretch/(1+exp(-alpha1*(P_str * state_r / flu_h_r - sig0))) * (state_v_i - Esac); 
 
     flu_v_KIR_i    = z_1 * state_K_p / unitcon + z_2;                                  // mV           state_K_p,
     flu_G_KIR_i    = exp( z_5 * state_v_i + z_3 * state_K_p / unitcon + z_4 );        // pS pF-1 =s-1  state_v_i, state_K_p
@@ -544,15 +544,15 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     flu_P_NR2AO         = nvu_Glu(t,x,y)/(betA+nvu_Glu(t,x,y)); 
     flu_P_NR2BO         = nvu_Glu(t,x,y)/(betB+nvu_Glu(t,x,y));
     flu_openProbTerm    = 0.63 * flu_P_NR2AO + 11 * flu_P_NR2BO;
-    flu_I_Ca            = (-4*v_n*G_M*P_Ca_P_M*(Ca_ex/M))/(1+exp(-0.08*(v_n+20)))*(exp(2*1e-3*v_n*Farad/(R_gas*Temp)))/(1-exp(2*1e-3*v_n*Farad/(R_gas*Temp)))*(0.63*flu_P_NR2AO+11*flu_P_NR2BO); 
+    flu_I_Ca            = (-4 * v_n * G_M * P_Ca_P_M * (Ca_ex/M)) / (1+exp(-0.08*(v_n+20)))*(exp(2*1e-3*v_n*Farad/(R_gas*Temp)))/(1-exp(2*1e-3*v_n*Farad/(R_gas*Temp)))*(0.63*flu_P_NR2AO+11*flu_P_NR2BO); 
     flu_phi_N           = 1 + Q1*state_ca_n + Q1*Q2*pow(state_ca_n,2) + Q1*Q2*Q3*pow(state_ca_n,3) + Q1*Q2*Q3*Q4*pow(state_ca_n,4);        // (102)
     flu_dphi_N          = Q1 + 2*Q1*Q2*state_ca_n + 3*Q1*Q2*Q3*pow(state_ca_n,2) + 4*Q1*Q2*Q3*Q4*pow(state_ca_n,3);            // == d(phi_N)/d(ind.Ca_n) ; (part of 101)
     flu_N               = (state_ca_n/flu_phi_N)*flu_dphi_N;                                                   // number of Ca2+ bound per calmodulin ; (101)
     flu_CaM             = state_ca_n/flu_N;                                      // concentration of calmodulin / calcium complexes ; (100)            
-    flu_tau_w           = 9.1e4 * state_r;
-    flu_W_tau_w         = W_0*pow((flu_tau_w + sqrt(16*pow(delt_wss,2)+pow(flu_tau_w,2))-4*delt_wss),2) / (flu_tau_w+sqrt(16*pow(delt_wss,2)+pow(flu_tau_w,2))) ; 
-    flu_F_tau_w         = (1/(1+alp*exp(-flu_W_tau_w)))-(1/(1+alp)); // -(1/(1+alp)) was added to get no NO at 0 wss (!)
-    flu_k4              = C_4*pow(state_cGMP,m);
+    flu_tau_w           = 1.82e5 * state_r * R0; // radius is non-dimensional!
+    flu_W_tau_w         = W_0 * pow((flu_tau_w + sqrt(16 * pow(delt_wss,2) + pow(flu_tau_w,2)) - 4 * delt_wss),2) / (flu_tau_w + sqrt(16 * pow(delt_wss,2) + pow(flu_tau_w,2))) ;  // - tick
+    flu_F_tau_w         = 1 / (1 + alp * exp(-flu_W_tau_w)) - 1 / (1 + alp); // -(1/(1+alp)) was added to get no NO at 0 wss (!) - tick
+    flu_k4              = C_4 * pow(state_cGMP,m);
 //    flu_R_cGMP1         = (pow(state_cGMP,2))/(pow(state_cGMP,2)+pow(K_m_cGMP,2));
 //    flu_R_NO            = (state_NOi/(state_NOi+K_m_NO)) ;
 //    flu_v_Ca3           = -45 * log10(state_ca_i - 0.0838) + 223.276 * flu_R_cGMP1 - 292.700 * flu_R_NO - 198.55;
@@ -626,10 +626,10 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     du[cGMP]       = V_max_sGC * state_E_5c - (k_pde * pow(state_cGMP,2) ) / (K_m_pde + state_cGMP );
        
     // EC:
-    du[eNOS]       = gam_eNOS * (K_dis * state_ca_j / (K_eNOS + state_ca_j))  // Ca-dependent activation
-			+ (1 - gam_eNOS) * (g_max * flu_F_tau_w) // wss-dependent activation
-			- mu2 * state_eNOS;      // deactivation
-    du[NOj]       = V_NOj_max * state_eNOS * Oj / (K_mO2_j + Oj) * LArg / (K_mArg_j + LArg) 
+    du[eNOS]       = gam_eNOS * (K_dis * state_ca_j / (K_eNOS + state_ca_j))  // Ca-dependent activation - tick
+			+ (1 - gam_eNOS) * (g_max * flu_F_tau_w) // wss-dependent activation - tick
+			- mu2 * state_eNOS;      // deactivation - tick
+    du[NOj]       = V_NOj_max * state_eNOS * Oj / (K_mO2_j + Oj) * LArg / (K_mArg_j + LArg) // production - tick
 			- k_O2 * pow(state_NOj,2) * Oj // consumption
 			+ (state_NOi - state_NOj) / tau_ij - state_NOj * 4 * 3300 / (pow(25,2)); // diffusion, why is radius here constant?
 
