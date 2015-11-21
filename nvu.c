@@ -660,7 +660,8 @@ double K_input(double t, double x, double y) {
     //double K_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
     //double K_space =((0.5 + 0.5 *(tanh(1e5 * (x-0.0004)+1))) *(0.5 + 0.5 *(tanh(1e5 *(y-0.0004)+1))));
     double K_space;   
-    if (x<= 0){
+//    if (x<= 0){
+    if (x <= 0 && y <= 0){
         K_space = 1;
     }
     else {
@@ -709,7 +710,8 @@ double flux_ft(double t, double x, double y) {
     //double flux_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
     //double flux_space =((0.5 + 0.5 *(tanh(1e5 * (x-0.0004)+1))) *(0.5 + 0.5 *(tanh(1e5 *(y-0.0004)+1))));  
     double flux_space;   
-    if (x<= 0){
+//    if (x<= 0){
+    if (x <= 0 && y <= 0){
         flux_space = 1;
     }
     else {
@@ -771,7 +773,7 @@ void nvu_ics(double *u0, double x, double y, nvu_workspace *w) {
     u0[AMp]       = 0.25;                      //22
     u0[AM]        = 0.25;                      //23
     u0[PLC_i]     = PLC_input(300,x,y);
-    u0[K_df_i]    = K_input(105,x,y);
+    u0[K_df_i]    = K_input(205,x,y);
     u0[K_flux_i]  = flux_ft(300,x,y);
 
 // NO pathway*****************
