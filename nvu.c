@@ -395,7 +395,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     double flu_v_cpl_j, flu_c_cpl_j, flu_I_cpl_j, flu_rho_j, flu_O_j, flu_ip3_j, flu_ERuptake_j, flu_CICR_j,
     flu_extrusion_j, flu_leak_j, flu_cation_j, flu_BKCa_j, flu_SKCa_j, flu_K_j, flu_R_j, flu_degrad_j, flu_J_stretch_j; // EC fluxes
     double flu_K1_c, flu_K6_c; // Mech fluxes   
-    double flu_c_w, flu_P_NR2AO, flu_P_NR2BO, flu_openProbTerm, flu_I_Ca, flu_phi_N, flu_dphi_N, flu_N, flu_CaM, flu_W_tau_w, flu_F_tau_w, flu_k4, flu_R_NO, flu_v_Ca3, flu_R_cGMP2, flu_K2_c, flu_K5_c, flu_tau_w;    // NO pathway fluxes
+    double flu_c_w, flu_P_NR2AO, flu_P_NR2BO, flu_openProbTerm, flu_I_Ca, flu_phi_N, flu_dphi_N, flu_N, flu_CaM, flu_W_tau_w, flu_F_tau_w, flu_k4, flu_R_NO, flu_R_cGMP2, flu_K2_c, flu_K5_c, flu_tau_w;    // NO pathway fluxes
 
 // State Variables:
     state_r  = u[i_radius];
@@ -500,7 +500,6 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     flu_NaK_i		    = F_NaK;
     flu_Cl_i		    = G_Cl * (state_v_i - v_Cl);
     flu_K_i			    = G_K * state_w_i * ( state_v_i - vK_i );
-//    flu_Kactivation_i   = pow((state_ca_i + c_w),2) / ( pow((state_ca_i + c_w),2) + bet*exp(-(state_v_i - v_Ca3)/R_K) );  // see NO pathway!
     flu_degrad_i	    = k_i * state_ip3_i;
 	double P_str;
 	P_str = (p*P0 + PCAP) / 2.0 * PA2MMHG;
@@ -553,19 +552,12 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     flu_W_tau_w         = W_0 * pow((flu_tau_w + sqrt(16 * pow(delt_wss,2) + pow(flu_tau_w,2)) - 4 * delt_wss),2) / (flu_tau_w + sqrt(16 * pow(delt_wss,2) + pow(flu_tau_w,2))) ;  // - tick
     flu_F_tau_w         = 1 / (1 + alp * exp(-flu_W_tau_w)) - 1 / (1 + alp); // -(1/(1+alp)) was added to get no NO at 0 wss (!) - tick
     flu_k4              = C_4 * pow(state_cGMP,m);
-//    flu_R_cGMP1         = (pow(state_cGMP,2))/(pow(state_cGMP,2)+pow(K_m_cGMP,2));
-//    flu_R_NO            = (state_NOi/(state_NOi+K_m_NO)) ;
-//    flu_v_Ca3           = -45 * log10(state_ca_i - 0.0838) + 223.276 * flu_R_cGMP1 - 292.700 * flu_R_NO - 198.55;
-//    flu_P_O             = pow((state_ca_i + c_wi ),2)/( pow((state_ca_i + c_wi ),2) + bet_i*exp(-(state_v_i - flu_v_Ca3) / (R_Kfit)) );
-    flu_R_cGMP2         = (pow(state_cGMP,2))/(pow(state_cGMP,2)+pow(K_m_mlcp,2));
+    flu_R_cGMP2         = (pow(state_cGMP,2))/(pow(state_cGMP,2)+pow(K_m_mlcp,2)); // - tick
     flu_K2_c            = 58.1395 * k_mlcp_b + 58.1395 * k_mlcp_c * flu_R_cGMP2;  // Factor is chosen to relate two-state model of Yang2005 to Hai&Murphy model 
     flu_K5_c            = flu_K2_c;
-//    flu_kmlcp           = k_mlcp_b + k_mlcp_c * flu_R_cGMP2;
-//    flu_Kactivation_i  = 0.075*(1+tanh((state_cGMP-9.7)))+ (pow((state_ca_i + c_w ),2) / ( pow((state_ca_i + c_w),2) + bet*exp(-(state_v_i - v_Ca3)/R_K) ));
     flu_c_w             = 1e-7 / (1e-7 + 1e7 * exp(-3 * state_cGMP)); //1 / (epsilon_i + alpha_i * exp(gamma_i * cGMP));
     flu_Kactivation_i   = pow((state_ca_i + flu_c_w),2) / (pow((state_ca_i + flu_c_w),2) + bet_i * exp(-(state_v_i - v_Ca3) / R_K));
 
-    
 
 
 
