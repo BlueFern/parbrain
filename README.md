@@ -9,6 +9,7 @@ From the vasculature:
 ---------------------
 * pressure in the root vessel
 * PLC production flux 
+
 From the tissue:
 ----------------
 * neuronal K+ release/Na+ uptake - Ostby input
