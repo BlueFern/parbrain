@@ -17,7 +17,7 @@ From the tissue:
 
 How to Compile
 ==============
-Simply run *make* in the main directory.
+Simply run *make* in the main directory. Make sure "exuberant-ctags" and "libsuitesparse-dev" are installed.
 
 How to Run
 ==========
