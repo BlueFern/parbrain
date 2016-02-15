@@ -42,13 +42,13 @@ How to Build
 ------------
 In the "visualisation" directory, make and move into a subdirectory (e.g. "binToVtu.build").
 
-For out-of-source build run 
+For *out-of-source* build run 
 
 `cmake ../binToVtu`
 
 Then 
 
-'make'
+`make`
 
 `Repeat when edits to the code have been made.
 
