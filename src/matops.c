@@ -45,7 +45,7 @@ double mean(double *x, int n) {
     double nd = (double) n;
     for (i = 0; i < n; i++)
         y += x[i] / nd;
-    y = y;
+    // y = y;
     return y;
 }
 void dcopy(int n, const double *x, double *y) {

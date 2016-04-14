@@ -1,11 +1,12 @@
 #include "brain.h"
 
+//? Why is this not in a header file?
 typedef struct odews {
     workspace *W;
     csn *N; // Newton matrix numeric factorisation
     css *S; // Newton matrix sybolic factorisation
     double *y; // Workspace variable
-    double *p; // - hab ich dazugefuegt, funktioniert aber anscheinend so nicht...
+    double *p; // - hab ich dazugefuegt, funktioniert aber anscheinend so nicht... nein nein nein!@@@@!@!@!@!@
     double *q; // - hab ich dazugefuegt, funktioniert aber anscheinend so nicht...
     double *f; // Workspace variable
     double gamma;
@@ -39,7 +40,7 @@ int main(int argc, char **argv) {
     // Problem parameters
     ws->gamma  = 1e-5; // time step  1e-5
     ws->t0     = 0.;   // initial time 0
-    ws->tf     = 1000;  // final time  10
+    ws->tf     = 10;  // final time  10
     ws->ftol   = 1e-3; // function evaluation tolerance for Newton convergence 1e-3
     ws->ytol   = 1e-3; // relative error tolerance for Newton convergence 1e-3
     ws->nconv  = 5;    // Newton iteration threshold for Jacobian reevaluation 5
@@ -82,7 +83,7 @@ int main(int argc, char **argv) {
 // Fixed step Backward Euler ODE solver
 void back_euler(odews *ws) {
     // Declare and initialise additional workspace variables
-    double *beta, *w, *x;
+    double *beta, *w, *x; // arrays
     workspace *W;
     W = ws->W;
     int ny = W->nu;

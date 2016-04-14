@@ -35,7 +35,7 @@ workspace * init(int argc, char **argv) {
     init_roottree(W);               // Same, but for root tree
     set_spatial_coordinates(W);
     compute_symbchol(W);            // Precompute symbolic factorisations 
-    W->nvu = nvu_init();            // Initialise ODE parameter workspace
+    W->nvu = nvu_init();            // Initialise ODE parameter workspace //?
     W->neq = W->nvu->neq;
     W->nu  = W->neq * W->nblocks;   // no of state variables per rank
     set_conductance(W, 0, 1);       // set scaled conductances

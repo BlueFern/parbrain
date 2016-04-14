@@ -66,7 +66,8 @@ static const int K_flux_i  = 26; //!
 
 // nvu_init: this user-supplied function does any precomputation required
 // for the model
-nvu_workspace *nvu_init(void) {
+nvu_workspace *nvu_init(void)
+{
     nvu_workspace *w;
 //TODO: Sparsity patterns!
     // Specify the sparsity patterns of the equations with respect to

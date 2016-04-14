@@ -2,6 +2,7 @@
 #define BRAIN_H
 #include "matops.h"
 #include "nvu.h"
+#include <cs.h>
 #include <mpi.h>
 #include <stdio.h>
 #include <assert.h>
