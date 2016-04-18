@@ -10,19 +10,27 @@ set(CMAKE_LD_FLAGS ${CMAKE_LD_FLAGS} "-lm")
 # Add local CMake directory to CMake modules path to load project-specific modules. 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMake ${CMAKE_MODULE_PATH})
 
-# Unable to run without MPI.
 find_package(MPI REQUIRED)
 include_directories(${MPI_CXX_INCLUDE_PATH})
 
 find_package(CXSparse REQUIRED)
 include_directories(${CXSPARSE_INCLUDE_DIRS})
 
+find_package (VTK REQUIRED)
+include (${VTK_USE_FILE})
+
+
 set(HDRs src/brain.h src/matops.h src/nvu.h)
 set(SRCs src/simulate.c src/brain.c src/matops.c src/nvu.c src/adjacency.c)
 
 add_executable(parBrainSim ${SRCs} ${HDRs})
+add_executable (ConvertBinToVtu util/binToVtu/src/binToVtu.cxx)
+
 
 target_link_libraries(parBrainSim 
 	${MPI_LIBRARIES}
 	${CXSPARSE_LIBRARIES}
 	m)
+
+target_link_libraries(ConvertBinToVtu 
+	${VTK_LIBRARIES})
