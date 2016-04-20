@@ -38,9 +38,17 @@ int main(int argc, char *argv[]) {
 	char Prefix[] = "";
 //	char Prefix[] = "/hpc/home/kdo40/Frontiers_in_Physiology/parbrain/";
 //	char Prefix[] = "/power7/Frontiers_in_Physiology/parbrain/";
+//
+	if (argc != 3)
+	{
+		printf("Uh oh, spaghettio. You have not entered the correct number of arguments.\n");
+		std::cerr << "Usage: " << argv[0] << " <Data directory> <Final time>\n";
+		exit(EXIT_FAILURE);
+	}
+
 
 	char *dirName=argv[1];        // First argument: Folder name.
-	int time_fin = atoi(argv[2]); // Second argument: Final time.
+	int tf = atoi(argv[2]); // Second argument: Final time.
 
 	// Read configuration file:
 	char iSuffix[] = "/info.dat";
@@ -137,6 +145,8 @@ int main(int argc, char *argv[]) {
 			points_tb->InsertNextPoint(points_xcoord, points_ycoord, BLOCK_LENGTH);
 		}
 	}
+
+
 
 	// 1.2 H-Tree:
 	vtkSmartPointer<vtkPoints> points_tree = vtkSmartPointer<vtkPoints>::New();
@@ -261,14 +271,14 @@ int main(int argc, char *argv[]) {
 	uGrid2->SetCells(VTK_LINE, cellArray_tree); //     uGrid2->SetLines(cellArray2);
 
 	//char *var_names[] = {"radius_coupled","radius_decoupled","R_k","N_Na_k","N_K_k","N_HCO3_k","N_Cl_k","N_Na_s","N_K_s","N_HCO3_s","K_p","w_k","ca_i","ca_sr_i","v_i","w_i","ip3_i","K_i","ca_j","ca_er_j","v_j","ip3_j","Mp","AMp","AM","input_PLC","input_K_df","input_K_flux","NOi","NOj","NOn","cGMP","eNOS","nNOS","ca_n","E_b","E_6c","E_5c"};
-	char *var_names[] = {"radius_coupled","R_k","N_Na_k","N_K_k","N_HCO3_k","N_Cl_k","N_Na_s","N_K_s","N_HCO3_s","K_p","w_k","ca_i","ca_sr_i","v_i","w_i","ip3_i","K_i","ca_j","ca_er_j","v_j","ip3_j","Mp","AMp","AM","input_PLC","input_K_df","input_K_flux","NOi","NOj","NOn","cGMP","eNOS","nNOS","ca_n","E_b","E_6c","E_5c"};
+	char const *var_names[] = {"radius_coupled","R_k","N_Na_k","N_K_k","N_HCO3_k","N_Cl_k","N_Na_s","N_K_s","N_HCO3_s","K_p","w_k","ca_i","ca_sr_i","v_i","w_i","ip3_i","K_i","ca_j","ca_er_j","v_j","ip3_j","Mp","AMp","AM","input_PLC","input_K_df","input_K_flux","NOi","NOj","NOn","cGMP","eNOS","nNOS","ca_n","E_b","E_6c","E_5c"};
 
 // 4. Add binary data as attributes to cells:
 
 
     // Time step loop:
 	double time_tb, time_tree;
-	for (int i = 0; i <= time_fin; i++) {
+	for (int i = 0; i <= tf; i++) {
 		is.read((char *) &time_tb, sizeof(time_tb)); // Read time from both binary files (is not used for anything at the moment...)
 		is_flow.read((char *) &time_tree, sizeof(time_tree));
 		std::cout << "Time: " << time_tb << " \t" << time_tree << std::endl; // Print time from both files for comparison.
