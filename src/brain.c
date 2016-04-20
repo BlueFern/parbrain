@@ -35,8 +35,8 @@ workspace * init(int argc, char **argv) {
     init_roottree(W);               // Same, but for root tree
     set_spatial_coordinates(W);
     compute_symbchol(W);            // Precompute symbolic factorisations 
-    W->nvu = nvu_init();            // Initialise ODE parameter workspace //?
-    W->neq = W->nvu->neq;
+    W->nvu_w = nvu_init();            // Initialise ODE parameter workspace //?
+    W->neq = W->nvu_w->neq;
     W->nu  = W->neq * W->nblocks;   // no of state variables per rank
     set_conductance(W, 0, 1);       // set scaled conductances
     set_length(W);                  // Initialise the vessel lengths
@@ -57,7 +57,7 @@ void evaluate(workspace *W, double t, double *y, double *dy) {
         W->g[i] = pow(r, 4) / l;
     }
     // Solve for pressure and flow
-    solve(W, nvu_p0(t), W->nvu->pcap);
+    solve(W, nvu_p0(t), W->nvu_w->pcap);
     // Evaluate the right hand side equations
     rhs(W, t, y, W->p, dy);
 }
@@ -122,7 +122,8 @@ void init_parallel(workspace *W, int argc, char **argv) {
     if (argc > 2)
         W->Nsub = atoi(argv[2]); // Nsub has been specified at command line
     W->N0 = (int) round(log2((double) W->n_procs)); 
-    W->Np = W->N - W->N0; 
+    W->Np = W->N - W->N0; 		// Dependent on number of levels and number of cores running
+    //printf("NO: %d, Np: %d\n",W->N0, W->Np);
 
     /* Check that the user input etc. makes sense. This catches the two bad
      * cases of too many workers, or Nsub being too large */
@@ -284,7 +285,7 @@ void write_flow(workspace *W, double t, double *q, double *q0) {
 //    MPI_Barrier(MPI_COMM_WORLD); //Just in case, leave the barrier here. May not be necessary.
     MPI_File_set_view(W->Qoutfile, pos*sizeof(double), MPI_DOUBLE,
             MPI_DOUBLE,"native", MPI_INFO_NULL);
-    int roottreeSize = (1<<W->N0) - 1;
+    int roottreeSize = POW_OF_2(W->N0) - 1;
     if (W->rank == 0) {
         MPI_File_write(W->Qoutfile, &q0[0], roottreeSize, MPI_DOUBLE, MPI_STATUS_IGNORE);
 
@@ -335,7 +336,7 @@ void write_pressure(workspace *W, double t, double *p, double *p0) {
     
     // write data from roottree
     MPI_File_set_view(W->Poutfile, pos*sizeof(double), MPI_DOUBLE, MPI_DOUBLE,"native", MPI_INFO_NULL);
-    int roottreeSize = (1<<W->N0) - 1;
+    int roottreeSize = POW_OF_2(W->N0) - 1;
     if (W->rank == 0) {
         MPI_File_write(W->Poutfile, &p0[0], roottreeSize, MPI_DOUBLE, MPI_STATUS_IGNORE);
         
@@ -359,7 +360,7 @@ void write_info(workspace *W) {
         sprintf(infofilename, "%s%s",W->dirName,iSuffix);
 
         fp = fopen(infofilename, "w");
-        fprintf(fp, "n_processors    n_blocks        eqs_per_block   m_local         n_local         m_global        n_global\n");
+        fprintf(fp, "n_processors    n_blocks_per_rank        n_state_vars   m_local         n_local         m_global        n_global\n");
         fprintf(fp, "%-16d", W->n_procs);
         fprintf(fp, "%-16d", W->nblocks);
         fprintf(fp, "%-16d", W->neq);
@@ -401,17 +402,17 @@ void set_spatial_coordinates(workspace *W) {
 
     int m, n; // number of rows / cols of blocks globally
     // if rectangular, make it so there are more rows than columns
-    m = 1 << ((W->N - 1)/2 + (W->N - 1) %2);
-    n = 1 << ((W->N - 1)/2);
+    m = POW_OF_2((W->N - 1)/2 + (W->N - 1) %2);
+    n = POW_OF_2((W->N - 1)/2);
 
     // Work out arrangement of workers, again, if rectangular, set more
     // rows than columns
     if (W->N % 2 == 1) {
-        mg = 1 << (l2P/2);
-        ng = 1 << ((l2P/2) + l2P%2);
+        mg = POW_OF_2(l2P/2);
+        ng = POW_OF_2((l2P/2) + l2P%2);
     } else {
-        mg = 1 << ((l2P/2) + l2P%2);
-        ng = 1 << (l2P/2);
+        mg = POW_OF_2((l2P/2) + l2P%2);
+        ng = POW_OF_2(l2P/2);
     }
     
     // Work out how many rows / columns of blocks we have for each worker
@@ -448,7 +449,7 @@ int is_power_of_two (unsigned int x) {
 }
 void init_subtree(workspace *W) {
     // First construct the local subtree 
-    W->A    = adjacency(W->Np);
+    W->A    = adjacency(W->Np); // where Np = N - N0, dependent on the number of levels (N) and cores (2^N0)
     W->At   = cs_transpose(W->A, 1);
     W->G    = speye(W->A->n);
     W->g    = W->G->x;
@@ -559,7 +560,7 @@ void set_length(workspace *W) {
 }
 double compute_length(int level, int n_levels) {
     double l;
-    l = LRR * RMIN * (double) (1 << ((n_levels - level - 1)/ 2));
+    l = LRR * RMIN * (double) POW_OF_2((n_levels - level - 1)/ 2);
     return l;
 }
 double compute_radius(int level, int n_levels) {
@@ -581,7 +582,7 @@ void init_dgdx(workspace *W) {
     //function simply sets up the n * (nblocks * neq)
     cs *T; int *Ti, *Tj; double *Tx; // standard triplet matrix requirements
 
-    int neq = W->nvu->neq; // number of equations per block
+    int neq = W->nvu_w->neq; // number of equations per block
 
     // matrix is 
     T = cs_spalloc(W->A->n, neq * W->nblocks, W->nblocks, 1, 1);
@@ -599,9 +600,10 @@ void init_dpdg(workspace *W) {
     //     * compute the symbolic factorisation of A_A G A_A^T
 
     // Compute the indices B of the nodes to remove from A
-    int Nr = W->Np - W->Nsub; int m = W->A->m;
-    int B0 = (1 << (W->Np - 1)) - (1 << Nr);
-    int B1 = (1 << (W->Np - 1)) - (1 << (Nr - 1));
+    int Nr = W->Np - W->Nsub;
+    int m = W->A->m;
+    int B0 = POW_OF_2(W->Np - 1) - POW_OF_2(Nr); // ?
+    int B1 = POW_OF_2(W->Np - 1) - POW_OF_2(Nr - 1);
 
     // Construct the temporary matrix to store the projector in
     cs *T;
@@ -637,7 +639,7 @@ void init_dfdx(workspace *W) {
     int nblocks = W->nblocks;
     cs *J;
 
-    J = blkdiag(W->nvu->dfdx_pattern, nblocks, nblocks);
+    J = blkdiag(W->nvu_w->dfdx_pattern, nblocks, nblocks);
     W->dfdx = numjacinit(J);
 
     cs_spfree(J);
@@ -646,7 +648,7 @@ void init_dfdp(workspace *W) {
     // The ordering of the blocks is such that the first two see the first
     // pressure, the second two see the second, etc.
     cs *B, *J;
-    B = vertcat(W->nvu->dfdp_pattern, W->nvu->dfdp_pattern);
+    B = vertcat(W->nvu_w->dfdp_pattern, W->nvu_w->dfdp_pattern);
     J = blkdiag(B, W->nblocks / 2, W->A->m);
     W->dfdp = numjacinit(J);
     
@@ -905,14 +907,14 @@ void rhs(workspace *W, double t, double *u, double *p, double *du) {
     for (int i = 0; i < W->nblocks; i++) {
         istart = W->neq * i;
         // Evaluate the individual right hand side
-        nvu_rhs(t, W->x[i], W->y[i], p[i/2], u + istart, du + istart, W->nvu);
+        nvu_rhs(t, W->x[i], W->y[i], p[i/2], u + istart, du + istart, W->nvu_w);
     }
 }
 void set_initial_conditions(workspace *W, double *u){
     int istart;
     for (int i = 0; i < W->nblocks; i++) {
         istart = W->neq * i;
-        nvu_ics(u + istart, W->x[i], W->y[i], W->nvu);
+        nvu_ics(u + istart, W->x[i], W->y[i], W->nvu_w);
     }
 }
 

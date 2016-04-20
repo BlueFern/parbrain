@@ -4,52 +4,31 @@
 #include "matops.h"
 #include "brain.h"
 
-// OLD VERSION
-//cs *adjacency(int N) {
-//    int m = (1 << (N-1)) - 1;
-//    int n = (1 << N) - 1;
-//    int *Ti, *Tj;
-//    double *Tx;
-//
-//    cs *T, *A;
-//    T = cs_spalloc(m, n, 3*m, 1, 1);
-//    if (T == NULL) return T;
-//    Ti = T->i; Tj = T->p; Tx = T->x;
-//
-//    int k = 0;
-//    for (int i = 0; i < m; i++) {
-//        Ti[k] = i;   Ti[k+1] = i;       Ti[k+2] = i;
-//        Tj[k] = 2*i; Tj[k+1] = 2*i + 1; Tj[k+2] = m + i + 1;
-//        Tx[k] = 1.;  Tx[k+1] = 1.;      Tx[k+2] = -1.;
-//        k += 3;
-//    }
-//    T->nz = 3*m;
-//    A = cs_compress(T);
-//    cs_spfree(T);
-//    return A;
-//}
+// Structure of the H tree?
+cs * adjacency(int Np) {
+	/* Size of A matrix dependent on N (i.e. Np which is dependent on the number of cores and number of levels)
+	Np = # levels - log2 (# cores)
+	 */
 
-cs * adjacency(int N) {
     // Initialise the sparse matrix for filling
-    
     cs *A, *T;
     int *Ti, *Tj;
     double *Tx;
     int m, n;
-    m = (1 << (N-1)) - 1;
-    n = (1 << N) - 1;
+    m = POW_OF_2(Np-1) - 1; 	// number of rows
+    n = POW_OF_2(Np) - 1;		// number of cols
     T = cs_spalloc(m, n, 3*m, 1, 1);
     Ti = T->i; Tj = T->p; Tx = T->x;
 
     // Set the size of the lowest level grid
-    int ncols = 1 << ((N-1)/2); 
-    int nrows = 1 << ((N-1)/2 + (N-1)%2);
+    int ncols = POW_OF_2((Np-1)/2); 				// equivalent to 2^((Np-1)/2)
+    int nrows = POW_OF_2((Np-1)/2 + (Np-1)%2);
     
     int a, k = 0;
-    int k1, k2, row = 0, col = (1 << (N-1)); 
+    int k1, k2, row = 0, col = POW_OF_2(Np-1);
     int xbranch = 0;
-    for (int L = N - 1; L > 0; L--) {
-        a = (1 << N) - (1 << (L+1));
+    for (int L = Np - 1; L > 0; L--) {
+        a = POW_OF_2(Np) - POW_OF_2(L+1);
         //b = (1 << N) - (1 << (L  ));
         //c = (1 << N) - (1 << (L-1));
 
@@ -77,7 +56,7 @@ cs * adjacency(int N) {
             }
             nrows /= 2;
         }
-        xbranch = !xbranch;
+        xbranch = !xbranch; // switch xbranch 0 <--> 1
     } // L loop: from bottom level up to the top of the tree (internal nodes)
     T->nz = k;
     A = cs_compress(T);

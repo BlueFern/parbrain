@@ -18,6 +18,8 @@
 #define M_PI 3.14159265358979323846264338327
 #endif
 
+#define POW_OF_2(x) (1 << (x)) // macro for 2^x using bitwise shift
+
 extern const int NDEFAULT   ;
 extern const int NSUBDEFAULT;
 extern const int NSYMBOLS   ;
@@ -130,7 +132,7 @@ typedef struct workspace {
     double tjacfactorize;
 
     /* Model-specific stuff */
-    nvu_workspace   *nvu;
+    nvu_workspace   *nvu_w;
 } workspace;
 
 /* Methods for external use: essentially function evaluation and Jacobian

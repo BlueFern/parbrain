@@ -33,7 +33,7 @@ typedef struct nvu_workspace {
     cs *dfdp_pattern; // neq * 1 matrix indicating dependence on p
     cs *dfdx_pattern; // neq * neq matrix indicating Jacobian structure of nvu 
 
-    // Other NVU parameters.
+    // Other NVU parameters for radius and pressure.
     double a1, a2, a3, a4, a5;
     double b1, d1, d2, g1, g2;
     double l;
@@ -46,10 +46,10 @@ typedef struct nvu_workspace {
 nvu_workspace* nvu_init(void); //? why the *
 
 // Right hand side routine for one block
-void   nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_workspace *w);
+void   nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_workspace *nvu_w);
 
 // Tidy up routine. Free anything allocated in nvu_init here
-void  *nvu_free(nvu_workspace *w); 
+void  *nvu_free(nvu_workspace *nvu_w);
 
 // Time-varying input pressure function
 double nvu_p0(double t);
@@ -70,7 +70,7 @@ double PLC_input(double t, double x, double y);
 double factorial(int c);
 
 // Initial conditions
-void   nvu_ics(double *u0, double x, double y, nvu_workspace *w);
+void   nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w);
 
 
 #endif

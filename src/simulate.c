@@ -1,15 +1,14 @@
 #include "brain.h"
 
-//? Why is this not in a header file?
-typedef struct odews {
+typedef struct ode_workspace {
     workspace *W;
     csn *N; // Newton matrix numeric factorisation
     css *S; // Newton matrix sybolic factorisation
     double *y; // Workspace variable
-    double *p; // - hab ich dazugefuegt, funktioniert aber anscheinend so nicht... nein nein nein!@@@@!@!@!@!@
-    double *q; // - hab ich dazugefuegt, funktioniert aber anscheinend so nicht...
+    double *p; //
+    double *q; //
     double *f; // Workspace variable
-    double gamma;
+    double dt;
     double t0;
     double tf;
     double ftol;
@@ -18,62 +17,62 @@ typedef struct odews {
     int    nconv;
     int mdeclared;
     double dtwrite;
-} odews;
+} ode_workspace;
 
 // prototypes
-void newton_matrix(odews *ws);
-int lusoln(odews *ws, double *b);
+void newton_matrix(ode_workspace *odews);
+int lusoln(ode_workspace *odews, double *b);
 css * newton_sparsity(cs *J);
 int sizecheck(double *x, int n, double tol);
-void back_euler(odews *ws);
-void solver_init(odews *ws, int argc, char **argv);
-void free_var(odews *ws); //free remaining variables
+void back_euler(ode_workspace *odews);
+void solver_init(ode_workspace *odews, int argc, char **argv);
+void free_var(ode_workspace *odews); //free remaining variables
 
 // Main simulation program 
 int main(int argc, char **argv) {
     // Initialisation step. Construct and initialise the ODE workspace
-    odews *ws;
-    MPI_Init(&argc, &argv);
-    ws = malloc(sizeof *ws);
+    ode_workspace *odews;
+    MPI_Init(&argc, &argv);			// initialise MPI
+    odews = malloc(sizeof *odews); 	// allocate memory
     int verbose = 1;
 
     // Problem parameters
-    ws->gamma  = 1e-5; // time step  1e-5
-    ws->t0     = 0.;   // initial time 0
-    ws->tf     = 10;  // final time  10
-    ws->ftol   = 1e-3; // function evaluation tolerance for Newton convergence 1e-3
-    ws->ytol   = 1e-3; // relative error tolerance for Newton convergence 1e-3
-    ws->nconv  = 5;    // Newton iteration threshold for Jacobian reevaluation 5
-    ws->maxits = 100;   // Maximum number of Newton iterations 100
-    ws->dtwrite = 1; // Time step for writing to file (and screen)
+    odews->dt  = 1e-5; // time step  1e-5
+    odews->t0     = 0.;   // initial time 0
+    odews->tf     = 10;  // final time  10
+    odews->ftol   = 1e-3; // function evaluation tolerance for Newton convergence 1e-3
+    odews->ytol   = 1e-3; // relative error tolerance for Newton convergence 1e-3
+    odews->nconv  = 5;    // Newton iteration threshold for Jacobian reevaluation 5
+    odews->maxits = 100;   // Maximum number of Newton iterations 100
+    odews->dtwrite = 1; // Time step for writing to file (and screen)
 
     // Initialise the solver with all the bits and pieces
-    solver_init(ws, argc, argv);
+    solver_init(odews, argc, argv);
 
     // Begin computation. t0 and tf just measure elapsed simulation time
     double t0 = MPI_Wtime();
-    back_euler(ws); // All of the simulation occurs in here
+    back_euler(odews); // All of the simulation occurs in here
     double tf = MPI_Wtime();
 
-    ws->W->ntimestamps = (ws->tf-ws->t0)/ws->gamma;
+    odews->W->ntimestamps = (odews->tf-odews->t0)/odews->dt;
 
     // Display diagnostics
-    if (ws->W->rank == 0) {
+    if (odews->W->rank == 0) {
         if (verbose) {
-            printf("Levels: %d Subtree size: %d N procs: %d\n", ws->W->N, ws->W->Nsub, ws->W->n_procs);
+            printf("Levels: %d Subtree size: %d N procs: %d\n", odews->W->N, odews->W->Nsub, odews->W->n_procs);
             printf("Solution time:                %g seconds\n", tf - t0);
-            printf("    # fevals:                 %d\n", ws->W->fevals);
-            printf("    # Jacobians:              %d\n", ws->W->jacupdates);
-            printf("    # feval time:             %g seconds\n", ws->W->tfeval);
-            printf("    # Jacobian update time:   %g seconds\n", ws->W->tjacupdate);
-            printf("    # Jacobian symbolic time: %g seconds\n", ws->W->tjacfactorize);
+            printf("    # fevals:                 %d\n", odews->W->fevals);
+            printf("    # Jacobians:              %d\n", odews->W->jacupdates);
+            printf("    # feval time:             %g seconds\n", odews->W->tfeval);
+            printf("    # Jacobian update time:   %g seconds\n", odews->W->tjacupdate);
+            printf("    # Jacobian symbolic time: %g seconds\n", odews->W->tjacfactorize);
         } else {
-            printf("%4d%4d%4d%12.4e%4d%4d%12.4e%12.4e%12.4e\n", ws->W->N, ws->W->Nsub, ws->W->n_procs, tf - t0, ws->W->fevals, ws->W->jacupdates, ws->W->tfeval, ws->W->tjacupdate, ws->W->tjacfactorize);
+            printf("%4d%4d%4d%12.4e%4d%4d%12.4e%12.4e%12.4e\n", odews->W->N, odews->W->Nsub, odews->W->n_procs, tf - t0, odews->W->fevals, odews->W->jacupdates, odews->W->tfeval, odews->W->tjacupdate, odews->W->tjacfactorize);
         }
     }
     // And clean up
-    close_io(ws->W);
-    free_var(ws);
+    close_io(odews->W);
+    free_var(odews);
 
     MPI_Finalize();
     return 0;
@@ -81,68 +80,68 @@ int main(int argc, char **argv) {
 
 
 // Fixed step Backward Euler ODE solver
-void back_euler(odews *ws) {
+void back_euler(ode_workspace *odews) {
     // Declare and initialise additional workspace variables
     double *beta, *w, *x; // arrays
     workspace *W;
-    W = ws->W;
+    W = odews->W;
     int ny = W->nu;
     beta = zerosv(ny);
     w    = zerosv(ny);
     x    = zerosv(ny);
 
-    double t = ws->t0;
+    double t = odews->t0;
     double tnext;
 
     // Initial newton_matrix computation
-    newton_matrix(ws);
+    newton_matrix(odews);
     int jac_needed = 0; // flag to say that Jacobian is current
 
     int converged = 0;
-    write_data(W, t, ws->y); // Write initial data to file
+    write_data(W, t, odews->y); // Write initial data to file
     write_flow(W, t, W->q, W->q0);
     write_pressure(W, t, W->p, W->p0);
     MPI_Barrier(MPI_COMM_WORLD);
 
-    for (int i = 0; t < ws->tf; i++) {
+    for (int i = 0; t < odews->tf; i++) {
         // Perform a Jacobian update if necessary. This is in sync across
         // all processors
         if (jac_needed) {
-            jacupdate(W, t, ws->y); 
+            jacupdate(W, t, odews->y);
             jac_needed = 0;
-            newton_matrix(ws);
+            newton_matrix(odews);
         }
 
         // Copy values from previous completed timestep
-        dcopy(ny, ws->y, beta);
-        dcopy(ny, ws->y, w);
-        tnext = t + ws->gamma;
+        dcopy(ny, odews->y, beta);
+        dcopy(ny, odews->y, w);
+        tnext = t + odews->dt;
 
         // Indicate that we haven't converged yet
         W->flag[W->rank] = 0;
         converged = 0;
-        for (int k = 0; k < ws->maxits; k++) {  //
-            evaluate(W, tnext, w, ws->f); // f = g(w)
+        for (int k = 0; k < odews->maxits; k++) {  //
+            evaluate(W, tnext, w, odews->f); // f = g(w)
 
             // evaluate also exchanges convergence information. If everyone
             // has converged, then we can stop. Everyone likewise gets the
             // request for Jacobian update
             if (all(W->flag, W->n_procs)) {
                 converged = 1;
-                if (k > ws->nconv)
+                if (k > odews->nconv)
                     jac_needed = 1;
                 break; // w contains the correct value 
             }
-            // Form x = w - beta - gamma g (our fcn value for Newton)
+            // Form x = w - beta - dt g (our fcn value for Newton)
             dcopy(ny, w, x);
             daxpy(ny, -1, beta, x);
-            daxpy(ny, -ws->gamma, ws->f, x);
+            daxpy(ny, -odews->dt, odews->f, x);
             for (int la = 0; la < 27; la++) {
 		//printf("iteration %d, state variable %2d - x: %e w: %e\n", k, la, x[la], w[la] );
 	    } // TEST x[0] = radius etc. - w is the state var value, x is passed on to Newton
-            W->flag[W->rank] = sizecheck(x, ny, ws->ftol); // function value size check
-            lusoln(ws, x);  // solve (x is now increment)
-            W->flag[W->rank] |= sizecheck(x, ny, ws->ytol); // increment size check
+            W->flag[W->rank] = sizecheck(x, ny, odews->ftol); // function value size check
+            lusoln(odews, x);  // solve (x is now increment)
+            W->flag[W->rank] |= sizecheck(x, ny, odews->ytol); // increment size check
             daxpy(ny, -1, x, w); // update w with new value
         } // Newton loop
         if (!converged) {
@@ -150,9 +149,9 @@ void back_euler(odews *ws) {
             exit(1);
         }
         t = tnext;
-        dcopy(ny, w, ws->y); // update y values
-        if (fmod(t, ws->dtwrite) < ws->gamma) {
-            write_data(W, t, ws->y); 
+        dcopy(ny, w, odews->y); // update y values
+        if (fmod(t, odews->dtwrite) < odews->dt) {
+            write_data(W, t, odews->y);
             write_flow(W, t, W->q, W->q0);
             write_pressure(W, t, W->p, W->p0);
             if (W->rank == 0)
@@ -164,32 +163,32 @@ void back_euler(odews *ws) {
     free(x); 
     free(beta);
 }
-void solver_init(odews *ws, int argc, char **argv) {
+void solver_init(ode_workspace *odews, int argc, char **argv) {
     workspace *W;
 
     // Initialise the workspace
-    ws->W = init(argc, argv); W = ws->W;
-    ws->mdeclared = 0;
+    odews->W = init(argc, argv); W = odews->W;
+    odews->mdeclared = 0;
 
     // Put initial conditions in to y
-    ws->y = zerosv(W->nu);
-    ws->f = zerosv(W->nu);
-    set_initial_conditions(W, ws->y);
+    odews->y = zerosv(W->nu);
+    odews->f = zerosv(W->nu);
+    set_initial_conditions(W, odews->y);
 
     // Initial Jacobian computation
     double t0 = MPI_Wtime();
-    evaluate(W, ws->t0, ws->y, ws->f);
+    evaluate(W, odews->t0, odews->y, odews->f);
     double tf = MPI_Wtime();
-    ws->W->tfeval = tf - t0;
+    odews->W->tfeval = tf - t0;
     t0 = MPI_Wtime();
-    jacupdate(W, ws->t0, ws->y);
+    jacupdate(W, odews->t0, odews->y);
     double ta = MPI_Wtime();
-    ws->S = newton_sparsity(W->J);
+    odews->S = newton_sparsity(W->J);
     double tb = MPI_Wtime();
-    newton_matrix(ws);
+    newton_matrix(odews);
     tf = MPI_Wtime();
-    ws->W->tjacupdate = (tf - t0) - (tb - ta);
-    ws->W->tjacfactorize = (tb - ta);
+    odews->W->tjacupdate = (tf - t0) - (tb - ta);
+    odews->W->tjacfactorize = (tb - ta);
 }
 int sizecheck(double *x, int n, double tol) { // n - no of equ total (nblocks*nequs)
     int smallenough = 1;
@@ -253,91 +252,91 @@ css * newton_sparsity(cs *J) {
     S = cs_sqr(order, J, 0); // 0 means we're doing LU and not QR
     return S;
 }
-void newton_matrix(odews *ws) {
+void newton_matrix(ode_workspace *odews) {
     // Create a Newton matrix from the given step gamma and Jacobian in W
     cs *M, *eye;
-    if (ws->mdeclared)
-        cs_nfree(ws->N);
+    if (odews->mdeclared)
+        cs_nfree(odews->N);
     else
-        ws->mdeclared = 1;
+        odews->mdeclared = 1;
 
-    eye = speye(ws->W->J->m);
-    M = cs_add(eye, ws->W->J, 1, -ws->gamma);
+    eye = speye(odews->W->J->m);
+    M = cs_add(eye, odews->W->J, 1, -odews->dt);
     cs_spfree(eye);
 
-    ws->N = cs_lu(M, ws->S, 1);
+    odews->N = cs_lu(M, odews->S, 1);
     cs_spfree(M);
 }
-int lusoln(odews *ws, double *b) {
+int lusoln(ode_workspace *odews, double *b) {
     // Can only be called if newton_matrix has been called already 
     double *x;
-    int n = ws->W->J->n;
+    int n = odews->W->J->n;
     x = cs_malloc (n, sizeof (*x));
-    int ok = ws->S && ws->N && x;
+    int ok = odews->S && odews->N && x;
     if (ok) {
-        cs_ipvec(ws->N->pinv, b, x, n);
-        cs_lsolve(ws->N->L, x);
-        cs_usolve(ws->N->U, x);
-        cs_ipvec(ws->S->q, x, b, n);
+        cs_ipvec(odews->N->pinv, b, x, n);
+        cs_lsolve(odews->N->L, x);
+        cs_usolve(odews->N->U, x);
+        cs_ipvec(odews->S->q, x, b, n);
     }
     cs_free (x);
     return ok;
 }
-void free_var(odews *ws){
+void free_var(ode_workspace *odews){
 
-    if (ws->W->buf != NULL) free(ws->W->buf);
-    if (ws->W->flag != NULL) free(ws->W->flag);
-    if (ws->W->level != NULL) free(ws->W->level);
-    if (ws->W->l != NULL) free(ws->W->l);
-    if (ws->W->x != NULL) free(ws->W->x);
-    if (ws->W->y != NULL) free(ws->W->y);
-    if (ws->W->b != NULL) free(ws->W->b);
-    if (ws->W->u != NULL) free(ws->W->u);
-    if (ws->W->v != NULL) free(ws->W->v);
-    if (ws->W->p != NULL) free(ws->W->p);
-    if (ws->W->q != NULL) free(ws->W->q);
-    if (ws->W->w != NULL) free(ws->W->w);
-    if (ws->W->ucomm != NULL) free(ws->W->ucomm);
-    if (ws->W->vcomm != NULL) free(ws->W->vcomm);
-    if (ws->W->gcomm != NULL) free(ws->W->gcomm);
-    if (ws->W->xn != NULL) free(ws->W->xn);
-    if (ws->W->xm != NULL) free(ws->W->xm);
-    if (ws->W->level0 != NULL) free(ws->W->level0);
-    if (ws->W->b0 != NULL) free(ws->W->b0);
-    if (ws->W->p0 != NULL) free(ws->W->p0);
-    if (ws->W->q0 != NULL) free(ws->W->q0);
-    if (ws->W->xn0 != NULL) free(ws->W->xn0);
-    if (ws->W->J != NULL) cs_spfree(ws->W->J);
-    if (ws->W->dfdx->r != NULL) free(ws->W->dfdx->r);		
-    if (ws->W->dfdx->g != NULL) free(ws->W->dfdx->g);		
-    if (ws->W->dfdx->A != NULL) cs_spfree(ws->W->dfdx->A);		
-    if (ws->W->dfdx != NULL) free(ws->W->dfdx);	
-    if (ws->W->A != NULL) cs_spfree(ws->W->A);
-    if (ws->W->At != NULL) cs_spfree(ws->W->At);
-    if (ws->W->A_A != NULL) cs_spfree(ws->W->A_A);
-    if (ws->W->A_At != NULL) cs_spfree(ws->W->A_At);
-    if (ws->W->dpdgneg != NULL) cs_spfree(ws->W->dpdgneg);		
-    if (ws->W->dfdp->r != NULL) free(ws->W->dfdp->r);		
-    if (ws->W->dfdp->g != NULL) free(ws->W->dfdp->g);
-    if (ws->W->dfdp->A != NULL) cs_spfree(ws->W->dfdp->A);
-    if (ws->W->dfdp != NULL) free(ws->W->dfdp);
-    if (ws->W->G != NULL) cs_spfree(ws->W->G);
-    if (ws->W->dgdx != NULL) cs_spfree(ws->W->dgdx);
-    if (ws->W->Proj != NULL) cs_spfree(ws->W->Proj);
-    if (ws->W->symbchol != NULL) cs_sfree(ws->W->symbchol); 
-    if (ws->W->symbchol_reduced != NULL) cs_sfree(ws->W->symbchol_reduced);
-    if (ws->W->nvu->dfdx_pattern != NULL) cs_spfree(ws->W->nvu->dfdx_pattern);
-    if (ws->W->nvu->dfdp_pattern != NULL) cs_spfree(ws->W->nvu->dfdp_pattern);
-    if (ws->W->nvu != NULL) free(ws->W->nvu);
-    if (ws->W->symbchol0 != NULL) cs_sfree(ws->W->symbchol0);	
-    if (ws->W->G0 != NULL) cs_spfree(ws->W->G0);
-    if (ws->W->A0 != NULL) cs_spfree(ws->W->A0);
-    if (ws->W->A0t != NULL) cs_spfree(ws->W->A0t);
+    if (odews->W->buf != NULL) free(odews->W->buf);
+    if (odews->W->flag != NULL) free(odews->W->flag);
+    if (odews->W->level != NULL) free(odews->W->level);
+    if (odews->W->l != NULL) free(odews->W->l);
+    if (odews->W->x != NULL) free(odews->W->x);
+    if (odews->W->y != NULL) free(odews->W->y);
+    if (odews->W->b != NULL) free(odews->W->b);
+    if (odews->W->u != NULL) free(odews->W->u);
+    if (odews->W->v != NULL) free(odews->W->v);
+    if (odews->W->p != NULL) free(odews->W->p);
+    if (odews->W->q != NULL) free(odews->W->q);
+    if (odews->W->w != NULL) free(odews->W->w);
+    if (odews->W->ucomm != NULL) free(odews->W->ucomm);
+    if (odews->W->vcomm != NULL) free(odews->W->vcomm);
+    if (odews->W->gcomm != NULL) free(odews->W->gcomm);
+    if (odews->W->xn != NULL) free(odews->W->xn);
+    if (odews->W->xm != NULL) free(odews->W->xm);
+    if (odews->W->level0 != NULL) free(odews->W->level0);
+    if (odews->W->b0 != NULL) free(odews->W->b0);
+    if (odews->W->p0 != NULL) free(odews->W->p0);
+    if (odews->W->q0 != NULL) free(odews->W->q0);
+    if (odews->W->xn0 != NULL) free(odews->W->xn0);
+    if (odews->W->J != NULL) cs_spfree(odews->W->J);
+    if (odews->W->dfdx->r != NULL) free(odews->W->dfdx->r);
+    if (odews->W->dfdx->g != NULL) free(odews->W->dfdx->g);
+    if (odews->W->dfdx->A != NULL) cs_spfree(odews->W->dfdx->A);
+    if (odews->W->dfdx != NULL) free(odews->W->dfdx);
+    if (odews->W->A != NULL) cs_spfree(odews->W->A);
+    if (odews->W->At != NULL) cs_spfree(odews->W->At);
+    if (odews->W->A_A != NULL) cs_spfree(odews->W->A_A);
+    if (odews->W->A_At != NULL) cs_spfree(odews->W->A_At);
+    if (odews->W->dpdgneg != NULL) cs_spfree(odews->W->dpdgneg);
+    if (odews->W->dfdp->r != NULL) free(odews->W->dfdp->r);
+    if (odews->W->dfdp->g != NULL) free(odews->W->dfdp->g);
+    if (odews->W->dfdp->A != NULL) cs_spfree(odews->W->dfdp->A);
+    if (odews->W->dfdp != NULL) free(odews->W->dfdp);
+    if (odews->W->G != NULL) cs_spfree(odews->W->G);
+    if (odews->W->dgdx != NULL) cs_spfree(odews->W->dgdx);
+    if (odews->W->Proj != NULL) cs_spfree(odews->W->Proj);
+    if (odews->W->symbchol != NULL) cs_sfree(odews->W->symbchol);
+    if (odews->W->symbchol_reduced != NULL) cs_sfree(odews->W->symbchol_reduced);
+    if (odews->W->nvu_w->dfdx_pattern != NULL) cs_spfree(odews->W->nvu_w->dfdx_pattern);
+    if (odews->W->nvu_w->dfdp_pattern != NULL) cs_spfree(odews->W->nvu_w->dfdp_pattern);
+    if (odews->W->nvu_w != NULL) free(odews->W->nvu_w);
+    if (odews->W->symbchol0 != NULL) cs_sfree(odews->W->symbchol0);
+    if (odews->W->G0 != NULL) cs_spfree(odews->W->G0);
+    if (odews->W->A0 != NULL) cs_spfree(odews->W->A0);
+    if (odews->W->A0t != NULL) cs_spfree(odews->W->A0t);
 
-    if (ws->W != NULL) free(ws->W);
-    if (ws->N != NULL) cs_nfree(ws->N);
-    if (ws->y != NULL) free(ws->y);
-    if (ws->f != NULL) free(ws->f);
+    if (odews->W != NULL) free(odews->W);
+    if (odews->N != NULL) cs_nfree(odews->N);
+    if (odews->y != NULL) free(odews->y);
+    if (odews->f != NULL) free(odews->f);
 }
 
 

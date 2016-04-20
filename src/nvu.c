@@ -4,7 +4,7 @@
 #include "nvu.h"
 #include <math.h>
 
-// Constants
+// Pressure constants
 static const double HRR        = 0.1   ;  // Nondimensional (thickness to radius ratio)
 static const double RSCALE     = 0.6   ;  // Dimensionless
 static const double E0         = 66e3  ;  // Pa
@@ -14,6 +14,7 @@ static const double ETA        = 2.8e2 ;  // Pa s
 static const double T0         = 1     ;  // s
 static const double PA2MMHG    = 0.00750061683;
 
+// State variable indexing
 static const int i_radius  = 0; // radius has to be 0, this is assumed elsewhere
 // AC
 static const int R_k       = 1;
@@ -68,7 +69,7 @@ static const int K_flux_i  = 26; //!
 // for the model
 nvu_workspace *nvu_init(void)
 {
-    nvu_workspace *w;
+    nvu_workspace *nvu_w;
 //TODO: Sparsity patterns!
     // Specify the sparsity patterns of the equations with respect to
     // pressure and state variables here. An equation is considered to be
@@ -106,8 +107,8 @@ nvu_workspace *nvu_init(void)
 						  
 
     // Initialise the workspace
-    w = malloc(sizeof *w);
-    w->neq = 27;  // TODO: make sure you have the right no of DEs!
+    nvu_w = malloc(sizeof *nvu_w);
+    nvu_w->neq = 27;  // TODO: make sure you have the right no of DEs!
 
     // Construct sparse matrices containing the sparsity patterns
     // TODO: modify dense2sparse so we can just use two calls to that,
@@ -116,44 +117,44 @@ nvu_workspace *nvu_init(void)
     // If you just define the integer arrays dfdp_pattern and dfdx_pattern
     // as above, you can leave the following two blocks as they are.
     cs *T;
-    T = cs_spalloc(w->neq, 1, 1, 1, 1);
-    for (int i = 0; i < w->neq; i++) {
+    T = cs_spalloc(nvu_w->neq, 1, 1, 1, 1);
+    for (int i = 0; i < nvu_w->neq; i++) {
         if (dfdp_pattern[i])
             cs_entry(T, i, 0, 1.);
     }
-    w->dfdp_pattern = cs_compress(T);
+    nvu_w->dfdp_pattern = cs_compress(T);
     cs_spfree(T);
 
-    T = cs_spalloc(w->neq, w->neq, 1, 1, 1);
-    for (int j = 0; j < w->neq; j++) {
-        for (int i = 0; i < w->neq; i++) {
-            if (dfdx_pattern[w->neq*j + i])
+    T = cs_spalloc(nvu_w->neq, nvu_w->neq, 1, 1, 1);
+    for (int j = 0; j < nvu_w->neq; j++) {
+        for (int i = 0; i < nvu_w->neq; i++) {
+            if (dfdx_pattern[nvu_w->neq*j + i])
                 cs_entry(T, i, j, 1.);
         }
     }
-    w->dfdx_pattern = cs_compress(T);
+    nvu_w->dfdx_pattern = cs_compress(T);
     cs_spfree(T);
 
-
+    // Allocate other nvu workspace parameters
     double Rstar = R0;
     double hstar = HRR * Rstar;
-    w->a1 = E0 * T0 * Rstar / (ETA * R0);
-    w->a2 = P0 * Rstar * T0 / (ETA * hstar);
-    w->a3 = Rstar / R0;
-    w->a4 = 1 - RSCALE;
-    w->a5 = EACTIVE / EPASSIVE - 1;
-    w->pcap  = PCAP / P0;
-    w->l  = 1; // normalised away
+    nvu_w->a1 = E0 * T0 * Rstar / (ETA * R0);
+    nvu_w->a2 = P0 * Rstar * T0 / (ETA * hstar);
+    nvu_w->a3 = Rstar / R0;
+    nvu_w->a4 = 1 - RSCALE;
+    nvu_w->a5 = EACTIVE / EPASSIVE - 1;
+    nvu_w->pcap  = PCAP / P0;
+    nvu_w->l  = 1; // normalised away
 
-    return w;
+    return nvu_w;
 }
 // This frees the nvu_workspace structure. If you have allocated any memory
 // within this struct, here is where you free it
-void *nvu_free(nvu_workspace *w) {
-    cs_spfree(w->dfdp_pattern);
-    cs_spfree(w->dfdx_pattern);
-    free(w);
-    return w;
+void *nvu_free(nvu_workspace *nvu_w) {
+    cs_spfree(nvu_w->dfdp_pattern);
+    cs_spfree(nvu_w->dfdx_pattern);
+    free(nvu_w);
+    return nvu_w;
 }
 
 // right hand side evaluation function. 
@@ -162,7 +163,7 @@ void *nvu_free(nvu_workspace *w) {
 //      p       the pressure at the top of the vessel, 
 //      u       state variables, the first of which is the vessel radius
 //      du      output vector, in the same order (already allocated)
-void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_workspace *w) {
+void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_workspace *nvu_w) {
 // general constants:
 	const double Farad       = 96500         ;// [C mol-1]      Faradays constant
 	const double R_gas       = 8.315         ;// [J mol-1K-1]
@@ -200,7 +201,6 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     const double g_BK_k      = G_BK_k * 1e-12 / A_ef_k ;// ohm-1m-2  Specific capacitance of the BK-Channel in units of Ostby
     const double VR_pa       = 0.001       ; // [-]       The estimated volume ratio of perivascular space to astrocyte: Model estimation
     const double VR_ps       = 0.001       ; // [-]       The estimated volume ratio of perivascular space to SMC: Model Estimation
-
 
 // SMC constants:
     const double F_il = 7.5e2            ;//[-] scalingsfactor to fit the experimental data of Filosa
@@ -249,8 +249,6 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     const double Esac        = -18;          // mV
     const double alpha1      = 0.0074;
     const double sig0        = 500;
-
-
 
 // EC constants:
     const double Fmax_j		= 0.23;		// [microM/s]
@@ -359,9 +357,10 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 //    const double tau_w       = 1; // will be dynamic later
 
 
-    double state_r, f; //, cb, ct;
-    double pt, e, r0, q, g;
+    double state_r, f; //r: radius, f: AM + AMp
+    double pt, e, r0, q, g; // pressure stuff
 
+    // Initialise state variables
     double state_R_k,   state_N_Na_k, state_N_K_k, state_N_HCO3_k, state_N_Cl_k, state_N_Na_s, state_N_K_s, state_N_HCO3_s, state_K_p, state_w_k; // AC state
     double state_ca_i, state_ca_sr_i, state_v_i, state_w_i, state_ip3_i, state_K_i; // SMC state
     double state_ca_j, state_ca_er_j, state_v_j, state_ip3_j; // EC state
@@ -369,7 +368,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     double state_PLC_i, state_K_df_i, state_K_flux_i; // input
 //    double state_ca_n, state_nNOS, state_NOn, state_NOi, state_E_b, state_E_6c, state_E_5c, state_cGMP, state_eNOS, state_NOj; // NO pathway state
 
-
+    // Fluxes
     double flu_R_s, flu_N_Cl_s, flu_Na_k, flu_K_k, flu_HCO3_k, flu_Cl_k, flu_Na_s, flu_K_s, flu_HCO3_s, flu_Cl_s, flu_E_Na_k, flu_E_K_k, flu_E_Cl_k, flu_E_NBC_k, flu_E_BK_k, flu_J_NaK_k, flu_v_k, flu_J_KCC1_k, flu_J_NBC_k, flu_J_NKCC1_k, flu_J_Na_k, flu_J_K_k, flu_J_BK_k, flu_w_inf, flu_phi_w; // AC fluxes
     double flu_M, flu_E_K_i, flu_h_r, flu_v_cpl_i, flu_c_cpl_i, flu_I_cpl_i, flu_rho_i, flu_ip3_i, flu_SRuptake_i,
     flu_CICR_i, flu_extrusion_i, flu_leak_i, flu_VOCC_i, flu_NaCa_i, flu_NaK_i, flu_Cl_i, flu_K_i, flu_Kactivation_i,
@@ -377,6 +376,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     double flu_v_cpl_j, flu_c_cpl_j, flu_I_cpl_j, flu_rho_j, flu_O_j, flu_ip3_j, flu_ERuptake_j, flu_CICR_j,
     flu_extrusion_j, flu_leak_j, flu_cation_j, flu_BKCa_j, flu_SKCa_j, flu_K_j, flu_R_j, flu_degrad_j, flu_J_stretch_j; // EC fluxes
     double flu_K1_c, flu_K6_c; // Mech fluxes   
+    double P_str;
 //    double flu_P_NR2AO, flu_P_NR2BO, flu_openProbTerm, flu_I_Ca, flu_phi_N, flu_dphi_N, flu_N, flu_CaM, flu_W_tau_w, flu_F_tau_w, flu_k4, flu_R_cGMP1, flu_R_NO, flu_v_Ca3, flu_P_O, flu_R_cGMP2, flu_K2_c, flu_K5_c, flu_kmlcp;    // NO pathway fluxes
 
 // State Variables:
@@ -399,7 +399,6 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     state_N_HCO3_s= u[N_HCO3_s];
     state_K_p     = u[K_p];
     state_w_k     = u[w_k];
-
 
     state_ca_j    = u[ca_j];
     state_ca_er_j = u[ca_er_j];
@@ -429,12 +428,12 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 
 // Fluxes:
     f = state_AMp + state_AM;
-    g  = pow(state_r, 4) / w->l;
-    // pressure:
-    pt = 0.5 * (p + w->pcap);
-    q  = (p - w->pcap) * g; //brauchen wir das noch?
-    e  = 1. + w->a5 * f;
-    r0 = w->a3 * (1. - w->a4 * f);
+    g  = pow(state_r, 4) / nvu_w->l; // ?
+    // pressure (TODO: find these equations and rename the variables):
+    pt = 0.5 * (p + nvu_w->pcap);
+    q  = (p - nvu_w->pcap) * g;
+    e  = 1. + nvu_w->a5 * f;
+    r0 = nvu_w->a3 * (1. - nvu_w->a4 * f);
     // AC fluxes
     flu_R_s            = R_tot - state_R_k;                            //
     flu_N_Cl_s         = state_N_Na_s + state_N_K_s - state_N_HCO3_s;  //
@@ -483,7 +482,6 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     flu_K_i			    = G_K * state_w_i * ( state_v_i - vK_i );
     flu_Kactivation_i   = pow((state_ca_i + c_w),2) / ( pow((state_ca_i + c_w),2) + bet*exp(-(state_v_i - v_Ca3)/R_K) );  // see NO pathway!
     flu_degrad_i	    = k_i * state_ip3_i;
-	double P_str;
 	P_str = (p*P0 + PCAP) / 2.0 * PA2MMHG;
     flu_J_stretch_i     = G_stretch/(1+exp(-alpha1*(P_str*state_r / flu_h_r - sig0))) * (state_v_i - Esac); 
 
@@ -491,8 +489,6 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     flu_G_KIR_i    = exp( z_5 * state_v_i + z_3 * state_K_p / unitcon + z_4 );        // pS pF-1 =s-1  state_v_i, state_K_p
     flu_J_KIR_i    = F_il/gam * (flu_G_KIR_i) * (state_v_i-(flu_v_KIR_i));            // mV s-1 //     state_v_i, state_K_p
     
-
-
     // EC fluxes
     flu_v_cpl_j		= - g_hat * ( state_v_j - state_v_i );
     flu_c_cpl_j		= - p_hat * ( state_ca_j - state_ca_i );
@@ -504,16 +500,12 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     flu_CICR_j			= C_j *  ( pow(state_ca_er_j,2) ) / ( pow(sc_j,2) + pow(state_ca_er_j,2) ) *  ( pow(state_ca_j,4) ) / ( pow(cc_j,4) + pow(state_ca_j,4) );
     flu_extrusion_j     = D_j * state_ca_j;
     flu_leak_j          = L_j * state_ca_er_j;
-
     flu_cation_j 	= G_cat * ( E_Ca - state_v_j) * 0.5 * ( 1 + tanh( ( log10( state_ca_j ) - m3cat )  /  m4cat  ) );
-
     flu_BKCa_j 		= 0.2 * ( 1 + tanh( ( (  log10(state_ca_j) - c) * ( state_v_j - b ) - a1 ) / ( m3b* pow(( state_v_j + a2 * ( log10( state_ca_j ) - c ) - b),2) + m4b ) ) );
-
     flu_SKCa_j 		= 0.3 * ( 1 + tanh( ( log10(state_ca_j) - m3s ) /  m4s ));
     flu_K_j 		= G_tot * ( state_v_j - vK_j ) * ( flu_BKCa_j + flu_SKCa_j ); // Reihenfolge!!
     flu_R_j 		= G_R * ( state_v_j - v_rest);
     flu_degrad_j 	= k_j * state_ip3_j;
-
     flu_J_stretch_j       = G_stretch / (1 + exp(-alpha1*(P_str * state_r / flu_h_r - sig0))) * (state_v_j - Esac);
 
 // Mech fluxes
@@ -545,11 +537,8 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 //   flu_kmlcp          = k_mlcp_b + k_mlcp_c * flu_R_cGMP2;
 //   flu_Kactivation_i  = 0.075*(1+tanh((state_cGMP-9.7)))+ (pow((state_ca_i + c_w ),2) / ( pow((state_ca_i + c_w),2) + bet*exp(-(state_v_i - v_Ca3)/R_K) ));
 
-
-
-
 // Differential Equations:
-    du[i_radius]  = -w->a1 * e * (state_r / r0 - 1.) + w->a2 * state_r * pt; //Radius (non-dimensional!)
+    du[i_radius]  = -nvu_w->a1 * e * (state_r / r0 - 1.) + nvu_w->a2 * state_r * pt; //Radius (non-dimensional!)
 
     //AC:
     du[ R_k     ] = L_p * (flu_Na_k + flu_K_k + flu_Cl_k + flu_HCO3_k - flu_Na_s - flu_K_s - flu_Cl_s - flu_HCO3_s + X_k / state_R_k);  // m s-1
@@ -557,10 +546,10 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     du[ N_K_k   ] = -flu_J_K_k + 2 * flu_J_NaK_k + flu_J_NKCC1_k + flu_J_KCC1_k -flu_J_BK_k; // uMm s-1
     du[ N_HCO3_k] = 2 * flu_J_NBC_k;                                                // uMm s-1
     du[ N_Cl_k  ] = du[ N_Na_k] + du[ N_K_k] - du[ N_HCO3_k];                       // uMm s-1, modified equation compared to the one of Ostby  //
-    	du[ N_Na_s  ] = - k_C * K_input(t,x,y) - du[ N_Na_k];                                        // uMm s-1
-    	du[ N_K_s   ] = k_C * K_input(t,x,y) - du[ N_K_k] - flu_J_BK_k;                 // uMm s-1
+    du[ N_Na_s  ] = - k_C * K_input(t,x,y) - du[ N_Na_k];                                        // uMm s-1
+    du[ N_K_s   ] = k_C * K_input(t,x,y) - du[ N_K_k] - flu_J_BK_k;                 // uMm s-1
     du[ N_HCO3_s] = - du[ N_HCO3_k];                                                // uMm s-1
-    	du[ K_p     ] = flu_J_BK_k / (VR_pa * state_R_k) + flu_J_KIR_i / VR_ps - R_decay * (state_K_p - K_p_min);         // uM s-1
+    du[ K_p     ] = flu_J_BK_k / (VR_pa * state_R_k) + flu_J_KIR_i / VR_ps - R_decay * (state_K_p - K_p_min);         // uM s-1
     du[ w_k     ] = flu_phi_w * (flu_w_inf - state_w_k);                            // s-1
 
     //SMC:
@@ -570,7 +559,6 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     du[ w_i     ] = lam * (flu_Kactivation_i - state_w_i ) ;
     du[ ip3_i   ] = flu_I_cpl_i - flu_degrad_i ;          // **
     du[ K_i     ] = - flu_J_KIR_i - flu_K_i + flu_NaK_i;                                            // uM s-1
-
 
     //EC:
     du[ca_j     ] = flu_c_cpl_j + flu_rho_j * ( flu_ip3_j - flu_ERuptake_j + flu_CICR_j - flu_extrusion_j + flu_leak_j + flu_cation_j + flu_O_j + flu_J_stretch_j ) ;
@@ -583,6 +571,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     du[ AMp  ] = K3_c * state_Mp + flu_K6_c * state_AM - (K4_c + K5_c) * state_AMp;
     du[ AM   ] = K5_c * state_AMp - ( K7_c + flu_K6_c ) * state_AM;
 
+    // ? Why are these state variables
     du[PLC_i]    = 0;
     du[K_df_i]   = 0;
     du[K_flux_i] = 0;
@@ -605,10 +594,6 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 //    du[eNOS]       = ((K_dis * state_ca_j) / (K_eNOS + state_ca_j)) - mu2 * state_eNOS + g_max * flu_F_tau_w ;      // (104)
 //    du[NOj]        = V_eNOS*(LArg)/(pow((pow(LArg,2)+1),0.5))*(state_eNOS) - (state_NOj-state_NOi)/tau_ji - k_O2*pow((state_NOj),2)*Oj - state_NOj*4*3300/(pow(25,2));
 
-
-
-
-    
    // printf("** %e** %e** %e** %e** %e** %e** %e** %e** %e** %e ** %e *** \n", L_p, flu_Na_k, flu_K_k, flu_Cl_k, flu_HCO3_k, flu_Na_s, flu_K_s, flu_Cl_s, flu_HCO3_s, X_k, state_R_k);
 
 //flu_c_cpl_j, flu_rho_j, flu_ip3_j, flu_ERuptake_j, flu_CICR_j, flu_extrusion_j, flu_leak_j, flu_cation_j, flu_O_j, flu_J_stretch_j );
@@ -620,7 +605,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 double nvu_p0(double t) {
     //double p0 = 1. * 8000 / P0; // 8000 Pa   original: 1.5 * 8000 / P0;
     //double p0 = (0.5 * sin(t) + 1) * 8000 / P0; //
-    double p0 = 1.5 * 8000 / P0;
+    double p0 = 1.5 * 8000 / P0;	// no time dependence?
 return p0;
 }
 
@@ -635,7 +620,7 @@ return p0;
 //    return Glu;
 //}
 
-// Space- & time-varying K+ input signal
+// Space- & time-varying K+ input signal (simulating neuronal activity)
 double K_input(double t, double x, double y) {
     double K_input_min = 0;
     double K_input_max = 2.5;
@@ -662,7 +647,7 @@ double K_input(double t, double x, double y) {
     //double K_space =((0.5 + 0.5 *(tanh(1e5 * (x-0.0004)+1))) *(0.5 + 0.5 *(tanh(1e5 *(y-0.0004)+1))));
     double K_space;   
 //    if (x<= 0){
-    if (x <= 0 && y <= 0){
+    if (x <= 0 && y <= 0){	// what are x and y?
         K_space = 1;
     }
     else {
@@ -680,7 +665,7 @@ double K_input(double t, double x, double y) {
     else {
         K_time = 0;
     }
-    double K_out = K_input_min + (K_input_max-K_input_min) * K_space * K_time;
+    double K_out = K_input_min + (K_input_max-K_input_min) * K_space * K_time; // 0 if t3 < t or x,y <= 0
     return K_out;
 }
 
@@ -742,7 +727,7 @@ double PLC_input(double t, double x, double y) {
 // Initial conditions. If you want spatial inhomegeneity, make it a
 // function of the coordinates x and y. u0 is already allocated, you just
 // need to fill in the entries
-void nvu_ics(double *u0, double x, double y, nvu_workspace *w) {
+void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w) {
 
     u0[i_radius]  = 1;   //0
 
