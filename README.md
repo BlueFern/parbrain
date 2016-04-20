@@ -35,8 +35,7 @@ How to Run
 ==========
 `mpirun -np <number_of_processors> <program> <number_of_levels> <subtree_size>`
 
-Where `<program>` is "parBrainSim" located in the build directory.
-The subtree size is usually 3. This outputs a directory with multiple data files.
+Where `<program>` is "parBrainSim" located in the build directory. `<number_of_levels>` and `<subtree_size>` are optional arguments; by default they are 9 and 3 respectively. This outputs a directory with multiple data files.
 	
 
 How to View Binary Data
