@@ -1,19 +1,17 @@
 #ifndef NVU_H
 #define NVU_H
+
 #ifndef M_PI
 #define M_PI 3.14159265358979323846264338327
 #endif
 
 #include <cs.h>
 
-// Constants we may want to use that are defined in brain.c. 
-extern const double RMIN;   // radius of smallest vessel
+// TODO: make not external cos it's BAD!!! But check first
+
+// External constant variables defined in brain.c.
 extern const double R0;     // radius scaling characteristic value
-extern const double L0;     // length characteristic value
-extern const double LRR;    // length to radius ratio
-extern const double MU;     // blood viscosity (Pa s)
 extern const double P0;     // pressure characteristic value (Pa)
-extern const double PROOT;  // nominal tree root pressure (Pa)
 extern const double PCAP;   // nominal capillary bed pressure (Pa)
 
 // nvu_workspace gets created once per node (not once per block). So the
@@ -37,13 +35,13 @@ typedef struct nvu_workspace {
     double a1, a2, a3, a4, a5;
     double b1, d1, d2, g1, g2;
     double l;
-    double gamma, cstar;
+//    double gamma, cstar;
     double pcap;
 
 } nvu_workspace;
 
 // Initialisation routine. Gets called once before simulation
-nvu_workspace* nvu_init(void); //? why the *
+nvu_workspace* nvu_init(void);
 
 // Right hand side routine for one block
 void   nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_workspace *nvu_w);

@@ -5,7 +5,7 @@ int main(int argc, char **argv)
     workspace *W;
     MPI_Init(&argc, &argv);
 
-    W = init(argc, argv);
+    W = workspace_init(argc, argv);
 
     // Test function evaluatios
     double *u;
