@@ -2,6 +2,7 @@
 #define BRAIN_H
 #include "matops.h"
 #include "nvu.h"
+#include <cs.h>
 #include <mpi.h>
 #include <stdio.h>
 #include <assert.h>
@@ -17,22 +18,12 @@
 #define M_PI 3.14159265358979323846264338327
 #endif
 
-extern const int NDEFAULT   ;
-extern const int NSUBDEFAULT;
-extern const int NSYMBOLS   ;
-
-extern const double RMIN    ;
-extern const double R0      ;
-extern const double L0      ;
-extern const double LRR     ;
-extern const double PROOT   ;
-extern const double P0      ;
-extern const double PCAP    ;
-extern const double MU      ;
+#define POW_OF_2(x) (1 << (x)) // macro for 2^x using bitwise shift
 
 // Define the workspace that we need to carry around. This is the base
 // workspace for computing the RHS and Jacobian, and performing the solves
 // involved in a Newton step, and as such contains pretty much everything
+
 typedef struct workspace {
     // First, the pieces required to describe the parallel tree problem 
     cs      *A;     // Local (per node) adjacency matrix
@@ -84,9 +75,9 @@ typedef struct workspace {
     int     rank;
     int     n_procs;
     int     n_writes;
-    int     displacement; // global displacement in output file, in bytes
+    int     displacement; 			// global displacement in output file, in bytes
     int     displacement_per_write; // bytes written per write (globally)
-    double  *buf;    // Communication buffer
+    double  *buf;    				// Communication buffer
     char    *Toutfilename;
     char    *Qoutfilename;
     char    *Poutfilename;
@@ -108,7 +99,7 @@ typedef struct workspace {
     int     N;      // Total number of levels */
     int     Nsub;   // Subtree size for blk-diagonal Jacobian */
     int     N0;     // Number of root levels */
-    int     Np;     // Number of levels for local subtree */
+    int     Np;     // Number of levels for local subtree, e.g. if H-tree has 4 levels and using 4 cores the local subtrees will have 2 levels */
 
     // Jacobian information 
     int    isjac;
@@ -131,7 +122,8 @@ typedef struct workspace {
     double tjacfactorize;
 
     /* Model-specific stuff */
-    nvu_workspace   *nvu;
+    nvu_workspace   *nvu_w;
+
 } workspace;
 
 /* Methods for external use: essentially function evaluation and Jacobian
@@ -139,11 +131,12 @@ typedef struct workspace {
  * conductance, pressure, and flow values in the workspace data structure,
  * so these values should not be relied to remain static
  * */
+
 // defined in adjacency.c
-cs *adjacency(int N);
+cs *adjacency(int Np);
 
 // defined in brain.c
-workspace *init(int argc, char **argv);
+workspace *workspace_init(int argc, char **argv);
 void    evaluate(workspace *W, double t, double *y, double *dy);
 void    solve(workspace *W, double pin, double pc);
 void    jacupdate(workspace *W, double t, double *y);
@@ -159,9 +152,7 @@ void    write_pressure(workspace *W, double t, double *p, double *p0);
 void    write_info(workspace *W);
 int     is_power_of_two(unsigned int x);
 void    init_subtree(workspace *W);
-
-//cs     *adjacency(int N);
-void    compute_symbchol(workspace *W);
+void    compute_symbol_cholesky(workspace *W);
 void    init_roottree(workspace *W);
 void    set_spatial_coordinates(workspace *W);
 void    set_conductance(workspace *W, int isscaled, int computeroot) ;

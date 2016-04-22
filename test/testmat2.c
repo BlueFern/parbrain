@@ -11,6 +11,9 @@ int main(void)
     printf("B is %d x %d\n", B->m, B->n);
     sparseprint(B);
 
+    cs_spfree(T);
+    cs_spfree(A);
+    cs_spfree(B);
 
     // Test the block diagonal feature
 

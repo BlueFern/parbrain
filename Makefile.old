@@ -6,10 +6,12 @@ CFALL = $(CFLAGS) $(TARGET_ARCH)
 # on mac /usr/local is in the standard path by default
 INC=
 LIB=
+RPATH=
 ifeq ($(UNAME_M), ppc64)
 	CFARCHDEP = -m64 -mtune=power7 -mcpu=power7 -pthread -std=c99 -O2
 	# using poe on ppc64
-	MPCC = mpcc -compiler gcc
+	MPCC = mpcc -compiler gcc 
+        RPATH = -Wl,-rpath=$(LD_RUN_PATH)
 else
 	CFARCHDEP = -Wall -std=c99 -g  
 	# regular wrapper everywhere else
@@ -53,7 +55,7 @@ testbrain: testbrain.c matops.o brain.o adjacency.o nvu.o Makefile
 	$(MPCC) $(CF) $(INC) $(LIB) -o testbrain testbrain.c $(OBJ) $(CS) -lm
 
 simulate: simulate.c matops.o brain.o nvu.o adjacency.o Makefile
-	$(MPCC) $(CF) $(INC) $(LIB) -o simulate simulate.c $(OBJ) $(CS) -lm
+	$(MPCC) $(CF) $(INC) $(LIB) -o simulate simulate.c $(OBJ) $(RPATH) $(CS) -lm
 
 clean:
 	rm -r tags $(OBJ) $(EXE) *.dSYM

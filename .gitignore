@@ -16,15 +16,6 @@
 *.out
 *.app
 
-# Project executables
-simulate
-tags
-testbrain
-testmat2
-testmatops
-adjacency
-core
-
 *.err
 *.out
 *.dSYM*

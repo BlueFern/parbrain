@@ -1,11 +1,13 @@
 #ifndef NVU_H
 #define NVU_H
+
 #ifndef M_PI
 #define M_PI 3.14159265358979323846264338327
 #endif
 
 #include <cs.h>
 
+// State variable indexing (TODO: shouldn't be initialised here but is needed in various files - make external or something?)
 static const int i_radius  = 0; // radius has to be 0, this is assumed elsewhere
 // AC
 static const int R_k       = 1;
@@ -19,7 +21,7 @@ static const int N_HCO3_s  = 8;
 static const int K_p       = 9;
 static const int w_k       = 10;
 // SMC
-static const int ca_i      = 11;
+static const int ca_i      = 11; // or use enum
 static const int ca_sr_i   = 12;
 static const int v_i       = 13;
 static const int w_i       = 14;
@@ -34,9 +36,10 @@ static const int ip3_j     = 20;
 static const int Mp        = 21;
 static const int AMp       = 22;
 static const int AM        = 23;
-static const int PLC_i     = 24;
-static const int K_df_i    = 25;
-static const int K_flux_i  = 26;
+static const int PLC_i     = 24; //!
+static const int K_df_i    = 25; //!
+static const int K_flux_i  = 26; //!
+
 // NO pathway
 //static const int NOi       = 24;
 //static const int NOj       = 25;
@@ -49,14 +52,11 @@ static const int K_flux_i  = 26;
 //static const int E_6c      = 32;
 //static const int E_5c      = 33;
 
+
 // Constants we may want to use that are defined in brain.c. 
 extern const double RMIN;   // radius of smallest vessel
 extern const double R0;     // radius scaling characteristic value
-extern const double L0;     // length characteristic value
-extern const double LRR;    // length to radius ratio
-extern const double MU;     // blood viscosity (Pa s)
 extern const double P0;     // pressure characteristic value (Pa)
-extern const double PROOT;  // nominal tree root pressure (Pa)
 extern const double PCAP;   // nominal capillary bed pressure (Pa)
 
 // Number of variables stored in diffusion structs.
@@ -92,11 +92,11 @@ typedef struct nvu_workspace {
     cs *dfdp_pattern; // neq * 1 matrix indicating dependence on p
     cs *dfdx_pattern; // neq * neq matrix indicating Jacobian structure of nvu 
 
-    // Other NVU parameters.
+    // Other NVU parameters for radius and pressure.
     double a1, a2, a3, a4, a5;
     double b1, d1, d2, g1, g2;
     double l;
-    double gamma, cstar;
+//    double gamma, cstar;
     double pcap;
 
     // Indices of neighbours for every tissue block. Ghost blocks are numbered
@@ -115,13 +115,13 @@ typedef struct nvu_workspace {
 } nvu_workspace;
 
 // Initialisation routine. Gets called once before simulation
-nvu_workspace* nvu_init(void); 
+nvu_workspace* nvu_init(void);
 
 // Right hand side routine for one block
-void   nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_workspace *w);
+void   nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_workspace *nvu_w);
 
 // Tidy up routine. Free anything allocated in nvu_init here
-void  *nvu_free(nvu_workspace *w); 
+void  *nvu_free(nvu_workspace *nvu_w);
 
 // Time-varying input pressure function
 double nvu_p0(double t);
@@ -142,19 +142,24 @@ double PLC_input(double t, double x, double y);
 double factorial(int c);
 
 // Initial conditions
-void nvu_ics(double *u0, double x, double y, nvu_workspace *w);
+void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w);
 
 // Get the indices for the four immediate neighbours of a given block.
 void set_neighbours(int idx, int m, int n, int *neighbours);
 
+// Same as set_neighbours?
+void set_domain_neighbours(int idx, int m, int n, int *neighbours);
+
 // Get the indices for all neighbours for all tissue blocks in the given MPI domain.
 void set_block_neighbours(int nlocal, int mlocal, nvu_workspace* w);
+
+// Set the indices of the edges
+void set_edge_indices(int nlocal, int mlocal, nvu_workspace *w);
 
 // Allocate the space for ghost blocks.
 void init_ghost_blocks(int nlocal, int mlocal, nvu_workspace *w);
 
 // Calculate diffusion for tissue blocks within given MPI domain.
 void diffusion(int block_number, double t, double *u, double *du, nvu_workspace *w);
-
 
 #endif
