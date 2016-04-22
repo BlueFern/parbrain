@@ -7,6 +7,9 @@
 
 #include <cs.h>
 
+// Forward declaration to avoid errors
+typedef struct ghost_block ghost_block;
+
 // State variable indexing (TODO: shouldn't be initialised here but is needed in various files - make external or something?)
 static const int i_radius  = 0; // radius has to be 0, this is assumed elsewhere
 // AC
@@ -58,22 +61,6 @@ extern const double RMIN;   // radius of smallest vessel
 extern const double R0;     // radius scaling characteristic value
 extern const double P0;     // pressure characteristic value (Pa)
 extern const double PCAP;   // nominal capillary bed pressure (Pa)
-
-// Number of variables stored in diffusion structs.
-static const int NUM_DIFF_VARS = 1;
-
-// Enumerator to keep track of the diffusion variables positions.
-enum diff_idx
-{
-	DIFF_K
-};
-
-// Ghost block to store diffusion variables. Ghost blocks are placed around
-// the 'perimeter' of the tissue blocks allocated to an MPI process.
-typedef struct ghost_block
-{
-	double *vars;
-} ghost_block;
 
 // nvu_workspace gets created once per node (not once per block). So the
 // parameters therein are generic for each nvu. Spatial inhomogeneity
@@ -143,23 +130,5 @@ double factorial(int c);
 
 // Initial conditions
 void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w);
-
-// Get the indices for the four immediate neighbours of a given block.
-void set_neighbours(int idx, int m, int n, int *neighbours);
-
-// Same as set_neighbours?
-void set_domain_neighbours(int idx, int m, int n, int *neighbours);
-
-// Get the indices for all neighbours for all tissue blocks in the given MPI domain.
-void set_block_neighbours(int nlocal, int mlocal, nvu_workspace* w);
-
-// Set the indices of the edges
-void set_edge_indices(int nlocal, int mlocal, nvu_workspace *w);
-
-// Allocate the space for ghost blocks.
-void init_ghost_blocks(int nlocal, int mlocal, nvu_workspace *w);
-
-// Calculate diffusion for tissue blocks within given MPI domain.
-void diffusion(int block_number, double t, double *u, double *du, nvu_workspace *w);
 
 #endif

@@ -19,8 +19,8 @@ include_directories(${CXSPARSE_INCLUDE_DIRS})
 find_package (VTK REQUIRED)
 include (${VTK_USE_FILE})
 
-set(HDRs src/solver.h src/brain.h src/matops.h src/nvu.h)
-set(SRCs src/run_parbrain.c src/solver.c src/brain.c src/matops.c src/nvu.c src/adjacency.c)
+set(HDRs src/solver.h src/brain.h src/matops.h src/nvu.h src/diffusion.h)
+set(SRCs src/run_parbrain.c src/solver.c src/brain.c src/matops.c src/nvu.c src/adjacency.c src/diffusion.c)
 
 add_executable(parBrainSim ${SRCs} ${HDRs})
 add_executable (ConvertBinToVtu util/binToVtu/src/bin_to_vtu.cxx)

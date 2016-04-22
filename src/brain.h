@@ -1,7 +1,7 @@
 #ifndef BRAIN_H
 #define BRAIN_H
 #include "matops.h"
-#include "nvu.h"
+#include "diffusion.h"
 #include <cs.h>
 #include <mpi.h>
 #include <stdio.h>

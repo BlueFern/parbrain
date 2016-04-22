@@ -1,4 +1,5 @@
 #include "brain.h"
+#include "diffusion.h"
 
 const int NDEFAULT      = 9;
 const int NSUBDEFAULT   = 3;
