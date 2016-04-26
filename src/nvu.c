@@ -588,7 +588,7 @@ double nvu_p0(double t)
 //    return Glu;
 //}
 
-
+// Currently not used
 double Kp_input(double t, double x, double y)
 {
     double Kp_out = ((0.5 + 0.5 *(tanh(100000*(x-0.0004)+1))) *(0.5 + 0.5 *(tanh(100000*(y-0.0004)+1)))); // spatial
