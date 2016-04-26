@@ -1,5 +1,7 @@
 #include "solver.h" // contains other header files
 
+//TODO: more output (e.g. % done, ETA)
+
 // Main simulation program 
 int main(int argc, char **argv)
 {

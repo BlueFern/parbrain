@@ -589,38 +589,38 @@ double nvu_p0(double t)
 //}
 
 // Currently not used
-double Kp_input(double t, double x, double y)
-{
-    double Kp_out = ((0.5 + 0.5 *(tanh(100000*(x-0.0004)+1))) *(0.5 + 0.5 *(tanh(100000*(y-0.0004)+1)))); // spatial
-    //*          ((Glu_min + (Glu_max - Glu_min) / 2.0 * (1 + tanh(10*(t - t_up))) + (Glu_min - Glu_max) / 2.0 * (1 + tanh(10*(t - t_down))))); // temporal
-    return Kp_out;
-}
+//double Kp_input(double t, double x, double y)
+//{
+//    double Kp_out = ((0.5 + 0.5 *(tanh(100000*(x-0.0004)+1))) *(0.5 + 0.5 *(tanh(100000*(y-0.0004)+1)))); // spatial
+//    //*          ((Glu_min + (Glu_max - Glu_min) / 2.0 * (1 + tanh(10*(t - t_up))) + (Glu_min - Glu_max) / 2.0 * (1 + tanh(10*(t - t_down))))); // temporal
+//    return Kp_out;
+//}
 
 // Space- & time-varying K+ input signal (simulating neuronal activity)
 double K_input(double t, double x, double y)
 {
-    double K_input_min = 0;
-    double K_input_max = 2.5;
-    double t_up   = 10;				// Signal starts at time = 10 ***
-    double t_down = 900;
-    double lengthpulse = t_down - t_up;   
-    double lengtht1 = 10;
-    double t0 = t_up;
-    double t1 = t0 + lengtht1;
-    double t2 = t0 + lengthpulse;
-    double t3 = t1 + lengthpulse;
-    int alpha = 2;
-    int beta = 5;
-    double deltat= 10;    
-    double gab = factorial(alpha + beta - 1);
-    double ga = factorial(alpha - 1);
-    double gb = factorial(beta - 1);
+    double K_input_min 	= 0;
+    double K_input_max 	= 2.5;
+    double t_up   		= 5;				// Signal starts at time = 10 ***
+    double t_down 		= 25;
+    double lengthpulse 	= t_down - t_up;
+    double lengtht1 	= 15;
+    double t0 			= t_up;
+    double t1 			= t0 + lengtht1;
+    double t2 			= t0 + lengthpulse;
+    double t3 			= t1 + lengthpulse;
+    int alpha 			= 2;
+    int beta 			= 5;
+    double deltat		= 10;
+    double gab 			= factorial(alpha + beta - 1);
+    double ga 			= factorial(alpha - 1);
+    double gb 			= factorial(beta - 1);
     //double K_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
     //double K_space =((0.5 + 0.5 *(tanh(1e5 * (x-0.0004)+1))) *(0.5 + 0.5 *(tanh(1e5 *(y-0.0004)+1))));
     double K_space;
 
-    // Only on left side
-   	if (x <= 0)
+    // only in corner
+    if (x <= 0 && y <= 0)
     {
         K_space = 1;
     }
@@ -665,14 +665,14 @@ double factorial(int c)
 // Block function to switch cotransporter channels on and off (K+ input)
 double flux_ft(double t, double x, double y)
 {
-    double flux_min = 0;
-    double flux_max = 1; 
-    double t_up   = 10;					// Channels turn on at time = 10 ***
-    double t_down = 900;
-    double lengthpulse = t_down - t_up;
-    double lengtht1 = 10;
-    double t0 = t_up;   
-    double t1 = t0 + lengtht1;
+    double flux_min 	= 0;
+    double flux_max 	= 1;
+    double t_up   		= 5;					// Channels turn on at time = 10 ***
+    double t_down 		= 25;
+    double lengthpulse 	= t_down - t_up;
+    double lengtht1 	= 15;
+    double t0 			= t_up;
+    double t1 			= t0 + lengtht1;
 //    double ampl = 3;
 //    double ramp = 0.003;
 //    double x_centre = 0;//-0.0008;
@@ -683,8 +683,8 @@ double flux_ft(double t, double x, double y)
     //double flux_space =((0.5 + 0.5 *(tanh(1e5 * (x-0.0004)+1))) *(0.5 + 0.5 *(tanh(1e5 *(y-0.0004)+1))));  
     double flux_space;   
 
-    // only on left side
-    if (x <= 0)
+    // only in corner
+    if (x <= 0 && y <= 0)
     {
         flux_space = 1;
     }
@@ -754,9 +754,10 @@ void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w)
     u0[Mp]        = 0.25;                      //21
     u0[AMp]       = 0.25;                      //22
     u0[AM]        = 0.25;                      //23
-    u0[PLC_i]     = PLC_input(300,x,y);
-    u0[K_df_i]    = K_input(105,x,y);
-    u0[K_flux_i]  = flux_ft(300,x,y);
+
+    u0[PLC_i]     = PLC_input(0,x,y);
+    u0[K_df_i]    = K_input(0,x,y);
+    u0[K_flux_i]  = flux_ft(0,x,y);
 
 // NO pathway*****************
 //    u0[NOi]       = 0.07;                    //24
