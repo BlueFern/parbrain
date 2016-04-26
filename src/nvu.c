@@ -601,8 +601,8 @@ double K_input(double t, double x, double y)
 {
     double K_input_min = 0;
     double K_input_max = 2.5;
-    double t_up   = 200;
-    double t_down = 800;
+    double t_up   = 10;				// Signal starts at time = 10 ***
+    double t_down = 900;
     double lengthpulse = t_down - t_up;   
     double lengtht1 = 10;
     double t0 = t_up;
@@ -619,7 +619,8 @@ double K_input(double t, double x, double y)
     //double K_space =((0.5 + 0.5 *(tanh(1e5 * (x-0.0004)+1))) *(0.5 + 0.5 *(tanh(1e5 *(y-0.0004)+1))));
     double K_space;
 
-    if (x <= 0 && y <= 0) // what are x and y?
+    // Only on left side
+   	if (x <= 0)
     {
         K_space = 1;
     }
@@ -666,8 +667,8 @@ double flux_ft(double t, double x, double y)
 {
     double flux_min = 0;
     double flux_max = 1; 
-    double t_up   = 200;
-    double t_down = 800;
+    double t_up   = 10;					// Channels turn on at time = 10 ***
+    double t_down = 900;
     double lengthpulse = t_down - t_up;
     double lengtht1 = 10;
     double t0 = t_up;   
@@ -681,8 +682,9 @@ double flux_ft(double t, double x, double y)
     //double flux_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
     //double flux_space =((0.5 + 0.5 *(tanh(1e5 * (x-0.0004)+1))) *(0.5 + 0.5 *(tanh(1e5 *(y-0.0004)+1))));  
     double flux_space;   
-//    if (x<= 0){
-    if (x <= 0 && y <= 0)
+
+    // only on left side
+    if (x <= 0)
     {
         flux_space = 1;
     }
@@ -702,8 +704,8 @@ double PLC_input(double t, double x, double y)
 {
     double PLC_min = 0.18;
     double PLC_max = 0.4;
-    double t_up   = 2000;
-    double t_down = 9000;
+    double t_up   = 100;
+    double t_down = 900;
     double ampl = 3;
     double ramp = 0.003;//0.002;
     double x_centre = 0; // 0.0008 -> n_bif = 7; python: ((((2**(n_bif-1))**0.5)/4)*0.0004)
@@ -753,7 +755,7 @@ void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w)
     u0[AMp]       = 0.25;                      //22
     u0[AM]        = 0.25;                      //23
     u0[PLC_i]     = PLC_input(300,x,y);
-    u0[K_df_i]    = K_input(205,x,y);
+    u0[K_df_i]    = K_input(105,x,y);
     u0[K_flux_i]  = flux_ft(300,x,y);
 
 // NO pathway*****************
