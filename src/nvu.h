@@ -12,17 +12,23 @@ typedef struct ghost_block ghost_block;
 
 // State variable indexing (TODO: shouldn't be initialised here but is needed in various files - make external or something?)
 static const int i_radius  = 0; // radius has to be 0, this is assumed elsewhere
+
 // AC
 static const int R_k       = 1;
 static const int N_Na_k    = 2;
 static const int N_K_k     = 3;
 static const int N_HCO3_k  = 4;
 static const int N_Cl_k    = 5;
+static const int w_k       = 10;
+
+// SC
 static const int N_Na_s    = 6;
 static const int N_K_s     = 7;
 static const int N_HCO3_s  = 8;
+
+// PVS
 static const int K_p       = 9;
-static const int w_k       = 10;
+
 // SMC
 static const int ca_i      = 11; // or use enum
 static const int ca_sr_i   = 12;
@@ -30,18 +36,25 @@ static const int v_i       = 13;
 static const int w_i       = 14;
 static const int ip3_i     = 15;
 static const int K_i       = 16;
+
 // EC
 static const int ca_j      = 17;
 static const int ca_er_j   = 18;
 static const int v_j       = 19;
 static const int ip3_j     = 20;
+
 // Mech
 static const int Mp        = 21;
 static const int AMp       = 22;
 static const int AM        = 23;
-static const int PLC_i     = 24; //!
-static const int K_df_i    = 25; //!
-static const int K_flux_i  = 26; //!
+
+// ECS
+static const int K_e	   = 24;
+
+// Other
+static const int PLC_i     = 25; //!
+static const int K_df_i    = 26; //!
+static const int K_flux_i  = 27; //!
 
 // NO pathway
 //static const int NOi       = 24;
