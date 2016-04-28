@@ -30,7 +30,7 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
     else
     {
     	W_neighbour_offset =  W_neighbour - block_number;
-    	W_neighbour_val = u[W_neighbour_offset * w->neq + K_p];
+    	W_neighbour_val = u[W_neighbour_offset * w->neq + K_e];
     	flu_diff_K_0 = (W_neighbour_val - state_K_e) / tau;
     }
 
@@ -49,7 +49,7 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
     else
     {
     	N_neighbour_offset = N_neighbour - block_number;
-    	N_neighbour_val = u[N_neighbour_offset * w->neq + K_p];
+    	N_neighbour_val = u[N_neighbour_offset * w->neq + K_e];
     	flu_diff_K_1 = (N_neighbour_val - state_K_e) / tau;
     }
 
@@ -68,7 +68,7 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
 	else
 	{
 		E_neighbour_offset = E_neighbour - block_number;
-		E_neighbour_val = u[E_neighbour_offset * w->neq + K_p];
+		E_neighbour_val = u[E_neighbour_offset * w->neq + K_e];
 		flu_diff_K_2 = (E_neighbour_val - state_K_e) / tau;
 	}
 
@@ -87,7 +87,7 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
 	else
 	{
 		S_neighbour_offset = S_neighbour - block_number;
-		S_neighbour_val = u[S_neighbour_offset * w->neq + K_p];
+		S_neighbour_val = u[S_neighbour_offset * w->neq + K_e];
 		flu_diff_K_3 = (S_neighbour_val - state_K_e) / tau;
 	}
 
