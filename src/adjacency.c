@@ -4,7 +4,10 @@
 #include "matops.h"
 #include "brain.h"
 
-// Structure of the H tree defined by a matrix A consisting of 0, 1 and -1's
+/* Structure of the H tree defined by a matrix A consisting of 0, 1 and -1's:
+* 	The tree is a directed graph with adjacency matrix A
+*/
+
 cs * adjacency(int Np)
 {
 	/* Size of A matrix dependent on Np: the number of levels of the local subtree

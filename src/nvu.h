@@ -79,11 +79,10 @@ typedef struct nvu_workspace {
     cs *dfdp_pattern; // neq * 1 matrix indicating dependence on p
     cs *dfdx_pattern; // neq * neq matrix indicating Jacobian structure of nvu 
 
-    // Other NVU parameters for radius and pressure.
+    // Other NVU parameters for radius and pressure. TODO: rename
     double a1, a2, a3, a4, a5;
     double b1, d1, d2, g1, g2;
     double l;
-//    double gamma, cstar;
     double pcap;
 
     // Indices of neighbours for every tissue block. Ghost blocks are numbered

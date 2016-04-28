@@ -396,9 +396,9 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 
     // pressure (TODO: find these equations and rename the variables):
     pt = 0.5 * (p + nvu_w->pcap);
-    q  = (p - nvu_w->pcap) * g;
-    e  = 1. + nvu_w->a5 * AMp_AM;
-    r0 = nvu_w->a3 * (1. - nvu_w->a4 * AMp_AM);
+    //q  = (p - nvu_w->pcap) * g;
+    e  = 1.0 + nvu_w->a5 * AMp_AM;
+    r0 = nvu_w->a3 * (1.0 - nvu_w->a4 * AMp_AM);
 
     // AC fluxes
     flu_R_s            	= R_tot - state_R_k;                            //
@@ -469,7 +469,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     flu_cation_j 		= G_cat * ( E_Ca - state_v_j) * 0.5 * ( 1 + tanh( ( log10( state_ca_j ) - m3cat )  /  m4cat  ) );
     flu_BKCa_j 			= 0.2 * ( 1 + tanh( ( (  log10(state_ca_j) - c) * ( state_v_j - b ) - a1 ) / ( m3b* pow(( state_v_j + a2 * ( log10( state_ca_j ) - c ) - b),2) + m4b ) ) );
     flu_SKCa_j 			= 0.3 * ( 1 + tanh( ( log10(state_ca_j) - m3s ) /  m4s ));
-    flu_K_j 			= G_tot * ( state_v_j - vK_j ) * ( flu_BKCa_j + flu_SKCa_j ); // Reihenfolge!!
+    flu_K_j 			= G_tot * ( state_v_j - vK_j ) * ( flu_BKCa_j + flu_SKCa_j );
     flu_R_j 			= G_R * ( state_v_j - v_rest);
     flu_degrad_j 		= k_j * state_ip3_j;
     flu_J_stretch_j     = G_stretch / (1 + exp(-alpha1*(P_str * state_r / flu_h_r - sig0))) * (state_v_j - Esac);
@@ -506,17 +506,21 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 // Differential Equations:
     du[i_radius	] = -nvu_w->a1 * e * (state_r / r0 - 1.0) + nvu_w->a2 * state_r * pt; // Radius (non-dimensional!)
 
+    //SC:
+    du[ N_Na_s  ] = - k_C * K_input(t,x,y) - du[ N_Na_k];                           // uMm s-1
+    du[ N_K_s   ] = k_C * K_input(t,x,y) - du[ N_K_k] - flu_J_BK_k;                 // uMm s-1
+    du[ N_HCO3_s] = - du[ N_HCO3_k];                                                // uMm s-1
+
     //AC:
     du[ R_k     ] = L_p * (flu_Na_k + flu_K_k + flu_Cl_k + flu_HCO3_k - flu_Na_s - flu_K_s - flu_Cl_s - flu_HCO3_s + X_k / state_R_k);  // m s-1
     du[ N_Na_k  ] = -flu_J_Na_k - 3 * flu_J_NaK_k + flu_J_NKCC1_k + flu_J_NBC_k;    // uMm s-1
     du[ N_K_k   ] = -flu_J_K_k + 2 * flu_J_NaK_k + flu_J_NKCC1_k + flu_J_KCC1_k -flu_J_BK_k; // uMm s-1
     du[ N_HCO3_k] = 2 * flu_J_NBC_k;                                                // uMm s-1
     du[ N_Cl_k  ] = du[ N_Na_k] + du[ N_K_k] - du[ N_HCO3_k];                       // uMm s-1, modified equation compared to the one of Ostby  //
-    du[ N_Na_s  ] = - k_C * K_input(t,x,y) - du[ N_Na_k];                                        // uMm s-1
-    du[ N_K_s   ] = k_C * K_input(t,x,y) - du[ N_K_k] - flu_J_BK_k;                 // uMm s-1
-    du[ N_HCO3_s] = - du[ N_HCO3_k];                                                // uMm s-1
-    du[ K_p     ] = flu_J_BK_k / (VR_pa * state_R_k) + flu_J_KIR_i / VR_ps - R_decay * (state_K_p - K_p_min);         // uM s-1
     du[ w_k     ] = flu_phi_w * (flu_w_inf - state_w_k);                            // s-1
+
+    //PVS:
+    du[ K_p     ] = flu_J_BK_k / (VR_pa * state_R_k) + flu_J_KIR_i / VR_ps - R_decay * (state_K_p - K_p_min);         // uM s-1
 
     //SMC:
     du[ ca_i    ] = flu_c_cpl_i + flu_rho_i * ( flu_ip3_i - flu_SRuptake_i + flu_CICR_i - flu_extrusion_i + flu_leak_i - flu_VOCC_i + flu_NaCa_i + 0.1* flu_J_stretch_i);
@@ -537,7 +541,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     du[ AMp  	] = K3_c * state_Mp + flu_K6_c * state_AM - (K4_c + K5_c) * state_AMp;
     du[ AM   	] = K5_c * state_AMp - ( K7_c + flu_K6_c ) * state_AM;
 
-    // ? Why are these state variables
+    // State variables so they can be plotted in Paraview, but only for one time (initial condition set in nvu_ics, use t for when the signal is turned on)
     du[PLC_i	] = 0;
     du[K_df_i	] = 0;
     du[K_flux_i	] = 0;
@@ -601,7 +605,7 @@ double K_input(double t, double x, double y)
 {
     double K_input_min 	= 0;
     double K_input_max 	= 2.5;
-    double t_up   		= 5;				// Signal starts at time = 10 ***
+    double t_up   		= 5;				// Signal starts at time = 5 ***
     double t_down 		= 25;
     double lengthpulse 	= t_down - t_up;
     double lengtht1 	= 15;
@@ -667,7 +671,7 @@ double flux_ft(double t, double x, double y)
 {
     double flux_min 	= 0;
     double flux_max 	= 1;
-    double t_up   		= 5;					// Channels turn on at time = 10 ***
+    double t_up   		= 5;					// Channels turn on at time = 5 ***
     double t_down 		= 25;
     double lengthpulse 	= t_down - t_up;
     double lengtht1 	= 15;
@@ -755,9 +759,10 @@ void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w)
     u0[AMp]       = 0.25;                      //22
     u0[AM]        = 0.25;                      //23
 
-    u0[PLC_i]     = PLC_input(0,x,y);
-    u0[K_df_i]    = K_input(0,x,y);
-    u0[K_flux_i]  = flux_ft(0,x,y);
+    // Only here so they can be shown in Paraview for some time when the signals are turned on (as a check), so choose t within t0 and t1
+    u0[PLC_i]     = PLC_input(15,x,y);
+    u0[K_df_i]    = K_input(15,x,y);
+    u0[K_flux_i]  = flux_ft(15,x,y);
 
 // NO pathway*****************
 //    u0[NOi]       = 0.07;                    //24

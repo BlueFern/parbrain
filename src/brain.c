@@ -6,11 +6,10 @@ const int NSUBDEFAULT   = 3;
 const int NSYMBOLS      = 4;
 
 const double RMIN  = 10e-6 ;  							// m, radius of smallest vessel
-const double BIFURCATION_SCALE = 1.4142135623730951;
+const double BIFURCATION_SCALE = 1.4142135623730951;	// = sqrt(2), amount the radius decreases by when going down a level
 const double L0    = 200e-6;  							// m (for nondimensionalising), length characteristic value
 const double LRR   = 20    ;  							// Nondimensional, length to radius ratio
 const double MU    = 3.5e-3;  							// Pa s, blood viscosity
-const double PROOT = 8000  ;  							// Pa, nominal tree root pressure
 
 // External variables (initialised in nvu.h, also used in nvu.c)
 const double R0    = 10e-6 ;  // m (for nondimensionalising)
@@ -665,7 +664,7 @@ double compute_radius(int level, int n_levels)
 {
     double radius;
     //r = RMIN * pow(2., ((double) (n_levels - level - 1)) / 2.);
-    radius = RMIN * pow(BIFURCATION_SCALE, ((double) (n_levels - level - 1)));
+    radius = RMIN * pow(BIFURCATION_SCALE, ((double) (n_levels - level - 1)));  //TODO: remove bifurcation scale, replace with 2^...
     return radius;
 }
 
@@ -1251,7 +1250,7 @@ void eval_dgdx(workspace *W, double t, double *y)
     {
         r = y[i * W->neq];
         l = W->l[i];
-        W->dgdx->x[i] = 4.0*pow(r, 3) / l;
+        W->dgdx->x[i] = 4.0*pow(r, 3) / l;		// g = r^4 / l so dg/dx = 4 r^3 / l
     }
 }
 
@@ -1266,7 +1265,7 @@ void eval_dpdg(workspace *W, double t, double *y)
     for (int i = 0; i < W->nblocks; i++)
     {
         r = y[W->neq*i];
-        W->g[i] = pow(r, 4) / W->l[i];
+        W->g[i] = pow(r, 4) / W->l[i];			// g = r^4 / l
     }
 
     // Form the matrix A_A G A_A.'
