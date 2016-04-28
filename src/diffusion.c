@@ -14,7 +14,7 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
     int W_ghost_block_idx = 0;
 
     const double tau = 0.7; 	// (sec) the diffusion rate - characteristic time scale for ion to travel one cell length
-    double state_K_e = u[K_e];
+    double state_K_e = u[K_e];	// variable to diffuse
 
     double W_ghost_block_val = 0;
     double W_neighbour_val = 0;

@@ -410,7 +410,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 
     //SC:
     du[ N_Na_s  ] = - k_C * K_input(t,x,y) - du[ N_Na_k];                           // uMm s-1
-    du[ N_K_s   ] = k_C * K_input(t,x,y) - du[ N_K_k] - flu_J_BK_k + (R_s / VR_se) * ( (K_e - flu_K_s) / tau);                 // uMm s-1
+    du[ N_K_s   ] = k_C * K_input(t,x,y) - du[ N_K_k] - flu_J_BK_k + (R_s / VR_se) * ( (state_K_e - flu_K_s) / tau);                 // uMm s-1
     du[ N_HCO3_s] = - du[ N_HCO3_k];                                                // uMm s-1
 
     //AC:
@@ -422,7 +422,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     du[ w_k     ] = flu_phi_w * (flu_w_inf - state_w_k);                            // s-1
 
     //PVS:
-    du[ K_p     ] = flu_J_BK_k / (VR_pa * state_R_k) + flu_J_KIR_i / VR_ps - R_decay * (state_K_p - K_p_min) + (1 / VR_pe) * ( (K_e - K_p) / tau);         // uM s-1
+    du[ K_p     ] = flu_J_BK_k / (VR_pa * state_R_k) + flu_J_KIR_i / VR_ps - R_decay * (state_K_p - K_p_min) + (1 / VR_pe) * ( (state_K_e - state_K_p) / tau);         // uM s-1
 
     //SMC:
     du[ ca_i    ] = flu_c_cpl_i + flu_rho_i * ( flu_ip3_i - flu_SRuptake_i + flu_CICR_i - flu_extrusion_i + flu_leak_i - flu_VOCC_i + flu_NaCa_i + 0.1* flu_J_stretch_i);
@@ -443,8 +443,8 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     du[ AMp  	] = K3_c * state_Mp + flu_K6_c * state_AM - (K4_c + K5_c) * state_AMp;
     du[ AM   	] = K5_c * state_AMp - ( K7_c + flu_K6_c ) * state_AM;
 
-    //ECS:
-    du[ K_e		] = - flu_NaK_i + flu_K_i - ( (K_e - flu_K_s) / tau) - ( (K_e - K_p) / tau);
+    //ECS:				smc efflux				SC flux					 PVS flux
+    du[ K_e		] = - flu_NaK_i + flu_K_i - ( (state_K_e - flu_K_s) / tau) - ( (state_K_e - state_K_p) / tau);
 
     // State variables so they can be plotted in Paraview, but only for one time (initial condition set in nvu_ics, use t for when the signal is turned on)
     du[PLC_i	] = 0;
