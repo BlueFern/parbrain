@@ -12,6 +12,13 @@ void back_euler(ode_workspace *odews)
     w    = zerosv(ny);
     x    = zerosv(ny);
 
+    // Time stuff used later to output progress of the program at each iteration
+	time_t start_t = 0;
+	time_t end_t = 0;
+	double total_t = 0;
+	// Record the time at the start of program
+	time(&start_t);
+
     double t = odews->t0;
     double tnext;
 
@@ -99,10 +106,19 @@ void back_euler(ode_workspace *odews)
             write_flow(W, t, W->q, W->q0);
             write_pressure(W, t, W->p, W->p0);
 
-            if (W->rank == 0)
-            {
-                printf("time: %e \n",t);
-            }
+        	// Time taken since beginning
+        	time(&end_t);
+
+        	// Update total time since beginning and reset start_t
+        	total_t += difftime(end_t, start_t);
+        	start_t = end_t;
+
+        	// Output progress in terms of percentage remaining, time elapsed and estimated time remaining
+        	if (W->rank == 0)
+        	{
+        		printf("Time: %4.0f  | %4d min %2d sec elapsed\n", t, (int)(total_t / 60), ((int)total_t % 60));
+        	}
+
         }
     }
 
@@ -110,6 +126,12 @@ void back_euler(ode_workspace *odews)
     free(x);
     free(beta);
 }
+
+
+
+
+
+
 
 void solver_init(ode_workspace *odews, int argc, char **argv)
 {

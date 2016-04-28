@@ -542,8 +542,8 @@ double K_input(double t, double x, double y)
 {
     double K_input_min 	= 0;
     double K_input_max 	= 2.5;
-    double t_up   		= 5;				// Signal starts at time = 5 ***
-    double t_down 		= 25;
+    double t_up   		= 100;				// Signal starts at time = 5 ***
+    double t_down 		= 200;
     double lengthpulse 	= t_down - t_up;
     double lengtht1 	= 15;
     double t0 			= t_up;
@@ -608,8 +608,8 @@ double flux_ft(double t, double x, double y)
 {
     double flux_min 	= 0;
     double flux_max 	= 1;
-    double t_up   		= 5;					// Channels turn on at time = 5 ***
-    double t_down 		= 25;
+    double t_up   		= 100;					// Channels turn on at time = 5 ***
+    double t_down 		= 200;
     double lengthpulse 	= t_down - t_up;
     double lengtht1 	= 15;
     double t0 			= t_up;
@@ -697,7 +697,7 @@ void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w)
     u0[AMp]       = 0.25;                      //22
     u0[AM]        = 0.25;                      //23
 
-    u0[K_e]		  = 1;						   //24
+    u0[K_e]		  = 1e3;					   //24
 
     // Only here so they can be shown in Paraview for some time when the signals are turned on (as a check), so choose t within t0 and t1
     u0[PLC_i]     = PLC_input(15,x,y);
