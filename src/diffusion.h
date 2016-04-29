@@ -2,6 +2,11 @@
 #define DIFFUSION_H_
 
 #include "nvu.h"
+#include "brain.h"
+
+// Forward declaration to avoid errors
+typedef struct workspace workspace;
+
 
 
 // Number of variables stored in diffusion structs.
@@ -39,6 +44,6 @@ void init_ghost_blocks(int nlocal, int mlocal, nvu_workspace *w);
 // Calculate diffusion for tissue blocks within given MPI domain.
 void diffusion(int block_number, double t, double *u, double *du, nvu_workspace *w);
 
-
+void update_ghost_blocks(workspace *W, double *y);
 
 #endif

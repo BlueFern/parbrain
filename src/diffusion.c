@@ -23,7 +23,7 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
     if(W_neighbour < 0)
     {
     	W_ghost_block_idx = - W_neighbour - 1;
-    	W_ghost_block_val = w->ghost_blocks[W_ghost_block_idx].vars[DIFF_K];
+    	W_ghost_block_val = w->ghost_blocks[W_ghost_block_idx].vars[DIFF_K]; // value set in init_ghost_blocks
     	flu_diff_K_0 = (W_ghost_block_val - state_K_e) / tau;
     }
     // Otherwise it is a proper tissue block.
@@ -98,6 +98,8 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
 	printf("E_neighbour: %d, E_ghost_block_idx: %d, E_ghost_block_val: %f, E_neighbour_offset: %d, E_neighbour_val: %f, flu_diff_K_2: %f\n", E_neighbour, E_ghost_block_idx, E_ghost_block_val, E_neighbour_offset, E_neighbour_val, flu_diff_K_2);
 	printf("S_neighbour: %d, S_ghost_block_idx: %d, S_ghost_block_val: %f, S_neighbour_offset: %d, S_neighbour_val: %f, flu_diff_K_3: %f\n", S_neighbour, S_ghost_block_idx, S_ghost_block_val, S_neighbour_offset, S_neighbour_val, flu_diff_K_3);
 */
+	//printf("Block %d | Fluxes W: %f, N: %f, E: %f, S: %f\n", block_number, flu_diff_K_0, flu_diff_K_1, flu_diff_K_2, flu_diff_K_3);
+
 	// Add diffusion terms to K equation
 	du[K_e] += flu_diff_K_0 + flu_diff_K_1 + flu_diff_K_2 + flu_diff_K_3 ;
 }
@@ -164,6 +166,14 @@ void set_neighbours(int idx, int m, int n, int *neighbours)
 	{
 		neighbours[3] = i + m * j - 1; //S
 	}
+
+	int u = 0;
+	printf("index %d: ", idx);
+	for (u=0; u < 4; u++)
+	{
+		printf("%d ",neighbours[u]);
+	}
+	printf("\n");
 }
 
 // Get the indices for all neighbours for all tissue blocks in the given MPI domain.
@@ -234,6 +244,59 @@ void init_ghost_blocks(int nlocal, int mlocal, nvu_workspace *w)
 
     	w->ghost_blocks[i].vars[DIFF_K] = 3e3;
     }
+}
+
+void update_ghost_blocks(workspace *W, double *y)
+{
+
+	// All-side loop.
+	int odd_even = 1;
+	int idx_offset = 0;
+
+	for(int side_idx = 0; side_idx < 4; side_idx++)
+	{
+		// Choose length of the side depending on the odd or even value.
+		int side_length = odd_even ? W->mlocal : W->nlocal;
+
+		// If neighbour exists.
+		if(W->domain_neighbours[side_idx] >= 0)
+		{
+			// TODO: This likely will have to be a derived type when we have more than one diffusion variable to post.
+			double *send_array = malloc(sizeof(double) * side_length);
+			double *receive_array = malloc(sizeof(double) * side_length);
+
+			// Populate send array with values from the state variables array.
+			for(int i = 0; i < side_length; i++)
+			{
+				// Get the state variable based on the indices of the edge block for this side (and all other sides).
+				send_array[i] = y[W->neq * W->nvu_w->edge_indices[idx_offset + i] + K_e];
+			}
+
+			// TODO: Catch situations when there are no neighbours on the North side.
+			MPI_Sendrecv(
+					send_array, side_length, MPI_DOUBLE, W->domain_neighbours[side_idx], 0,
+					receive_array, side_length, MPI_DOUBLE, W->domain_neighbours[side_idx], 0,
+					MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+			// Copy received data into the ghost blocks.
+			for(int i = 0; i < side_length; i++)
+			{
+				W->nvu_w->ghost_blocks[idx_offset + i].vars[DIFF_K] = receive_array[i];
+			}
+
+			free(send_array);
+			free(receive_array);
+		}
+		else
+		{
+			for(int i = 0; i < side_length; i++)
+			{
+				W->nvu_w->ghost_blocks[idx_offset + i].vars[DIFF_K] = y[W->neq * W->nvu_w->edge_indices[idx_offset + i] + K_e];
+			}
+		}
+		idx_offset += side_length;
+		odd_even = !odd_even;
+	}
 }
 
 
