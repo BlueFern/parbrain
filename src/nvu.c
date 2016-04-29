@@ -475,9 +475,9 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     du[ AMp  	] = K3_c * state_Mp + flu_K6_c * state_AM - (K4_c + K5_c) * state_AMp;
     du[ AM   	] = K5_c * state_AMp - ( K7_c + flu_K6_c ) * state_AM;
 
-    //ECS:				smc efflux				SC flux					 		PVS flux							decay term
-//    du[ K_e		] = - flu_NaK_i + flu_K_i - VR_se * ( (state_K_e - flu_K_s) / tau) - VR_pe * ( (state_K_e - state_K_p) / tau) - 0.05 * state_K_e;
-    du[ K_e		] = 0; // for only the diffusion eq
+    //ECS:				smc efflux				SC flux					 				PVS flux								decay term
+    du[ K_e		] = - flu_NaK_i + flu_K_i - VR_se * ( (state_K_e - flu_K_s) / tau) - VR_pe * ( (state_K_e - state_K_p) / tau); // - 0.05 * state_K_e;
+//    du[ K_e		] = 0; // for only the diffusion eq
 
     // State variables so they can be plotted in Paraview, but only for one time (initial condition set in nvu_ics, use t for when the signal is turned on)
     du[PLC_i	] = 0;
@@ -698,14 +698,16 @@ void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w)
     u0[AMp]       = 0.25;                      //22
     u0[AM]        = 0.25;                      //23
 
-    if (x < 0 && y < 0)
-    {
-    	u0[K_e]		  = 3e3;					   //24, since diffusing make sure this is the same as the ghost blocks in init_ghost_blocks()
-    }
-    else
-    {
-    	u0[K_e]		  = 0;
-    }
+    u0[K_e]		  = 3e3;
+
+//    if (x < 0 && y < 0)
+//    {
+//    	u0[K_e]		  = 3e3;					   //24, since diffusing make sure this is the same as the ghost blocks in init_ghost_blocks()
+//    }
+//    else
+//    {
+//    	u0[K_e]		  = 0;
+//    }
 
     // Only here so they can be shown in Paraview for some time when the signals are turned on (as a check), so choose t within t0 and t1
     u0[PLC_i]     = PLC_input(15,x,y);

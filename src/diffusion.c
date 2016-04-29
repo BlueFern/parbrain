@@ -167,13 +167,14 @@ void set_neighbours(int idx, int m, int n, int *neighbours)
 		neighbours[3] = i + m * j - 1; //S
 	}
 
-	int u = 0;
-	printf("index %d: ", idx);
-	for (u=0; u < 4; u++)
-	{
-		printf("%d ",neighbours[u]);
-	}
-	printf("\n");
+//	int u = 0;
+//	printf("index %d: ", idx);
+//	for (u=0; u < 4; u++)
+//	{
+//		printf("%d ",neighbours[u]);
+//	}
+//	printf("\n");
+
 }
 
 // Get the indices for all neighbours for all tissue blocks in the given MPI domain.
