@@ -291,9 +291,9 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     const double gam_cross   = 17 * C_Hillmann;
 
     // ECS:
-    const double VR_se       = 0.001; 	// [-]       The estimated volume ratio of SC to ECS: Model Estimation
     const double VR_pe       = 0.001; 	// [-]       The estimated volume ratio of PVS to ECS: Model Estimation
-    const double tau = 0.7; 			// (sec) the diffusion rate of K+ - characteristic time scale for ion to travel one cell length
+    const double tau 		 = 0.7; 	// (sec) the diffusion rate of K+ - characteristic time scale for ion to travel one cell length
+    const double tau2 		 = 2.8; 	// (sec) the diffusion rate of K+ - characteristic time scale for ion to travel from PVS to SC (length of AC)
 
     double pt, e, r0, q, g; // pressure stuff
 
@@ -442,7 +442,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 
     //SC:
     du[ N_Na_s  ] = - k_C * K_input(t,x,y) - du[ N_Na_k];                           // uMm s-1
-    du[ N_K_s   ] = k_C * K_input(t,x,y) - du[ N_K_k] - flu_J_BK_k + R_s * ( (state_K_e - flu_K_s) / tau);                 // uMm s-1
+    du[ N_K_s   ] = k_C * K_input(t,x,y) - du[ N_K_k] - flu_J_BK_k + R_s * ( (state_K_e - flu_K_s) / tau2);                 // uMm s-1
     du[ N_HCO3_s] = - du[ N_HCO3_k];                                                // uMm s-1
 
     //AC:
@@ -476,7 +476,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     du[ AM   	] = K5_c * state_AMp - ( K7_c + flu_K6_c ) * state_AM;
 
     //ECS:				smc efflux				SC flux					 				PVS flux								decay term
-    du[ K_e		] = - flu_NaK_i + flu_K_i - VR_se * ( (state_K_e - flu_K_s) / tau) - VR_pe * ( (state_K_e - state_K_p) / tau); // - 0.05 * state_K_e;
+    du[ K_e		] = - flu_NaK_i + flu_K_i - ( (state_K_e - flu_K_s) / tau2) - VR_pe * ( (state_K_e - state_K_p) / tau); // - 0.05 * state_K_e;
 //    du[ K_e		] = 0; // for only the diffusion eq
 
     // State variables so they can be plotted in Paraview, but only for one time (initial condition set in nvu_ics, use t for when the signal is turned on)
