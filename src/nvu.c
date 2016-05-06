@@ -277,7 +277,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     const double v_rest		= -31.1;
     const double k_j		= 0.1;
 
-    const double J_PLC 		= PLC_input(t,x,y);	//0.18
+    const double J_PLC 		= 0.4;	//0.18 *****************************
 
     const double g_hat      = 0.5;
     const double p_hat      = 0.05;
@@ -292,8 +292,9 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 
     // ECS:
     const double VR_pe       = 0.001; 	// [-]       The estimated volume ratio of PVS to ECS: Model Estimation
-    const double tau 		 = 0.7; 	// (sec) the diffusion rate of K+ - characteristic time scale for ion to travel one cell length
-    const double tau2 		 = 2.8; 	// (sec) the diffusion rate of K+ - characteristic time scale for ion to travel from PVS to SC (length of AC)
+    // tau is dx^2 / 2D where dx is the length and D is diffusion rate
+    const double tau 		 = 0.7; 	// (sec) characteristic time scale for ion to travel one cell length (SMC length is ~50 um)
+    const double tau2 		 = 2.8; 	// (sec) characteristic time scale for ion to travel from PVS to SC (AC length is ~100 um, based on protoplasmic astrocyte process length of ~50 um)
 
     double pt, e, r0, q, g; // pressure stuff
 
@@ -543,8 +544,8 @@ double K_input(double t, double x, double y)
 {
     double K_input_min 	= 0;
     double K_input_max 	= 2.5;
-    double t_up   		= 100;				// Signal starts at time = 5 ***
-    double t_down 		= 200;
+    double t_up   		= 0;				// Signal starts at time = 5 ***
+    double t_down 		= 350;
     double lengthpulse 	= t_down - t_up;
     double lengtht1 	= 15;
     double t0 			= t_up;
@@ -553,23 +554,27 @@ double K_input(double t, double x, double y)
     double t3 			= t1 + lengthpulse;
     int alpha 			= 2;
     int beta 			= 5;
+    double ampl = 3;
+    double ramp = 0.003;
+    double x_centre = 0;//-0.0008;
+    double y_centre = 0;//-0.0008;
     double deltat		= 10;
     double gab 			= factorial(alpha + beta - 1);
     double ga 			= factorial(alpha - 1);
     double gb 			= factorial(beta - 1);
-    //double K_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
+    double K_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
     //double K_space =((0.5 + 0.5 *(tanh(1e5 * (x-0.0004)+1))) *(0.5 + 0.5 *(tanh(1e5 *(y-0.0004)+1))));
-    double K_space;
-
-    // only in corner
-    if (x <= 0 && y <= 0)
-    {
-        K_space = 1;
-    }
-    else
-    {
-        K_space = 0;
-    }
+//    double K_space;
+//
+//    // only in corner
+//    if (x <= 0 && y <= 0)
+//    {
+//        K_space = 1;
+//    }
+//    else
+//    {
+//        K_space = 0;
+//    }
 
     double K_time;
 
@@ -609,31 +614,31 @@ double flux_ft(double t, double x, double y)
 {
     double flux_min 	= 0;
     double flux_max 	= 1;
-    double t_up   		= 100;					// Channels turn on at time = 5 ***
-    double t_down 		= 200;
+    double t_up   		= 150;					// Channels turn on at time = 5 ***
+    double t_down 		= 350;
     double lengthpulse 	= t_down - t_up;
     double lengtht1 	= 15;
     double t0 			= t_up;
     double t1 			= t0 + lengtht1;
-//    double ampl = 3;
-//    double ramp = 0.003;
-//    double x_centre = 0;//-0.0008;
-//    double y_centre = 0;//-0.0008;
+    double ampl = 3;
+    double ramp = 0.003;
+    double x_centre = 0;//-0.0008;
+    double y_centre = 0;//-0.0008;
     double flux_time = 0.5 * tanh((t - t0) / 0.0005) - 0.5 * tanh((t - t1 - lengthpulse) / 0.0005);
     //double flux_time = 0.5 * tanh((t-t0)/0.005) - 0.5 * tanh((t-t1-lengthpulse)/0.005);
-    //double flux_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
+    double flux_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
     //double flux_space =((0.5 + 0.5 *(tanh(1e5 * (x-0.0004)+1))) *(0.5 + 0.5 *(tanh(1e5 *(y-0.0004)+1))));  
-    double flux_space;   
-
-    // only in corner
-    if (x <= 0 && y <= 0)
-    {
-        flux_space = 1;
-    }
-    else
-    {
-        flux_space = 0;
-    }
+//    double flux_space;
+//
+//    // only in corner
+//    if (x <= 0 && y <= 0)
+//    {
+//        flux_space = 1;
+//    }
+//    else
+//    {
+//        flux_space = 0;
+//    }
 
     double flux_out = flux_min + (flux_max-flux_min) * flux_time * flux_space;
 
@@ -646,8 +651,8 @@ double PLC_input(double t, double x, double y)
 {
     double PLC_min = 0.18;
     double PLC_max = 0.4;
-    double t_up   = 100;
-    double t_down = 900;
+    double t_up   = 1000;
+    double t_down = 9000;
     double ampl = 3;
     double ramp = 0.003;//0.002;
     double x_centre = 0; // 0.0008 -> n_bif = 7; python: ((((2**(n_bif-1))**0.5)/4)*0.0004)
