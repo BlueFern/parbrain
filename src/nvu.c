@@ -562,22 +562,22 @@ double K_input(double t, double x, double y)
     double gab 			= factorial(alpha + beta - 1);
     double ga 			= factorial(alpha - 1);
     double gb 			= factorial(beta - 1);
-    double K_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
+
+    //double K_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
     //double K_space =((0.5 + 0.5 *(tanh(1e5 * (x-0.0004)+1))) *(0.5 + 0.5 *(tanh(1e5 *(y-0.0004)+1))));
-//    double K_space;
-//
-//    // only in corner
-//    if (x <= 0 && y <= 0)
-//    {
-//        K_space = 1;
-//    }
-//    else
-//    {
-//        K_space = 0;
-//    }
+
+    double K_space;
+    // only in corner
+    if (x <= 0 && y <= 0)
+    {
+        K_space = 1;
+    }
+    else
+    {
+        K_space = 0;
+    }
 
     double K_time;
-
     if (t >= t0 && t <= t1)
     {
         //K_time = F_input * gab / (ga * gb) * pow((1-(t-t0) / deltat),(beta - 1)) * pow(((t - t0) / deltat),(alpha-1)); 
@@ -614,7 +614,7 @@ double flux_ft(double t, double x, double y)
 {
     double flux_min 	= 0;
     double flux_max 	= 1;
-    double t_up   		= 150;					// Channels turn on at time = 5 ***
+    double t_up   		= 0;					// Channels turn on at time = 5 ***
     double t_down 		= 350;
     double lengthpulse 	= t_down - t_up;
     double lengtht1 	= 15;
@@ -624,21 +624,23 @@ double flux_ft(double t, double x, double y)
     double ramp = 0.003;
     double x_centre = 0;//-0.0008;
     double y_centre = 0;//-0.0008;
+
     double flux_time = 0.5 * tanh((t - t0) / 0.0005) - 0.5 * tanh((t - t1 - lengthpulse) / 0.0005);
     //double flux_time = 0.5 * tanh((t-t0)/0.005) - 0.5 * tanh((t-t1-lengthpulse)/0.005);
-    double flux_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
+
+    //double flux_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
     //double flux_space =((0.5 + 0.5 *(tanh(1e5 * (x-0.0004)+1))) *(0.5 + 0.5 *(tanh(1e5 *(y-0.0004)+1))));  
-//    double flux_space;
-//
-//    // only in corner
-//    if (x <= 0 && y <= 0)
-//    {
-//        flux_space = 1;
-//    }
-//    else
-//    {
-//        flux_space = 0;
-//    }
+
+    double flux_space;
+    // only in corner
+    if (x <= 0 && y <= 0)
+    {
+        flux_space = 1;
+    }
+    else
+    {
+        flux_space = 0;
+    }
 
     double flux_out = flux_min + (flux_max-flux_min) * flux_time * flux_space;
 
@@ -659,6 +661,7 @@ double PLC_input(double t, double x, double y)
     double y_centre = 0;
     double PLC_space = fmin(1.0, ampl * (exp(-((pow((x - x_centre), 2) + pow((y - y_centre), 2)) / (2 * pow(ramp, 2))))));
     double PLC_time = 0.5 * tanh((t - t_up) / 0.05) - 0.5 * tanh((t - t_down) / 0.05);
+
     double PLC_out = PLC_min + (PLC_max-PLC_min) * PLC_space * PLC_time;
     //double PLC_out = PLC_space; // no time-dependency
     return PLC_out;
