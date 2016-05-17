@@ -56,19 +56,6 @@ static const int PLC_i     = 25; //!
 static const int K_df_i    = 26; //!
 static const int K_flux_i  = 27; //!
 
-// NO pathway
-//static const int NOi       = 24;
-//static const int NOj       = 25;
-//static const int NOn       = 26;
-//static const int cGMP      = 27;
-//static const int eNOS      = 28;
-//static const int nNOS      = 29;
-//static const int ca_n      = 30;
-//static const int E_b       = 31;
-//static const int E_6c      = 32;
-//static const int E_5c      = 33;
-
-
 // Constants we may want to use that are defined in brain.c. 
 extern const double RMIN;   // radius of smallest vessel
 extern const double R0;     // radius scaling characteristic value
@@ -96,7 +83,7 @@ typedef struct nvu_workspace {
     double a1, a2, a3, a4, a5;
     double b1, d1, d2, g1, g2;
     double l;
-    double pcap;
+    double pcap;		// pressure at capillaries (min)
 
     // Indices of neighbours for every tissue block. Ghost blocks are numbered
     // with negative indices in counter-clockwise flu_Kactivation_idirection.

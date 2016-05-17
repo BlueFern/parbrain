@@ -69,7 +69,8 @@ void evaluate(workspace *W, double t, double *y, double *dy)
     // printf("time: %f", t);
 
     // Update conductances of autoregulating vessels
-    for (int i = 0; i < W->nblocks; i++) {
+    for (int i = 0; i < W->nblocks; i++)
+    {
         r = y[W->neq*i]; // Radius is always the first variable
         l = W->l[i];
         W->g[i] = pow(r, 4) / l;

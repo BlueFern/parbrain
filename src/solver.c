@@ -198,16 +198,6 @@ int sizecheck(double *x, int n, double tol) { // n - # of equations total (nbloc
 			1,
 			1,
 			1
-			//1e-2, 	// 24 NO pathway
-			//1e-2,	// 25
-			//1e-1,	// 26
-			//1,	// 27
-			//1e-1,	// 28
-			//1e-4,	// 29
-			//1e-1,	// 30
-			//1e-1,	// 31
-			//1e-1,	// 32
-			//1e+1	// 33
 	};
 
     for (int i = 0; i < n; i++)

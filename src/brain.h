@@ -30,7 +30,7 @@ typedef struct workspace {
     cs      *At;    // transpose of A
     cs      *G;     // Conductance matrix 
     int     *level; // Level of each vessel in A
-    double  *g;     // Conductance vector, one per vessel. will be a pointer to data in G
+    double  *g;     // Conductance, one per vessel. will be a pointer to data in G
     int     nblocks;// Number of nvu blocks
     int     nu;     // Number of equations total
     int     neq;    // Number of equations per block

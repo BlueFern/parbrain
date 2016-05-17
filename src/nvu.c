@@ -27,35 +27,6 @@ nvu_workspace *nvu_init(void)
     // drop) or flow term
     int dfdp_pattern[] = {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; 	// neq * 1 column vector
 
-//    int dfdx_pattern[] = {1,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0, 		//remember indexing starts at 0
-//    		              0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-//    		              0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-//    		              0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-//    		              0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-//    		              0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-//    		              0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-//    		              0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,
-//    		              0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-//    		              0,0,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,
-//    		              0,0,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-//    		              1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,1,0,0,0,0,1,1,1,0,0,0,0,
-//    		              0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-//    		              0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-//    		              0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,
-//    		              0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,
-//    		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,
-//    		              1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,
-//    		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,
-//    		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,
-//    		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,
-//    		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,
-//    		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,
-//    		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,
-//						  0,0,0,0,0,0,0,1,0,1,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,
-//    		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-//    		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-//    		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 }; // column major, neq*neq
-
     // Column: variables the eq depends on
     // Row: variables that depend on that eq variable
     int dfdx_pattern[] = {1,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0, 		//remember indexing starts at 0
@@ -236,9 +207,6 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     const double v_Ca3		= -27; 			// correct
     const double R_K		= 12;
     const double k_i		= 0.1;
-//    const double K_d         = 1;            // = 1e3 nM Gonzalez
-//    const double B_T         = 100;          // = 1e5 nM Gonzalez
-//    const double Kinf_i      = 1e5;          // 100 mM K+ concentration in SMC
 
 // Stretch-activated channels
     const double G_stretch   = 0.0061;       // uM mV-1 s-1   (stretch activated channels)
@@ -484,28 +452,6 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     du[PLC_i	] = 0;
     du[K_df_i	] = 0;
     du[K_flux_i	] = 0;
-
-
-    // ***********NO pathway***********
-    // NE:           
-//    du[ca_n]       = (((flu_I_Ca)/(2*Farad*v_spine) - (k_ex * (state_ca_n - Ca_rest)))/(1+lambda)) ;     //\muM
-//    du[nNOS]       = V_maxNOS * flu_CaM / (K_actNOS + flu_CaM) - mu2 * state_nNOS ;                  //\muM
-//    du[NOn]        = V_nNOS * LArg / ( pow((pow(LArg,2)+1),0.5) ) * (state_nNOS) - ((state_NOn-state_NOi)/tau_ni) - (k_O2* pow(state_NOn,2) * On); 
-                         
-    // SMC:              
-//    du[NOi]        = (state_NOn - state_NOi) / tau_ni + (state_NOj - state_NOi) / tau_ji - k_dno * state_NOi ; 
-//    du[E_b]        = -k1 * state_E_b * state_NOi + k_1 * state_E_6c + flu_k4 * state_E_5c ;     
-//    du[E_6c]       = k1 * state_E_b * state_NOi - k_1 * state_E_6c - k2 * state_E_6c - k3 * state_E_6c * state_NOi ;
-//    du[E_5c]       = k3 * state_E_6c * state_NOi + k2 * state_E_6c - flu_k4 * state_E_5c ;
-//    du[cGMP]       = V_max_sGC * state_E_5c - (k_pde * pow(state_cGMP,2) ) / (K_m_pde + state_cGMP );
-       
-    // EC:
-//    du[eNOS]       = ((K_dis * state_ca_j) / (K_eNOS + state_ca_j)) - mu2 * state_eNOS + g_max * flu_F_tau_w ;      // (104)
-//    du[NOj]        = V_eNOS*(LArg)/(pow((pow(LArg,2)+1),0.5))*(state_eNOS) - (state_NOj-state_NOi)/tau_ji - k_O2*pow((state_NOj),2)*Oj - state_NOj*4*3300/(pow(25,2));
-
-   // printf("** %e** %e** %e** %e** %e** %e** %e** %e** %e** %e ** %e *** \n", L_p, flu_Na_k, flu_K_k, flu_Cl_k, flu_HCO3_k, flu_Na_s, flu_K_s, flu_Cl_s, flu_HCO3_s, X_k, state_R_k);
-
-//flu_c_cpl_j, flu_rho_j, flu_ip3_j, flu_ERuptake_j, flu_CICR_j, flu_extrusion_j, flu_leak_j, flu_cation_j, flu_O_j, flu_J_stretch_j );
 }
 
 // Time-varying pressure at the root of the tree. 1 is nominal value. If
@@ -519,25 +465,6 @@ double nvu_p0(double t)
 
     return p0;
 }
-
-// Space- & time-varying Glu input signal
-//double nvu_Glu(double t, double x, double y) {
-//    double Glu_min = 0;
-//    double Glu_max = 1846; // uM - one vesicle (Santucci)
-//    double t_up   = 50;
-//    double t_down = 800;
-//    double blocks_activated = 4;
-//    double Glu = ((0.5 + 0.5 *(tanh(100000*(x-0.0004)+1))) *(0.5 + 0.5 *(tanh(100000*(y-0.0004)+1))))        *          ((Glu_min + (Glu_max - Glu_min) / 2.0 * (1 + tanh(10*(t - t_up))) + (Glu_min - Glu_max) / 2.0 * (1 + tanh(10*(t - t_down)))));
-//    return Glu;
-//}
-
-// Currently not used
-//double Kp_input(double t, double x, double y)
-//{
-//    double Kp_out = ((0.5 + 0.5 *(tanh(100000*(x-0.0004)+1))) *(0.5 + 0.5 *(tanh(100000*(y-0.0004)+1)))); // spatial
-//    //*          ((Glu_min + (Glu_max - Glu_min) / 2.0 * (1 + tanh(10*(t - t_up))) + (Glu_min - Glu_max) / 2.0 * (1 + tanh(10*(t - t_down))))); // temporal
-//    return Kp_out;
-//}
 
 // Space- & time-varying K+ input signal (simulating neuronal activity)
 double K_input(double t, double x, double y)
@@ -708,36 +635,9 @@ void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w)
 
     u0[K_e]		  = 3e3;
 
-//    if (x < 0 && y < 0)
-//    {
-//    	u0[K_e]		  = 3e3;					   //24, since diffusing make sure this is the same as the ghost blocks in init_ghost_blocks()
-//    }
-//    else
-//    {
-//    	u0[K_e]		  = 0;
-//    }
-
     // Only here so they can be shown in Paraview for some time when the signals are turned on (as a check), so choose t within t0 and t1
     u0[PLC_i]     = PLC_input(15,x,y);
     u0[K_df_i]    = K_input(15,x,y);
     u0[K_flux_i]  = flux_ft(15,x,y);
 
-// NO pathway*****************
-//    u0[NOi]       = 0.07;                    //24
-//    u0[NOj]       = 0.07;                    //25
-//    u0[NOn]       = 0.2;                    //26
-//    u0[cGMP]      = 8.8;                    //27
-//    u0[eNOS]      = 3.8;                    //28
-//    u0[nNOS]      = 0.3;                    //29
-//    u0[ca_n]      = 0.1;                    //30
-//    u0[E_b]       = 0.3;                    //31  Eb+E6c+E5c=1 !
-//    u0[E_6c]      = 0.2;                    //32  
-//    u0[E_5c]      = 0.5;                    //33
-
 }
-
-//double Hill(double conc, double Hconst, double power) {
-//    double hill = pow(conc,power) / ( pow(conc,power) + pow(Hconst,power) ) ;
-//    return hill;
-//}
-
