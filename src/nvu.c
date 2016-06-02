@@ -68,6 +68,8 @@ nvu_workspace *nvu_init(void)
     //
     // If you just define the integer arrays dfdp_pattern and dfdx_pattern
     // as above, you can leave the following two blocks as they are.
+
+    // Takes the two patterns defined above and puts them into sparse matrices (cs*)
     cs *T;
     T = cs_spalloc(nvu_w->neq, 1, 1, 1, 1);
 

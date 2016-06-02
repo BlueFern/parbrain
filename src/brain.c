@@ -75,7 +75,7 @@ void evaluate(workspace *W, double t, double *y, double *dy)
         l = W->l[i];
         W->g[i] = pow(r, 4) / l;
     }
-    // Solve for pressure and flow
+    // Solve for pressure and flow: takes p0 and pcap (boundary conditions) as input
     solve(W, nvu_p0(t), W->nvu_w->pcap);
     // Evaluate the right hand side equations
     rhs(W, t, y, W->p, dy);
@@ -84,7 +84,8 @@ void evaluate(workspace *W, double t, double *y, double *dy)
 
     // Calculate diffusion for every block.
     int istart;
-    for (int i = 0; i < W->nblocks; i++) {
+    for (int i = 0; i < W->nblocks; i++)
+    {
     	istart = W->neq * i;
     	diffusion(i, t, y + istart, dy + istart, W->nvu_w);
     }
@@ -92,15 +93,15 @@ void evaluate(workspace *W, double t, double *y, double *dy)
     // printf(", again, time: %f\n", t);
 }
 
-void solve(workspace *W, double p_in, double pc)
+void solve(workspace *W, double p0, double pcap)
 {
-    compute_uv(W, pc);
+    compute_uv(W, pcap); // compute the intermediate variables u and v
     if (W->n_procs > 1)
     {
         communicate(W);
-        compute_root(W, p_in);
+        compute_root(W, p0);
     }
-    compute_sub(W, p_in, pc);
+    compute_sub(W, p0, pcap); // compute p, w and q
 }
 
 void jacupdate(workspace *W, double t, double *u)
@@ -548,14 +549,14 @@ void compute_symbol_cholesky(workspace *W)
     Y = cs_multiply(X, W->At);
     cs_spfree(X);
 
-    W->symbchol = cs_schol(0, Y);
+    W->symbchol = cs_schol(0, Y);  // symbchol = AGAt
     cs_spfree(Y);
 
     X = cs_multiply(W->A0, W->G0);
     Y = cs_multiply(X, W->A0t);
     cs_spfree(X);
 
-    W->symbchol0 = cs_schol(0, Y);
+    W->symbchol0 = cs_schol(0, Y);	// symbchol0 = AGAt for the root subtree
     cs_spfree(Y);
 }
 
@@ -665,7 +666,7 @@ double compute_radius(int level, int n_levels)
 {
     double radius;
     //r = RMIN * pow(2., ((double) (n_levels - level - 1)) / 2.);
-    radius = RMIN * pow(BIFURCATION_SCALE, ((double) (n_levels - level - 1)));  //TODO: remove bifurcation scale, replace with 2^...
+    radius = RMIN * (double) POW_OF_2((n_levels - level - 1)/ 2);
     return radius;
 }
 
@@ -766,7 +767,7 @@ void init_dpdg(workspace *W)
 
 void init_dfdx(workspace *W)
 {
-    // Load sparsity pattern for one block from file
+    // Load sparsity pattern for one block (dfdx_pattern) and add to make Jacobian for all blocks (dfdx)
     int nblocks = W->nblocks;
     cs *J;
 
@@ -778,6 +779,7 @@ void init_dfdx(workspace *W)
 
 void init_dfdp(workspace *W)
 {
+	// Creates large Jacobian for all NVU blocks - essentially the dfdp_pattern added together heaps
     // The ordering of the blocks is such that the first two see the first
     // pressure, the second two see the second, etc.
     cs *B, *J;
@@ -790,15 +792,16 @@ void init_dfdp(workspace *W)
     cs_spfree(B);
 }
 
-void compute_uv(workspace *W, double pc)
+void compute_uv(workspace *W, double pcap)
 {
+	// u = -AGb, v = [g,0]
     cs *AG, *B;
     csn *Nu;
 
-    // Set up boundary conditions - put them in q for now 
+    // Set up boundary conditions b - put them in q for now
     for (int i = 0; i < W->A->m + 1; i++)
     {
-        W->q[i] = -pc;
+        W->q[i] = -pcap;
     }
 
     for (int i = W->A->m + 1; i < W->A->n; i++)
@@ -806,11 +809,12 @@ void compute_uv(workspace *W, double pc)
     	W->q[i] = 0;
     }
 
-    // Define the matrices AG = A*G, and B = A*G*A'
+    // Solving A*G*At p = -A*G b (b is in q for now)
+    // Define the matrices AG = A*G, and B = A*G*At
     AG = cs_multiply(W->A, W->G);
     B  = cs_multiply(AG, W->At);
 
-    // Numerical Cholesky factorisation using precomputed symbolic
+    // Numerical Cholesky factorisation using precomputed symbolic, symbchol = AGAt. Maybe replaces symbchol with B?
     Nu = cs_chol(B, W->symbchol);
 
     if (!Nu) printf("Numerical cholesky decomposition failed in compute_uv");
@@ -832,7 +836,7 @@ void compute_uv(workspace *W, double pc)
 
     cs_spfree(AG); 
 
-    // And solve, using our computed factorisations
+    // And solve, using our computed factorisations - what is this outputting..?
     cholsoln(Nu, W->symbchol, W->A->m, W->u, W->xm);
 
     // Define RHS of v equations
@@ -884,7 +888,7 @@ void communicate(workspace *W)
 
 
 
-void compute_root(workspace *W, double p_in)
+void compute_root(workspace *W, double p0)
 {
     cs *AG, *B, *X, *D;
     csn *Nu;
@@ -907,7 +911,7 @@ void compute_root(workspace *W, double p_in)
 
     // Define the matrices AG = A_0 G_0 and B = A_0 G_0 A_0^T + D 
     AG = cs_multiply(W->A0, W->G0);
-    X  = cs_multiply(AG, W->A0t);
+    X = cs_multiply(AG, W->A0t);
     B = cs_add(X, D, 1.0, 1.0);
 
     cs_spfree(D); 
@@ -919,7 +923,7 @@ void compute_root(workspace *W, double p_in)
     cs_spfree(B);
 
     // Define the boundary condition b (stick it in q0 for now)
-    W->q0[W->A0->n-1] = p_in;
+    W->q0[W->A0->n-1] = p0;
     for (int i = 0; i < (W->A0->n - 1); i++)
     {
         W->q0[i] = 0.0;
@@ -950,8 +954,8 @@ void compute_root(workspace *W, double p_in)
     cholsoln(Nu, W->symbchol0, W->A0->m, W->p0, W->xn0);          
     // W->p0 is overwritten with p 
 
-    // Now compute q0: W->q0 is currently p_in e_n 
-    cs_gaxpy(W->A0t, W->p0, W->q0);       // q = A'p + q = A'p + p_in en
+    // Now compute q0: W->q0 is currently p_0 e_n
+    cs_gaxpy(W->A0t, W->p0, W->q0);       // q = A'p + q = A'p + p_0 en
 
     for (int i = 0; i < W->A0->m; i++)
     {
@@ -961,15 +965,16 @@ void compute_root(workspace *W, double p_in)
     cs_nfree(Nu);
 }
 
-void compute_sub(workspace *W, double p_in, double pc)
+// The function that actually solves for p, w and q!
+void compute_sub(workspace *W, double p0, double pcap)
 {
     double pk;
 
-    if (W->n_procs == 1)
+    if (W->n_procs == 1) // the whole tree
     {
-        pk = p_in;
+        pk = p0;
     }
-    else
+    else // a sub tree
     {
         pk = W->p0[W->rank / 2];
     }
@@ -979,20 +984,20 @@ void compute_sub(workspace *W, double p_in, double pc)
         W->p[i] = W->u[i] + pk * W->v[i];
     }
 
-    // figure out w - first set it to b + p0k e_n (effectively b) 
+    // figure out w
     W->w[W->A->n - 1] = pk;
 
+    // Set w to boundary conditions b
     for (int i = 0; i < W->A->m + 1 ; i++)
     {
-        W->w[i] = -pc;
+        W->w[i] = -pcap;
     }
-
     for (int i = W->A->m + 1; i < (W->A->n - 1); i++)
     {
         W->w[i] = 0;
     }
 
-    cs_gaxpy(W->At, W->p, W->w); // compute A'p + b + pKi en 
+    cs_gaxpy(W->At, W->p, W->w); // w = At*p + w (w set to b)
 
     for (int i = 0; i < W->A->n; i++)
     {
@@ -1145,7 +1150,7 @@ void rhs(workspace *W, double t, double *u, double *p, double *du)
     {
         istart = W->neq * i;
         // Evaluate the individual right hand side
-        nvu_rhs(t, W->x[i], W->y[i], p[i/2], u + istart, du + istart, W->nvu_w);
+        nvu_rhs(t, W->x[i], W->y[i], p[i/2], u + istart, du + istart, W->nvu_w); // p[i/2]? p[0], p[1/2], p[1], ...? ints so round down - 0, 0, 1, 1 etc?
     }
 }
 
