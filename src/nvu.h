@@ -56,6 +56,19 @@ static const int PLC_i     = 25; //!
 static const int K_df_i    = 26; //!
 static const int K_flux_i  = 27; //!
 
+// NO pathway
+static const int NOn        = 28;
+static const int NOk        = 29;
+static const int NOi        = 30;
+static const int NOj        = 31;
+static const int cGMP       = 32;
+static const int eNOS       = 33;
+static const int nNOS       = 34;
+static const int ca_n       = 35;
+static const int E_b        = 36;
+static const int E_6c       = 37;
+static const int E_5c       = 38;
+
 // Constants we may want to use that are defined in brain.c. 
 extern const double RMIN;   // radius of smallest vessel
 extern const double R0;     // radius scaling characteristic value
@@ -113,7 +126,7 @@ void  *nvu_free(nvu_workspace *nvu_w);
 double nvu_p0(double t);
 
 //time- and space-dependent Glu input
-//double nvu_Glu(double t, double x, double y);
+double nvu_Glu(double t, double x, double y);
 
 //time- and space-dependent K+ input
 double K_input(double t, double x, double y);
