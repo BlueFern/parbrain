@@ -16,19 +16,23 @@
 *.out
 *.app
 
-# Project executables
-simulate
-tags
-testbrain
-testmat2
-testmatops
-adjacency
-core
-
 *.err
 *.out
+*.dSYM*
 # Editor temporary files
 *.swp
 *.ll
+*~
 foo.c
 foo.dat
+
+# Simulation data files
+*.dat
+.DS_Store
+
+# Generated documents
+matlab/html/*
+matlab/*eps
+matlab/*jpg
+matlab/alphart2
+matlab/alpha06

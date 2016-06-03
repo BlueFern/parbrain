@@ -2,31 +2,28 @@
 #define BRAIN_H
 #include "matops.h"
 #include "nvu.h"
+#include <cs.h>
 #include <mpi.h>
 #include <stdio.h>
 #include <assert.h>
+
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <stdlib.h>
+
+#define FILENAMESIZE 128
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846264338327
 #endif
 
-extern const int NDEFAULT   ;
-extern const int NSUBDEFAULT;
-extern const int NSYMBOLS   ;
-
-extern const double RMIN    ;
-extern const double R0      ;
-extern const double L0      ;
-extern const double LRR     ;
-extern const double PROOT   ;
-extern const double P0      ;
-extern const double PCAP    ;
-extern const double MU      ;
-
+#define POW_OF_2(x) (1 << (x)) // macro for 2^x using bitwise shift
 
 // Define the workspace that we need to carry around. This is the base
 // workspace for computing the RHS and Jacobian, and performing the solves
 // involved in a Newton step, and as such contains pretty much everything
+
 typedef struct workspace {
     // First, the pieces required to describe the parallel tree problem 
     cs      *A;     // Local (per node) adjacency matrix
@@ -37,6 +34,13 @@ typedef struct workspace {
     int     nblocks;// Number of nvu blocks
     int     nu;     // Number of equations total
     int     neq;    // Number of equations per block
+    int     mlocal; // Size of subtree
+    int     nlocal; // ..
+    int     mglobal;// Processor grid, number of rows
+    int     nglobal;// Processor grid, number of columns
+    int     ntimestamps; 
+    int     QglobalPos;
+    int     PglobalPos;
 
     // Root subtree
     cs      *A0;    // Root adjacency matrix
@@ -70,13 +74,29 @@ typedef struct workspace {
     // MPI Information 
     int     rank;
     int     n_procs;
-    double  *buf;    // Communication buffer
+    int     n_writes;
+    int     displacement; 			// global displacement in output file, in bytes
+    int     displacement_per_write; // bytes written per write (globally)
+    double  *buf;    				// Communication buffer
+    char    *Toutfilename;
+    char    *Qoutfilename;
+    char    *Poutfilename;
+    MPI_File Toutfile;
+    MPI_File Qoutfile;
+    MPI_File Poutfile;
+    char    *dirName;
+
+    MPI_Datatype subarray;
+    MPI_Datatype subarray_single;
+
+    // VTK file
+    char    *vtkfilename;
 
     // Geometrical information
     int     N;      // Total number of levels */
     int     Nsub;   // Subtree size for blk-diagonal Jacobian */
     int     N0;     // Number of root levels */
-    int     Np;     // Number of levels for local subtree */
+    int     Np;     // Number of levels for local subtree, e.g. if H-tree has 4 levels and using 4 cores the local subtrees will have 2 levels */
 
     // Jacobian information 
     int    isjac;
@@ -99,7 +119,8 @@ typedef struct workspace {
     double tjacfactorize;
 
     /* Model-specific stuff */
-    nvu_workspace   *nvu;
+    nvu_workspace   *nvu_w;
+
 } workspace;
 
 /* Methods for external use: essentially function evaluation and Jacobian
@@ -107,11 +128,12 @@ typedef struct workspace {
  * conductance, pressure, and flow values in the workspace data structure,
  * so these values should not be relied to remain static
  * */
+
 // defined in adjacency.c
-cs *adjacency(int N);
+cs *adjacency(int Np);
 
 // defined in brain.c
-workspace *init(int argc, char **argv);
+workspace *workspace_init(int argc, char **argv);
 void    evaluate(workspace *W, double t, double *y, double *dy);
 void    solve(workspace *W, double pin, double pc);
 void    jacupdate(workspace *W, double t, double *y);
@@ -119,10 +141,15 @@ double  p0(double t);
 
 /* Internal methods: shouldn't be used in code outside brain.c */
 void    init_parallel(workspace *W, int argc, char **argv);
+void    init_io(workspace *W);
+void    close_io(workspace *W);
+void    write_data(workspace *W, double t, double *y); 
+void    write_flow(workspace *W, double t, double *q, double *q0);
+void    write_pressure(workspace *W, double t, double *p, double *p0);
+void    write_info(workspace *W);
 int     is_power_of_two(unsigned int x);
 void    init_subtree(workspace *W);
-//cs     *adjacency(int N);
-void    compute_symbchol(workspace *W);
+void    compute_symbol_cholesky(workspace *W);
 void    init_roottree(workspace *W);
 void    set_spatial_coordinates(workspace *W);
 void    set_conductance(workspace *W, int isscaled, int computeroot) ;
@@ -144,7 +171,34 @@ void    eval_dfdx(workspace *W, double t, double *y, double *f, double eps);
 void    eval_dfdp(workspace *W, double t, double *y, double *f, double eps);
 void    eval_dgdx(workspace *W, double t, double *y);
 void    eval_dpdg(workspace *W, double t, double *y);
+void    set_initial_conditions(workspace *W, double *y);
 void    rhs(workspace *W, double t, double *y, double *p, double *dy);
 cs     *mldivide_chol(cs *A, css *S, cs *B);
 
 #endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

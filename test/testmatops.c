@@ -120,6 +120,8 @@ int main(void)
 
     printf("\nTesting mldivide_chol\n");
 
+    cs_spfree(T);
+    cs_spfree(A);
 
     return 0;
 }
