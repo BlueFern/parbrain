@@ -258,7 +258,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     const double G_R		= 955;
     const double v_rest		= -31.1;
     const double k_j		= 0.1;
-    const double J_PLC 		= 0.4;	//0.18 *****************************
+    const double J_PLC 		= 0.18;	//0.18 or 0.4 *****************************
     const double g_hat      = 0.5;
     const double p_hat      = 0.05;
     const double p_hatIP3   = 0.05;
@@ -617,8 +617,8 @@ double nvu_Glu(double t, double x, double y)
 {
     double Glu_min = 0;
     double Glu_max = 1846; // uM - one vesicle (Santucci)
-    double t_up   = 200;
-    double t_down = 800;
+    double t_up   = 100;
+    double t_down = 200;
 //    double blocks_activated = 4;
 //    double Glu_out = ((0.5 + 0.5 *(tanh(100000*(x-0.0004)+1))) *(0.5 + 0.5 *(tanh(100000*(y-0.0004)+1))))        *          ((Glu_min + (Glu_max - Glu_min) / 2.0 * (1 + tanh(10*(t - t_up))) + (Glu_min - Glu_max) / 2.0 * (1 + tanh(10*(t - t_down)))));
     double ampl = 3;
@@ -626,7 +626,18 @@ double nvu_Glu(double t, double x, double y)
     double x_centre = 0; // 0.0008 -> n_bif = 7; python: ((((2**(n_bif-1))**0.5)/4)*0.0004)
     double y_centre = 0;
 
-    double Glu_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2)))))); // Gauss with plateau
+    //double Glu_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2)))))); // Gauss with plateau
+
+    double Glu_space;
+    // only in corner
+    if (x <= 0 && y <= 0)
+    {
+        Glu_space = 1;
+    }
+    else
+    {
+        Glu_space = 0;
+    }
 
     double Glu_time = 0.5 * tanh((t-t_up)/0.05) - 0.5 * tanh((t-t_down)/0.05);
 
@@ -639,8 +650,8 @@ double K_input(double t, double x, double y)
 {
     double K_input_min 	= 0;
     double K_input_max 	= 2.5;
-    double t_up   		= 0;				// Signal starts at time = 5 ***
-    double t_down 		= 350;
+    double t_up   		= 100;				// Signal starts at time = 5 ***
+    double t_down 		= 200;
     double lengthpulse 	= t_down - t_up;
     double lengtht1 	= 15;
     double t0 			= t_up;
@@ -709,8 +720,8 @@ double flux_ft(double t, double x, double y)
 {
     double flux_min 	= 0;
     double flux_max 	= 1;
-    double t_up   		= 0;					// Channels turn on at time = 5 ***
-    double t_down 		= 350;
+    double t_up   		= 100;					// Channels turn on at time = 5 ***
+    double t_down 		= 200;
     double lengthpulse 	= t_down - t_up;
     double lengtht1 	= 15;
     double t0 			= t_up;
