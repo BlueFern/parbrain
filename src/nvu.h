@@ -67,7 +67,15 @@ static const int nNOS       = 34;
 static const int ca_n       = 35;
 static const int E_b        = 36;
 static const int E_6c       = 37;
-static const int E_5c       = 38;
+
+// AC Ca2+
+static const int ca_k       = 38;
+static const int s_k        = 39;
+static const int h_k        = 40;
+static const int ip3_k      = 41;
+static const int eet_k      = 42;
+static const int m_k        = 43;
+static const int ca_p       = 44;
 
 // Constants we may want to use that are defined in brain.c. 
 extern const double RMIN;   // radius of smallest vessel
@@ -86,6 +94,7 @@ extern const double PCAP;   // nominal capillary bed pressure (Pa)
 //          equation depends on p (or q), but 0 otherwise
 //      dfdx_pattern: sparse neq x neq matrix - the sparsity pattern of the
 //          Jacobian of the block
+
 typedef struct nvu_workspace {
     // Mandatory fields (accessed externally). Initialised in nvu_init
     int neq;
@@ -130,6 +139,9 @@ double nvu_Glu(double t, double x, double y);
 
 //time- and space-dependent K+ input
 double K_input(double t, double x, double y);
+
+//time- and space-dependent rho (glutamate) input
+double rho_input(double t, double x, double y);
 	
 //time- and space-dependent flux_ft input
 double flux_ft(double t, double x, double y);
@@ -142,5 +154,7 @@ double factorial(int c);
 
 // Initial conditions
 void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w);
+
+int sizecheck(double *x, int n, double tol);
 
 #endif

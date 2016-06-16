@@ -90,7 +90,7 @@ void back_euler(ode_workspace *odews)
             W->flag[W->rank] |= sizecheck(x, ny, odews->ytol); // increment size check
             daxpy(ny, -1, x, w); // update w with new value
         }
-
+        printf("%s, %s, %d\n", __FUNCTION__, __FILE__, __LINE__);
         if (!converged)
         {
             printf("Newton iteration failed to converge\n");
@@ -129,10 +129,6 @@ void back_euler(ode_workspace *odews)
 
 
 
-
-
-
-
 void solver_init(ode_workspace *odews, int argc, char **argv)
 {
     workspace *W;
@@ -167,58 +163,7 @@ void solver_init(ode_workspace *odews, int argc, char **argv)
     odews->W->tjacfactorize = (tb - ta);
 }
 
-int sizecheck(double *x, int n, double tol) { // n - # of equations total (nblocks*nequs)
-    int smallenough = 1;
 
-    double x0[27] =
-    {		1,   	// 0
-		 	1e-7,	// 1
-			1e-4,	// 2
-			1e-3,	// 3
-			1e-4,	// 4
-			1e-4,	// 5
-			1e-3,	// 6
-			1e-5, 	// 7
-			1e-4,	// 8
-			1e+3,	// 9
-			1e-4,	// 10
-			1e-1,	// 11 *
-			1.0,	// 12
-			1e-1,	// 13
-			1e-1, 	// 14
-			1e-1,	// 15 **
-			1e+5,	// 16
-			1.0,	// 17
-			1e-1,	// 18
-			1e1,	// 19 *
-			1.0,	// 20 **
-			1e-1,	// 21
-			1e-1,	// 22
-			1e-1,	// 23
-			1,
-			1,
-			1
-	};
-
-    for (int i = 0; i < n; i++)
-    {
-// 	    for (int la = 0; la < 27; la++)
-// 	    {
-//            printf("***** tolerance check: var = %d: %e %e  %e \n", la, x[la], x0[la % 27], fabs(x[la] / x0[la % 27])); // TEST
-//        }
-
-        smallenough &= (fabs(x[i] / x0[i % 27]) < tol);  // W->neq hardcoded
-        //smallenough &= (fabs(x[i]) < tol);
-        //printf("%f \n", x[i]);
-
-        if (!smallenough)
-        {
-            break;
-        }
-    }
-
-    return smallenough;
-}
 
 css * newton_sparsity(cs *J)
 {

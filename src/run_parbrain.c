@@ -2,10 +2,13 @@
 
 //TODO: more output (e.g. % done, ETA)
 
+//        printf("%s, %s, %d\n", __FUNCTION__, __FILE__, __LINE__);
+
 // Main simulation program 
 int main(int argc, char **argv)
 {
-    // Initialisation step. Construct and initialise the ODE workspace
+
+	// Initialisation step. Construct and initialise the ODE workspace
     ode_workspace *odews;
 
     MPI_Init(&argc, &argv);			// initialise MPI
