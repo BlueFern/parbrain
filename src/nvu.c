@@ -402,16 +402,15 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 
 	/****** Model fluxes/algebraic variables and state variables ******/
 
-    double pt, e, r0, q, g; // pressure stuff
+    double pt, e, r0; // pressure stuff
 
     // Initialise state variables
     double state_r;
     double state_R_k, state_N_Na_k, state_N_K_k, state_N_HCO3_k, state_N_Cl_k, state_N_Na_s, state_N_K_s, state_N_HCO3_s, state_K_p, state_w_k; // AC state
-    double state_ca_i, state_ca_sr_i, state_v_i, state_w_i, state_ip3_i, state_K_i; // SMC state
+    double state_ca_i, state_ca_sr_i, state_v_i, state_w_i, state_ip3_i; // SMC state
     double state_ca_j, state_ca_er_j, state_v_j, state_ip3_j; // EC state
     double state_Mp, state_AM, state_AMp; // Mech state
     double state_K_e; // ECS state
-    double state_PLC_i, state_K_df_i, state_K_flux_i; // input
     double state_ca_n, state_nNOS, state_NOn, state_NOi, state_E_b, state_E_6c, state_cGMP, state_eNOS, state_NOj, state_NOk; // NO pathway state
     double state_ca_k, state_s_k, state_h_k, state_ip3_k, state_eet_k, state_m_k, state_ca_p; // AC Ca2+ state
 
@@ -432,7 +431,6 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     state_v_i     = u[v_i];
     state_w_i     = u[w_i];
     state_ip3_i   = u[ip3_i];
-    state_K_i     = u[K_i];
 
     state_R_k     = u[R_k];
     state_N_Na_k  = u[N_Na_k];
@@ -455,10 +453,6 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     state_AM      = u[AM];
 
     state_K_e	  = u[K_e];
-
-    state_PLC_i   = u[PLC_i];
-    state_K_df_i  = u[K_df_i];
-    state_K_flux_i= u[K_flux_i];
 
     state_ca_n    = u[ca_n];
     state_nNOS    = u[nNOS];
@@ -484,13 +478,11 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 
 // Fluxes:
     AMp_AM = state_AMp + state_AM;
-    g  = pow(state_r, 4) / nvu_w->l;
 
     // pressure
     pt = 0.5 * (p + nvu_w->pcap);
     e  = 1.0 + nvu_w->a5 * AMp_AM;
     r0 = nvu_w->a3 * (1.0 - nvu_w->a4 * AMp_AM);
-    //q  = (p - nvu_w->pcap) * g;
 
     // SC fluxes
     R_s        	    	= R_tot - state_R_k;                            // state_R_k is AC volume-area ratio, R_s is SC
@@ -501,6 +493,8 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     flu_Cl_s           	= flu_N_Cl_s / R_s;                         //
 
     // AC fluxes
+	flu_E_TRPV_k	= R_gas * Temp / (z_Ca * Farad) * log(state_ca_p / state_ca_k); // TRPV4 channel Nernst Potential
+
     flu_Na_k           	= state_N_Na_k / state_R_k;                     //
     flu_K_k            	= state_N_K_k / state_R_k;                      //
     flu_HCO3_k         	= state_N_HCO3_k / state_R_k;                   //
@@ -511,14 +505,13 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     flu_E_NBC_k        	= (R_gas * Temp) / (z_NBC* Farad) * log((flu_Na_s * pow(flu_HCO3_s,2))/(flu_Na_k * pow(flu_HCO3_k,2)));     // V
     flu_E_BK_k         	= reverseBK + switchBK * (R_gas * Temp) / (z_K  * Farad) * log(state_K_p / flu_K_k);   // V
     flu_J_NaK_k        	= J_NaK_max * ( pow(flu_Na_k,1.5) / ( pow(flu_Na_k,1.5) + pow(K_Na_k,1.5) ) ) * ( flu_K_s / (flu_K_s + K_K_s) );    // uMm s-1
+    flu_v_k         	= ( g_Na_k * flu_E_Na_k + g_K_k * flu_E_K_k + g_TRPV_k * state_m_k * flu_E_TRPV_k + g_Cl_k * flu_E_Cl_k + g_NBC_k * flu_E_NBC_k + g_BK_k * state_w_k * flu_E_BK_k - flu_J_NaK_k * Farad / unitcon ) / ( g_Na_k + g_K_k + g_Cl_k + g_NBC_k + g_TRPV_k * state_m_k + g_BK_k * state_w_k );
     flu_J_KCC1_k       	= flux_ft(t,x,y) * (R_gas * Temp * g_KCC1_k) / (pow(Farad,2)) * log(((flu_K_s) * (flu_Cl_s))/((flu_K_k)*(flu_Cl_k))) * unitcon;   //uMm s-1
     flu_J_NBC_k        	= g_NBC_k / Farad * (flu_v_k - flu_E_NBC_k) * unitcon;       //uMm s-1
     flu_J_NKCC1_k     	= flux_ft(t,x,y) * (g_NKCC1_k * R_gas * Temp) / (pow(Farad,2))  * log(((flu_K_s) * (flu_Na_s) * pow(flu_Cl_s,2)) /((flu_K_k) * (flu_Na_k) * pow(flu_Cl_k,2)))*unitcon;        //uMm s-1
     flu_J_Na_k   		= g_Na_k / Farad * (flu_v_k - flu_E_Na_k) * unitcon;              //uMm s-1
     flu_J_K_k    		= g_K_k  / Farad * ((flu_v_k) - (flu_E_K_k )) * unitcon;          //uMm s-1
     flu_J_BK_k   		= g_BK_k / Farad * state_w_k * (flu_v_k - flu_E_BK_k) * unitcon;  //uMm s-1
-    //flu_w_inf    		= 0.5 * (1+tanh(((flu_v_k)+v_6)/v_4));                            //[-] !!!
-    //flu_phi_w    		= psi_w * cosh(((flu_v_k)+v_6)/(2*v_4));                          //s-1 !!!
 
     // SMC fluxes
     flu_M               = 1 - state_Mp - state_AM - state_AMp;
@@ -595,7 +588,6 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     flu_ip3_k 		= J_max * pow(( state_ip3_k / ( state_ip3_k + K_I ) * state_ca_k / ( state_ca_k + K_act ) * state_h_k ) , 3) * (1.0 - state_ca_k / state_s_k);
 	flu_er_leak 	= P_L * ( 1.0 - state_ca_k / state_s_k );
 	flu_pump_k  	= V_max * pow(state_ca_k, 2) / ( pow(state_ca_k, 2) + pow(k_pump, 2) );
-	flu_E_TRPV_k	= R_gas * Temp / (z_Ca * Farad) * log(state_ca_p / state_ca_k);
 	flu_I_TRPV_k	= G_TRPV_k * state_m_k * (flu_v_k - flu_E_TRPV_k) * unitcon;
 	flu_TRPV_k		= -0.5 * flu_I_TRPV_k / ( C_astr_k * gamma_k );
 	B_cyt 			= 1.0 / (1.0 + BK_end + K_ex * B_ex / pow((K_ex + state_ca_k), 2) );
@@ -609,7 +601,6 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     minf_k 			= ( 1 / ( 1 + exp( - (eta - epshalf_k) / kappa_k ) ) ) * ( ( 1 / (1+ H_Ca_k) ) * (H_Ca_k + tanh(( flu_v_k - v1_TRPV_k) / v2_TRPV_k )));
     t_Ca_k 			= t_TRPV_k / state_ca_p;
     flu_VOCC_k		= flu_VOCC_i;
-    flu_v_k         = ( g_Na_k * flu_E_Na_k + g_K_k * flu_E_K_k + g_TRPV_k * state_m_k * flu_E_TRPV_k + g_Cl_k * flu_E_Cl_k + g_NBC_k * flu_E_NBC_k + g_BK_k * state_w_k * flu_E_BK_k - flu_J_NaK_k * Farad / unitcon ) / ( g_Na_k + g_K_k + g_Cl_k + g_NBC_k + g_TRPV_k * state_m_k + g_BK_k * state_w_k );
 
 
 // Differential Equations:
@@ -730,10 +721,10 @@ double nvu_Glu(double t, double x, double y)
     double t_down = 200;
 //    double blocks_activated = 4;
 //    double Glu_out = ((0.5 + 0.5 *(tanh(100000*(x-0.0004)+1))) *(0.5 + 0.5 *(tanh(100000*(y-0.0004)+1))))        *          ((Glu_min + (Glu_max - Glu_min) / 2.0 * (1 + tanh(10*(t - t_up))) + (Glu_min - Glu_max) / 2.0 * (1 + tanh(10*(t - t_down)))));
-    double ampl = 3;
-    double ramp = 0.003;//0.002;
-    double x_centre = 0; // 0.0008 -> n_bif = 7; python: ((((2**(n_bif-1))**0.5)/4)*0.0004)
-    double y_centre = 0;
+//    double ampl = 3;
+//    double ramp = 0.003;//0.002;
+//    double x_centre = 0; // 0.0008 -> n_bif = 7; python: ((((2**(n_bif-1))**0.5)/4)*0.0004)
+//    double y_centre = 0;
 
     //double Glu_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2)))))); // Gauss with plateau
 
@@ -761,10 +752,10 @@ double rho_input(double t, double x, double y)
     double rho_max = 0.7;
     double t_up   = 100;
     double t_down = 200;
-    double ampl = 3;
-    double ramp = 0.003;
-    double x_centre = 0;
-    double y_centre = 0;
+//    double ampl = 3;
+//    double ramp = 0.003;
+//    double x_centre = 0;
+//    double y_centre = 0;
 
     double rho_space;
     // only in corner
@@ -798,10 +789,10 @@ double K_input(double t, double x, double y)
     double t3 			= t1 + lengthpulse;
     int alpha 			= 2;
     int beta 			= 5;
-    double ampl = 3;
-    double ramp = 0.003;
-    double x_centre = 0;//-0.0008;
-    double y_centre = 0;//-0.0008;
+//    double ampl = 3;
+//    double ramp = 0.003;
+//    double x_centre = 0;//-0.0008;
+//    double y_centre = 0;//-0.0008;
     double deltat		= 10;
     double gab 			= factorial(alpha + beta - 1);
     double ga 			= factorial(alpha - 1);
@@ -854,10 +845,10 @@ double flux_ft(double t, double x, double y)
     double lengtht1 	= 15;
     double t0 			= t_up;
     double t1 			= t0 + lengtht1;
-    double ampl = 3;
-    double ramp = 0.003;
-    double x_centre = 0;//-0.0008;
-    double y_centre = 0;//-0.0008;
+//    double ampl = 3;
+//    double ramp = 0.003;
+//    double x_centre = 0;//-0.0008;
+//    double y_centre = 0;//-0.0008;
 
     double flux_time = 0.5 * tanh((t - t0) / 0.0005) - 0.5 * tanh((t - t1 - lengthpulse) / 0.0005);
     //double flux_time = 0.5 * tanh((t-t0)/0.005) - 0.5 * tanh((t-t1-lengthpulse)/0.005);
