@@ -80,17 +80,18 @@ void back_euler(ode_workspace *odews)
             daxpy(ny, -odews->dt, odews->f, x);
 
             // TEST x[0] = radius etc. - w is the state var value, x is passed on to Newton
-//            for (int la = 0; la < 27; la++)
+//            for (int la = 0; la < 45; la++)
 //            {
 //            	printf("iteration %d, state variable %2d - x: %e w: %e\n", k, la, x[la], w[la] );
 //            }
+//            printf("_______________________\n");
 
             W->flag[W->rank] = sizecheck(x, ny, odews->ftol); // function value size check
             lusoln(odews, x);  // solve (x is now increment)
             W->flag[W->rank] |= sizecheck(x, ny, odews->ytol); // increment size check
             daxpy(ny, -1, x, w); // update w with new value
         }
-        printf("%s, %s, %d\n", __FUNCTION__, __FILE__, __LINE__);
+
         if (!converged)
         {
             printf("Newton iteration failed to converge\n");

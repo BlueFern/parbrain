@@ -327,7 +327,7 @@ int main(int argc, char *argv[]) {
 
 // 4. Add binary data as attributes to cells:
 
-	char const *var_names[] = {"radius_coupled","R_k","N_Na_k","N_K_k","N_HCO3_k","N_Cl_k","N_Na_s","N_K_s","N_HCO3_s","K_p","w_k","ca_i","ca_sr_i","v_i","w_i","ip3_i","K_i","ca_j","ca_er_j","v_j","ip3_j","Mp","AMp","AM","K_e","PLC_input","K_input","flux_ft","NOn","NOk","NOi","NOj","cGMP","eNOS","nNOS","ca_n","E_b","E_6c","E_5c"};
+	char const *var_names[] = {"radius_coupled","R_k","N_Na_k","N_K_k","N_HCO3_k","N_Cl_k","N_Na_s","N_K_s","N_HCO3_s","K_p","w_k","ca_i","ca_sr_i","v_i","w_i","ip3_i","K_i","ca_j","ca_er_j","v_j","ip3_j","Mp","AMp","AM","K_e","PLC_input","K_input","flux_ft","NOn","NOk","NOi","NOj","cGMP","eNOS","nNOS","ca_n","E_b","E_6c","ca_k","s_k","h_k","ip3_k","eet_k","m_k","ca_p"};
 
 	// 4.1 Time step loop:
 	double time_tb, time_tree;
