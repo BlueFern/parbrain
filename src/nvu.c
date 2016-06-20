@@ -600,7 +600,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     flu_w_inf    	= 0.5 * ( 1 + tanh( ( flu_v_k + eet_shift * state_eet_k - v_3 ) / v_4 ) );
     flu_phi_w    	= psi_w * cosh( (flu_v_k - v_3) / (2*v_4) );
     H_Ca_k			= state_ca_k / gam_cai_k + state_ca_p / gam_cae_k;
-    eta 			= ( state_r * R0 - R_0_passive_k) / R_0_passive_k;
+    eta 			= ( state_r * R0 - R_0_passive_k) / R_0_passive_k;  //!!!!!!! state_r*R0*2 or state_r*R0?
     minf_k 			= ( 1 / ( 1 + exp( - (eta - epshalf_k) / kappa_k ) ) ) * ( ( 1 / (1 + H_Ca_k) ) * (H_Ca_k + tanh(( flu_v_k - v1_TRPV_k) / v2_TRPV_k )));
     t_Ca_k 			= t_TRPV_k / state_ca_p;
     flu_VOCC_k		= flu_VOCC_i;
@@ -742,7 +742,7 @@ double nvu_Glu(double t, double x, double y)
         Glu_space = 0;
     }
 
-    double Glu_time = 0.5 * tanh((t - t_up) / 0.05) - 0.5 * tanh((t - t_down) / 0.05);
+    double Glu_time = 0.5 * tanh((t - t_up) / 1) - 0.5 * tanh((t - t_down) / 1);
 
     double Glu_out = Glu_min + (Glu_max - Glu_min) * Glu_space * Glu_time;
     return Glu_out;
@@ -771,7 +771,7 @@ double rho_input(double t, double x, double y)
         rho_space = 0;
     }
 
-    double rho_time = 0.5 * tanh((t - t_up) / 0.05) - 0.5 * tanh((t - t_down) / 0.05);
+    double rho_time = 0.5 * tanh((t - t_up) / 1) - 0.5 * tanh((t - t_down) / 1);
 
     double rho_out = rho_min + (rho_max - rho_min) * rho_space * rho_time;
     return rho_out;
@@ -785,7 +785,7 @@ double K_input(double t, double x, double y)
     double t_up   		= 200;				// Signal starts at time = 5 ***
     double t_down 		= 400;
     double lengthpulse 	= t_down - t_up;
-    double lengtht1 	= 15;
+    double lengtht1 	= 10;
     double t0 			= t_up;
     double t1 			= t0 + lengtht1;
     double t2 			= t0 + lengthpulse;
@@ -842,10 +842,10 @@ double flux_ft(double t, double x, double y)
 {
     double flux_min 	= 0;
     double flux_max 	= 1;
-    double t_up   		= 200;					// Channels turn on at time = 5 ***
+    double t_up   		= 200;
     double t_down 		= 400;
     double lengthpulse 	= t_down - t_up;
-    double lengtht1 	= 15;
+    double lengtht1 	= 10;
     double t0 			= t_up;
     double t1 			= t0 + lengtht1;
 //    double ampl = 3;
@@ -854,7 +854,6 @@ double flux_ft(double t, double x, double y)
 //    double y_centre = 0;//-0.0008;
 
     double flux_time = 0.5 * tanh((t - t0) / 0.0005) - 0.5 * tanh((t - t1 - lengthpulse) / 0.0005);
-    //double flux_time = 0.5 * tanh((t-t0)/0.005) - 0.5 * tanh((t-t1-lengthpulse)/0.005);
 
     //double flux_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
     //double flux_space =((0.5 + 0.5 *(tanh(1e5 * (x-0.0004)+1))) *(0.5 + 0.5 *(tanh(1e5 *(y-0.0004)+1))));  
