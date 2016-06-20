@@ -473,10 +473,10 @@ double K_input(double t, double x, double y)
 {
     double K_input_min 	= 0;
     double K_input_max 	= 2.5;
-    double t_up   		= 0;				// Signal starts at time = 5 ***
-    double t_down 		= 350;
+    double t_up   		= 100;			
+    double t_down 		= 200;
     double lengthpulse 	= t_down - t_up;
-    double lengtht1 	= 15;
+    double lengtht1 	= 10;
     double t0 			= t_up;
     double t1 			= t0 + lengtht1;
     double t2 			= t0 + lengthpulse;
@@ -543,10 +543,10 @@ double flux_ft(double t, double x, double y)
 {
     double flux_min 	= 0;
     double flux_max 	= 1;
-    double t_up   		= 0;					// Channels turn on at time = 5 ***
-    double t_down 		= 350;
+    double t_up   		= 100;				
+    double t_down 		= 200;
     double lengthpulse 	= t_down - t_up;
-    double lengtht1 	= 15;
+    double lengtht1 	= 10;
     double t0 			= t_up;
     double t1 			= t0 + lengtht1;
     double ampl = 3;
