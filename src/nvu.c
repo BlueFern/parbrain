@@ -127,7 +127,7 @@ nvu_workspace *nvu_init(void)
     nvu_w->a3 = Rstar / R0;
     nvu_w->a4 = 1 - RSCALE;
     nvu_w->a5 = EACTIVE / EPASSIVE - 1;
-    nvu_w->pcap  = PCAP / P0;
+    nvu_w->pcap  = PCAP / P0; // pressure is nondimensional
     nvu_w->l  = 1; // normalised away
 
     return nvu_w;
@@ -406,7 +406,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 
 	/****** Model fluxes/algebraic variables and state variables ******/
 
-    double pt, e, r0; // pressure stuff
+    double pt; // pressure stuff
 
     // Initialise state variables
     double state_r;
@@ -422,10 +422,11 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     double R_s, flu_N_Cl_s, flu_Na_k, flu_K_k, flu_HCO3_k, flu_Cl_k, flu_Na_s, flu_K_s, flu_HCO3_s, flu_Cl_s, flu_E_Na_k, flu_E_K_k, flu_E_Cl_k, flu_E_NBC_k, flu_E_BK_k, flu_J_NaK_k, flu_v_k, flu_J_KCC1_k, flu_J_NBC_k, flu_J_NKCC1_k, flu_J_Na_k, flu_J_K_k, flu_J_BK_k, flu_w_inf, flu_phi_w; // AC fluxes
     double flu_M, flu_h_r, flu_v_cpl_i, flu_c_cpl_i, flu_I_cpl_i, flu_rho_i, flu_ip3_i, flu_SRuptake_i, flu_CICR_i, flu_extrusion_i, flu_leak_i, flu_VOCC_i, flu_NaCa_i, flu_NaK_i, flu_Cl_i, flu_K_i, flu_Kactivation_i, flu_degrad_i, flu_v_KIR_i, flu_G_KIR_i, flu_J_KIR_i, flu_J_stretch_i; // SMC fluxes
     double flu_v_cpl_j, flu_c_cpl_j, flu_I_cpl_j, flu_rho_j, flu_O_j, flu_ip3_j, flu_ERuptake_j, flu_CICR_j, flu_extrusion_j, flu_leak_j, flu_cation_j, flu_BKCa_j, flu_SKCa_j, flu_K_j, flu_R_j, flu_degrad_j, flu_J_stretch_j; // EC fluxes
-    double flu_K1_c, flu_K6_c, AMp_AM; // Mech fluxes
+    double flu_K1_c, flu_K6_c; // Mech fluxes
     double P_str; // pressure
     double flu_c_w, flu_P_NR2AO, flu_P_NR2BO, flu_I_Ca, flu_phi_N, flu_dphi_N, flu_N, flu_CaM, flu_W_tau_w, flu_F_tau_w, flu_k4, flu_R_cGMP2, flu_K2_c, flu_K5_c, flu_tau_w, E_5c, V_max_pde;    // NO pathway fluxes
     double flu_ip3_k, flu_er_leak, flu_pump_k, flu_I_TRPV_k, flu_TRPV_k, flu_E_TRPV_k, B_cyt, G, v_3, H_Ca_k, eta, minf_k, t_Ca_k, flu_VOCC_k;
+    double F_r, E, R_0;
 
     // State Variables:
     state_r  	  = u[i_radius];
@@ -481,12 +482,9 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 
 
 // Fluxes:
-    AMp_AM = state_AMp + state_AM;
 
     // pressure
-    pt = 0.5 * (p + nvu_w->pcap);
-    e  = 1.0 + nvu_w->a5 * AMp_AM;
-    r0 = nvu_w->a3 * (1.0 - nvu_w->a4 * AMp_AM);
+    pt = P0 * 0.5 * (p + nvu_w->pcap); // x P0 to make dimensional
 
     // SC fluxes
     R_s        	    	= R_tot - state_R_k;                            // state_R_k is AC volume-area ratio, R_s is SC
@@ -537,7 +535,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     flu_K_i			    = G_K * state_w_i * ( state_v_i - vK_i );
     flu_degrad_i	    = k_i * state_ip3_i;
 	P_str 				= (p*P0 + PCAP) / 2.0 * PA2MMHG;
-    flu_J_stretch_i     = G_stretch/(1+exp(-alpha1*(P_str*state_r / flu_h_r - sig0))) * (state_v_i - Esac); 
+    flu_J_stretch_i     = G_stretch/(1 + exp( -alpha1 * (P_str * state_r / flu_h_r - sig0))) * (state_v_i - Esac);
     flu_v_KIR_i    		= z_1 * state_K_p / unitcon + z_2;                                  // mV           state_K_p,
     flu_G_KIR_i    		= exp( z_5 * state_v_i + z_3 * state_K_p / unitcon + z_4 );        // pS pF-1 =s-1  state_v_i, state_K_p
     flu_J_KIR_i    		= F_il/gam * (flu_G_KIR_i) * (state_v_i - (flu_v_KIR_i));            // mV s-1 //     state_v_i, state_K_p
@@ -574,7 +572,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 	flu_dphi_N          = Q1 + 2 * Q1 * Q2 * state_ca_n + 3 * Q1 * Q2 * Q3 * pow(state_ca_n, 2) + 4 * Q1 * Q2 * Q3 * Q4 * pow(state_ca_n, 3);            // == d(phi_N)/d(ind.Ca_n) ; (part of 101)
 	flu_N               = (state_ca_n / flu_phi_N) * flu_dphi_N;                                                   // number of Ca2+ bound per calmodulin ; (101)
 	flu_CaM             = state_ca_n / flu_N;                                      // concentration of calmodulin / calcium complexes ; (100)
-	flu_tau_w           = 2.0 * 9.1e4 * state_r * R0; //9.1e4 * state_r * R0; // radius is non-dimensional! r = state_r*R0 TODO: maybe make number dependent on L and P
+	flu_tau_w           = 9.1e4 * state_r * R_0_passive_k; //9.1e4 * state_r * R0; // radius is non-dimensional! r = state_r*R0 TODO: maybe make number dependent on L and P
 	flu_W_tau_w         = W_0 * pow((flu_tau_w + sqrt(16 * pow(delt_wss,2) + pow(flu_tau_w,2)) - 4 * delt_wss),2) / (flu_tau_w + sqrt(16 * pow(delt_wss,2) + pow(flu_tau_w,2))) ;  // - tick
 	flu_F_tau_w         = 1 / (1 + alp * exp(-flu_W_tau_w)) - 1 / (1 + alp); // -(1/(1+alp)) was added to get no NO at 0 wss (!) - tick
 	flu_k4              = C_4 * pow(state_cGMP, m);
@@ -600,14 +598,18 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     flu_w_inf    	= 0.5 * ( 1 + tanh( ( flu_v_k + eet_shift * state_eet_k - v_3 ) / v_4 ) );
     flu_phi_w    	= psi_w * cosh( (flu_v_k - v_3) / (2*v_4) );
     H_Ca_k			= state_ca_k / gam_cai_k + state_ca_p / gam_cae_k;
-    eta 			= ( state_r * R0 - R_0_passive_k) / R_0_passive_k;  //!!!!!!! state_r*R0*2 or state_r*R0?
+    eta 			= (state_r* R_0_passive_k - R_0_passive_k) / R_0_passive_k;
     minf_k 			= ( 1 / ( 1 + exp( - (eta - epshalf_k) / kappa_k ) ) ) * ( ( 1 / (1 + H_Ca_k) ) * (H_Ca_k + tanh(( flu_v_k - v1_TRPV_k) / v2_TRPV_k )));
     t_Ca_k 			= t_TRPV_k / state_ca_p;
     flu_VOCC_k		= flu_VOCC_i;
 
 
 // Differential Equations:
-    du[i_radius	] = -nvu_w->a1 * e * (state_r / r0 - 1.0) + nvu_w->a2 * state_r * pt; // Radius (non-dimensional!)
+    //du[i_radius	] = -nvu_w->a1 * e * (state_r / r0 - 1.0) + nvu_w->a2 * state_r * pt; // Radius (non-dimensional!)
+    F_r			      = state_AMp + state_AM;
+    E 			      = EPASSIVE + F_r * (EACTIVE - EPASSIVE);
+    R_0 			  = R_0_passive_k + F_r * (RSCALE - 1) * R_0_passive_k;
+    du[i_radius		] = 1 / ETA * (state_r * pt / flu_h_r - E * (state_r* R_0_passive_k - R_0)/R_0);
 
     //AC:
     du[ R_k     ] = L_p * (flu_Na_k + flu_K_k + flu_Cl_k + flu_HCO3_k - flu_Na_s - flu_K_s - flu_Cl_s - flu_HCO3_s + X_k / state_R_k);  // m s-1
