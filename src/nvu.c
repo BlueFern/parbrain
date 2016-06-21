@@ -484,7 +484,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 // Fluxes:
 
     // pressure
-    pt = P0 * 0.5 * (p + nvu_w->pcap); // x P0 to make dimensional
+    pt = P0 / 2 * (p + nvu_w->pcap); // x P0 to make dimensional
 
     // SC fluxes
     R_s        	    	= R_tot - state_R_k;                            // state_R_k is AC volume-area ratio, R_s is SC
@@ -534,7 +534,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     flu_Cl_i		    = G_Cl * (state_v_i - v_Cl);
     flu_K_i			    = G_K * state_w_i * ( state_v_i - vK_i );
     flu_degrad_i	    = k_i * state_ip3_i;
-	P_str 				= (p*P0 + PCAP) / 2.0 * PA2MMHG;
+	P_str 				= pt * PA2MMHG;
     flu_J_stretch_i     = G_stretch/(1 + exp( -alpha1 * (P_str * state_r / flu_h_r - sig0))) * (state_v_i - Esac);
     flu_v_KIR_i    		= z_1 * state_K_p / unitcon + z_2;                                  // mV           state_K_p,
     flu_G_KIR_i    		= exp( z_5 * state_v_i + z_3 * state_K_p / unitcon + z_4 );        // pS pF-1 =s-1  state_v_i, state_K_p
@@ -562,6 +562,9 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 // Mech fluxes
     flu_K1_c         	= gam_cross * pow(state_ca_i,3);
     flu_K6_c        	= flu_K1_c;
+    F_r			        = state_AMp + state_AM;
+    E 			        = EPASSIVE + F_r * (EACTIVE - EPASSIVE);
+    R_0 			    = R_0_passive_k + F_r * (RSCALE - 1) * R_0_passive_k;
 
 // NO pathway fluxes
 
@@ -605,11 +608,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 
 
 // Differential Equations:
-    //du[i_radius	] = -nvu_w->a1 * e * (state_r / r0 - 1.0) + nvu_w->a2 * state_r * pt; // Radius (non-dimensional!)
-    F_r			      = state_AMp + state_AM;
-    E 			      = EPASSIVE + F_r * (EACTIVE - EPASSIVE);
-    R_0 			  = R_0_passive_k + F_r * (RSCALE - 1) * R_0_passive_k;
-    du[i_radius		] = 1 / ETA * (state_r * pt / flu_h_r - E * (state_r* R_0_passive_k - R_0)/R_0);
+    du[i_radius		] = 1 / ETA * (state_r * pt / flu_h_r - E * (state_r* R_0_passive_k - R_0)/R_0); // Radius - nondimensional (state_r * R_0_passive: dimensional)
 
     //AC:
     du[ R_k     ] = L_p * (flu_Na_k + flu_K_k + flu_Cl_k + flu_HCO3_k - flu_Na_s - flu_K_s - flu_Cl_s - flu_HCO3_s + X_k / state_R_k);  // m s-1

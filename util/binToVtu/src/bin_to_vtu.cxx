@@ -428,7 +428,7 @@ int main(int argc, char *argv[]) {
 			branchPolyData->GetCellData()->AddArray(flowArray);
 
 	        tubeFilter->SetInputData(branchPolyData);
-			tubeFilter->SetRadius(0.0003*(stateVars[0]->GetValue(line_id))-0.00023);  	// varying radii
+			tubeFilter->SetRadius(0.00012*(stateVars[0]->GetValue(line_id))-0.0001);  	// varying radii - different depending on NVU version
 			tubeFilter->SetNumberOfSides(20);
 			tubeFilter->CappingOn();  												  	// Cap tubes.
 			appendFilter->AddInputConnection(tubeFilter->GetOutputPort());
