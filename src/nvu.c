@@ -13,7 +13,7 @@ static const double EPASSIVE   = 66e3  ;  // Pa
 static const double EACTIVE    = 233e3 ;  // Pa
 static const double ETA        = 2.8e2 ;  // Pa s
 static const double T0         = 1     ;  // s
-static const double PA2MMHG    = 0.00750061683;
+static const double PA2MMHG    = 0.00750061683; // convert from Pa to mmHg
 
 // nvu_init: this user-supplied function does any precomputation required
 // for the model.
@@ -119,7 +119,7 @@ nvu_workspace *nvu_init(void)
     nvu_w->dfdx_pattern = cs_compress(T);
     cs_spfree(T);
 
-    // Allocate other nvu workspace parameters
+    // Allocate other nvu workspace parameters ** remove obsolete variables
     double Rstar = R0;
     double hstar = HRR * Rstar;
     nvu_w->a1 = E0 * T0 * Rstar / (ETA * R0);
@@ -484,7 +484,8 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 // Fluxes:
 
     // pressure
-    pt = P0 / 2 * (p + nvu_w->pcap); // x P0 to make dimensional
+    pt 					= P0 / 2 * (p + nvu_w->pcap); // x P0 to make dimensional, pressure difference in Pa
+	P_str 				= pt * PA2MMHG; // pressure difference in mmHg
 
     // SC fluxes
     R_s        	    	= R_tot - state_R_k;                            // state_R_k is AC volume-area ratio, R_s is SC
@@ -534,7 +535,6 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     flu_Cl_i		    = G_Cl * (state_v_i - v_Cl);
     flu_K_i			    = G_K * state_w_i * ( state_v_i - vK_i );
     flu_degrad_i	    = k_i * state_ip3_i;
-	P_str 				= pt * PA2MMHG;
     flu_J_stretch_i     = G_stretch/(1 + exp( -alpha1 * (P_str * state_r / flu_h_r - sig0))) * (state_v_i - Esac);
     flu_v_KIR_i    		= z_1 * state_K_p / unitcon + z_2;                                  // mV           state_K_p,
     flu_G_KIR_i    		= exp( z_5 * state_v_i + z_3 * state_K_p / unitcon + z_4 );        // pS pF-1 =s-1  state_v_i, state_K_p
@@ -575,7 +575,10 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 	flu_dphi_N          = Q1 + 2 * Q1 * Q2 * state_ca_n + 3 * Q1 * Q2 * Q3 * pow(state_ca_n, 2) + 4 * Q1 * Q2 * Q3 * Q4 * pow(state_ca_n, 3);            // == d(phi_N)/d(ind.Ca_n) ; (part of 101)
 	flu_N               = (state_ca_n / flu_phi_N) * flu_dphi_N;                                                   // number of Ca2+ bound per calmodulin ; (101)
 	flu_CaM             = state_ca_n / flu_N;                                      // concentration of calmodulin / calcium complexes ; (100)
-	flu_tau_w           = 9.1e4 * state_r * R_0_passive_k; //9.1e4 * state_r * R0; // radius is non-dimensional! r = state_r*R0 TODO: maybe make number dependent on L and P
+
+	//flu_tau_w           = 9.1e4 * state_r * R_0_passive_k; // radius is non-dimensional! r = state_r*R_0_passive_k TODO: maybe make number dependent on P
+	flu_tau_w			= state_r * R_0_passive_k * P_str / (2*200e-6); // WSS using pressure from the H tree
+
 	flu_W_tau_w         = W_0 * pow((flu_tau_w + sqrt(16 * pow(delt_wss,2) + pow(flu_tau_w,2)) - 4 * delt_wss),2) / (flu_tau_w + sqrt(16 * pow(delt_wss,2) + pow(flu_tau_w,2))) ;  // - tick
 	flu_F_tau_w         = 1 / (1 + alp * exp(-flu_W_tau_w)) - 1 / (1 + alp); // -(1/(1+alp)) was added to get no NO at 0 wss (!) - tick
 	flu_k4              = C_4 * pow(state_cGMP, m);
