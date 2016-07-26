@@ -576,7 +576,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 	flu_N               = (state_ca_n / flu_phi_N) * flu_dphi_N;                                                   // number of Ca2+ bound per calmodulin ; (101)
 	flu_CaM             = state_ca_n / flu_N;                                      // concentration of calmodulin / calcium complexes ; (100)
 
-	//flu_tau_w           = 9.1e4 * state_r * R_0_passive_k; // radius is non-dimensional! r = state_r*R_0_passive_k TODO: maybe make number dependent on P
+	//flu_tau_w           = 9.1e4 * state_r * R_0_passive_k; // radius is non-dimensional! r = state_r*R_0_passive_k
 	flu_tau_w			= state_r * R_0_passive_k * P_str / (2*200e-6); // WSS using pressure from the H tree
 
 	flu_W_tau_w         = W_0 * pow((flu_tau_w + sqrt(16 * pow(delt_wss,2) + pow(flu_tau_w,2)) - 4 * delt_wss),2) / (flu_tau_w + sqrt(16 * pow(delt_wss,2) + pow(flu_tau_w,2))) ;  // - tick
