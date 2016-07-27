@@ -26,13 +26,13 @@ typedef struct ghost_block
 } ghost_block;
 
 
-// Get the indices for the four immediate neighbours of a given block.
+// Get the indices for the neighbours of a block in a grid of blocks.
 void set_neighbours(int idx, int m, int n, int *neighbours);
 
-// Same as set_neighbours?
+// Get the indices for the four neighbouring MPI domains of a given domain.
 void set_domain_neighbours(int idx, int m, int n, int *neighbours);
 
-// Get the indices for all neighbours for all tissue blocks in the given MPI domain.
+// Get the indices for the four immediate neighbours of a given block within an MPI domain.
 void set_block_neighbours(int nlocal, int mlocal, nvu_workspace* w);
 
 // Set the indices of the edges

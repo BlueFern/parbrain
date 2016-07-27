@@ -106,74 +106,67 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
 
 void set_neighbours(int idx, int m, int n, int *neighbours)
 {
-	// Boundary conditions (later ghost blocks)
-	int b0[m]; //W (directions only make sense when origin is seen as lower left corner!)
-	int b1[n]; //N
-	int b2[m]; //E
-	int b3[n]; //S
-
-	// Calculate the row and column indices from the index of the given block.
+	// Calculate row and column for the given block index.
 	int i = idx % m;
-	int j = idx / n;
+	int j = idx / m;
 
-	// TODO: Simplify the arithmetic in the for the indices.
-
-	// Filled with negative numbers to differentiate from block neighbour indices
-	for (int j = 0; j < m; j++)
+	// West neighbour.
+	if(j == 0)
 	{
-		b0[j] = -1 * (j + 1);
-		b2[j] = -1 * (m + n + j + 1);
-	}
-
-	for (int k = 0; k < n; k++)
-	{
-		b1[k] = -1 * (m + k + 1);
-		b3[k] = -1 * (m + 2 * n + k + 1);
-	}
-
-	if ((i + m * j) < m)
-	{
-		neighbours[0] = b0[i]; //W
+		// No West neighbour if we are in the first column.
+		neighbours[0] = -1;
 	}
 	else
 	{
-		neighbours[0] = i + m * j - m; //W
+		// The neighbour is the length of the column behind us.
+		neighbours[0] = idx - m;
 	}
 
-	if (((i + m * j + 1) % m) == 0)
+	// North neighbour.
+	if(i == (m - 1))
 	{
-		neighbours[1] = b1[j]; //N
+		// No North neighbour if we are in the last row.
+		neighbours[1] = -1;
 	}
 	else
 	{
-		neighbours[1] = i + m * j + 1; //N
+		// The neighbour is the next block.
+		neighbours[1] = idx + 1;
 	}
 
-	if ((i + m * j) >= (m * (n - 1)))
+	// East neighbour.
+	if(j == (n - 1))
 	{
-		neighbours[2] = b2[i]; //E
+		// No East neighbour if we are in the last column.
+		neighbours[2] = -1;
 	}
 	else
 	{
-		neighbours[2] = i + m * j + m; //E
+		// The neighbour is the length of the column ahead of us.
+		neighbours[2] = idx + m;
 	}
 
-	if (((i + m * j) % m) == 0)
+	// South neighbour.
+	if(i == 0)
 	{
-		neighbours[3] = b3[j]; //S
+		// No South neighbour if we are in the first row.
+		neighbours[3] = -1;
 	}
 	else
 	{
-		neighbours[3] = i + m * j - 1; //S
+		// The neighbour is the previous block.
+		neighbours[3] = idx -1;
 	}
 
-//	int u = 0;
-//	printf("index %d: ", idx);
-//	for (u=0; u < 4; u++)
-//	{
-//		printf("%d ",neighbours[u]);
-//	}
-//	printf("\n");
+#if 0
+	int u = 0;
+	printf("index %d: ", idx);
+	for (u=0; u < 4; u++)
+	{
+		printf("%d ", neighbours[u]);
+	}
+	printf("\n");
+#endif
 
 }
 
