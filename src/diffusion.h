@@ -4,10 +4,11 @@
 #include "nvu.h"
 #include "brain.h"
 
-// Forward declaration to avoid errors
+// Forward declaration to avoid compilation errors.
 typedef struct workspace workspace;
 
-
+// Number of neighbours for each ghost block.
+static const int NUM_NEIGHBOURS = 4;
 
 // Number of variables stored in diffusion structs.
 static const int NUM_DIFF_VARS = 1;
@@ -19,7 +20,7 @@ enum diff_idx
 };
 
 // Ghost block to store diffusion variables. Ghost blocks are placed around
-// the 'perimeter' of the tissue blocks allocated to an MPI process.
+// the perimeter of the tissue blocks allocated to an MPI process.
 typedef struct ghost_block
 {
 	double *vars;
