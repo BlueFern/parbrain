@@ -425,7 +425,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     du[ w_k     ] = flu_phi_w * (flu_w_inf - state_w_k);                            // s-1
 
     //PVS:
-    du[ K_p     ] = flu_J_BK_k / (VR_pa * state_R_k) + flu_J_KIR_i / VR_ps - R_decay * (state_K_p - K_p_min) + ( (state_K_e - state_K_p) / tau);         // uM s-1
+    du[ K_p     ] = flu_J_BK_k / (VR_pa * state_R_k) + flu_J_KIR_i / VR_ps - R_decay * (state_K_p - K_p_min); // + ( (state_K_e - state_K_p) / tau);         // uM s-1
 
     //SMC:
     du[ ca_i    ] = flu_c_cpl_i + flu_rho_i * ( flu_ip3_i - flu_SRuptake_i + flu_CICR_i - flu_extrusion_i + flu_leak_i - flu_VOCC_i + flu_NaCa_i + 0.1* flu_J_stretch_i);
@@ -447,7 +447,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     du[ AM   	] = K5_c * state_AMp - ( K7_c + flu_K6_c ) * state_AM;
 
     //ECS:				smc efflux				SC flux					 				PVS flux								decay term
-    du[ K_e		] = - flu_NaK_i + flu_K_i - ( (state_K_e - flu_K_s) / tau2) - VR_pe * ( (state_K_e - state_K_p) / tau); // - 0.05 * state_K_e;
+    du[ K_e		] = - flu_NaK_i + flu_K_i - ( (state_K_e - flu_K_s) / tau2); // - VR_pe * ( (state_K_e - state_K_p) / tau); // - 0.05 * state_K_e;
 //    du[ K_e		] = 0; // for only the diffusion eq
 
     // State variables so they can be plotted in Paraview, but only for one time (initial condition set in nvu_ics, use t for when the signal is turned on)
@@ -472,7 +472,7 @@ double nvu_p0(double t)
 double K_input(double t, double x, double y)
 {
     double K_input_min 	= 0;
-    double K_input_max 	= 2.5;
+    double K_input_max 	= 2.67;
     double t_up   		= 100;
     double t_down 		= 200;
     double lengthpulse 	= t_down - t_up;
