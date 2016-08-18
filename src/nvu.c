@@ -247,7 +247,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     const double v_rest		= -31.1;
     const double k_j		= 0.1;
 
-    const double J_PLC 		= 0.4;	//0.18 *****************************
+    const double J_PLC 		= 0.18;	//0.18 *****************************
 
     const double g_hat      = 0.5;
     const double p_hat      = 0.05;
@@ -425,7 +425,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     du[ w_k     ] = flu_phi_w * (flu_w_inf - state_w_k);                            // s-1
 
     //PVS:
-    du[ K_p     ] = flu_J_BK_k / (VR_pa * state_R_k) + flu_J_KIR_i / VR_ps - R_decay * (state_K_p - K_p_min) + ( (state_K_e - state_K_p) / tau);         // uM s-1
+    du[ K_p     ] = flu_J_BK_k / (VR_pa * state_R_k) + flu_J_KIR_i / VR_ps - R_decay * (state_K_p - K_p_min); // + ( (state_K_e - state_K_p) / tau);         // uM s-1
 
     //SMC:
     du[ ca_i    ] = flu_c_cpl_i + flu_rho_i * ( flu_ip3_i - flu_SRuptake_i + flu_CICR_i - flu_extrusion_i + flu_leak_i - flu_VOCC_i + flu_NaCa_i + 0.1* flu_J_stretch_i);
@@ -446,9 +446,8 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     du[ AMp  	] = K3_c * state_Mp + flu_K6_c * state_AM - (K4_c + K5_c) * state_AMp;
     du[ AM   	] = K5_c * state_AMp - ( K7_c + flu_K6_c ) * state_AM;
 
-    //ECS:				smc efflux				SC flux					 				PVS flux								decay term
-    du[ K_e		] = - flu_NaK_i + flu_K_i - ( (state_K_e - flu_K_s) / tau2) - VR_pe * ( (state_K_e - state_K_p) / tau); // - 0.05 * state_K_e;
-//    du[ K_e		] = 0; // for only the diffusion eq
+    //ECS:				smc efflux				SC flux					 				                   PVS flux
+    du[ K_e		] = - flu_NaK_i + flu_K_i - ( (state_K_e - flu_K_s) / tau2) + ECS_input(t, x, y); // - VR_pe * ( (state_K_e - state_K_p) / tau);
 
     // State variables so they can be plotted in Paraview, but only for one time (initial condition set in nvu_ics, use t for when the signal is turned on)
     du[PLC_i	] = 0;
@@ -472,9 +471,9 @@ double nvu_p0(double t)
 double K_input(double t, double x, double y)
 {
     double K_input_min 	= 0;
-    double K_input_max 	= 2.5;
-    double t_up   		= 100;
-    double t_down 		= 200;
+    double K_input_max 	= 2.67;
+    double t_up   		= 1000;
+    double t_down 		= 2000;
     double lengthpulse 	= t_down - t_up;
     double lengtht1 	= 10;
     double t0 			= t_up;
@@ -524,18 +523,6 @@ double K_input(double t, double x, double y)
 
     double K_out = K_input_min + (K_input_max - K_input_min) * K_space * K_time; // 0 if t3 < t or x,y <= 0
     return K_out;
-}
-
-double factorial(int c)
-{
-    double result = 1;
-
-    for (int n = 1; n < c; n++)
-    {
-        result = result * n;
-    }
-
-    return result;
 }
 
 // Block function to switch cotransporter channels on and off (K+ input)
@@ -596,7 +583,56 @@ double PLC_input(double t, double x, double y)
     return PLC_out;
 }
 
+// Space- & time-varying ECS K+ input signal
+double ECS_input(double t, double x, double y)
+{
+    double ECS_max 		= 9e3;
+    double t_up   		= 100;
+    double t_down 		= 200;
+    double lengthpulse 	= t_down - t_up;
+    double lengtht1 	= 20;
+    double t0 			= t_up;
+    double t1 			= t0 + lengtht1;
+    double t2 			= t0 + lengthpulse;
+    double t3 			= t1 + lengthpulse;
 
+    double ampl = 3;
+    double ramp = 0.003;
+    double x_centre = 0;
+    double y_centre = 0;
+
+    double ECS_space = fmin(1.0, ampl * (exp(-((pow((x - x_centre), 2) + pow((y - y_centre), 2)) / (2 * pow(ramp, 2))))));
+
+    double ECS_time;
+    if (t >= t0 && t <= t1)
+    {
+        ECS_time = 1;
+    }
+    else if (t >= t2 && t <= t3)
+    {
+    	ECS_time = - 1;
+    }
+    else
+    {
+    	ECS_time = 0;
+    }
+
+    double ECS_out = ECS_max * ECS_space * ECS_time;
+
+    return ECS_out;
+}
+
+double factorial(int c)
+{
+    double result = 1;
+
+    for (int n = 1; n < c; n++)
+    {
+        result = result * n;
+    }
+
+    return result;
+}
 
 // Initial conditions. If you want spatial inhomegeneity, make it a
 // function of the coordinates x and y. u0 is already allocated, you just
