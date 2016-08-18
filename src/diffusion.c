@@ -2,7 +2,9 @@
 
 void diffusion(int block_number, double t, double *u, double *du, nvu_workspace *w)
 {
-    const double tau = 4.3; // (sec) The diffusion rate - characteristic time scale for ion to travel one cell length.
+
+    const double tau = 4.3; // (sec) The diffusion rate - characteristic time scale for potassium ion to travel from one NVU to another based on a tissue block diameter of 124 um.
+
 
     // Offset into the neighbours array to get the indices
     // of the neighbours for the current tissue block.
