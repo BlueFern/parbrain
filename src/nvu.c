@@ -627,7 +627,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     du[ N_HCO3_s] = - du[ N_HCO3_k];                                                // uMm s-1
 
     //PVS:
-    du[ K_p     ] = flu_J_BK_k / (VR_pa * state_R_k) + flu_J_KIR_i / VR_ps - R_decay * (state_K_p - K_p_min) + ( (state_K_e - state_K_p) / tau);         // uM s-1
+    du[ K_p     ] = flu_J_BK_k / (VR_pa * state_R_k) + flu_J_KIR_i / VR_ps - R_decay * (state_K_p - K_p_min);         // uM s-1
 
     //SMC:
     du[ ca_i    ] = flu_c_cpl_i + flu_rho_i * ( flu_ip3_i - flu_SRuptake_i + flu_CICR_i - flu_extrusion_i + flu_leak_i - flu_VOCC_i + flu_NaCa_i + 0.1* flu_J_stretch_i);
@@ -649,7 +649,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     du[ AM   	] = flu_K5_c * state_AMp - ( K7_c + flu_K6_c ) * state_AM;
 
     //ECS:				smc efflux				SC flux					 				PVS flux
-    du[ K_e		] = - flu_NaK_i + flu_K_i - ( (state_K_e - flu_K_s) / tau2) - VR_pe * ( (state_K_e - state_K_p) / tau);
+    du[ K_e		] = - flu_NaK_i + flu_K_i - ( (state_K_e - flu_K_s) / tau2);
 
     /***********NO pathway***********/
 
