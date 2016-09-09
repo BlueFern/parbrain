@@ -188,7 +188,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     //const double v_6         = 22e-3         ; 				// V        Constant
     const double v_4         = 14.5e-3       ;				// V        A measure of the spread of the distribution
     const double psi_w       = 2.664         ; 				// s-1      A characteristic time
-    const double G_BK_k      = 225         ; 				//!!! 4.3e3 TRPV OFF | pS      Constant estimation based on Ermentrout
+    const double G_BK_k      = 4.3e3         ; 				// !!!
     const double g_BK_k      = G_BK_k * 1e-12 / A_ef_k ;	// ohm-1m-2  Specific capacitance of the BK-Channel in units of Ostby
     const double VR_pa       = 0.001       	 ; 				// [-]       The estimated volume ratio of perivascular space to astrocyte: Model estimation
     const double VR_ps       = 0.001         ; 				// [-]       The estimated volume ratio of perivascular space to SMC: Model Estimation
@@ -281,9 +281,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     const double LArg_j		 = 100;
 
     // ECS:
-    const double VR_pe       = 0.001; 	// [-]       The estimated volume ratio of PVS to ECS: Model Estimation
-    	// tau is dx^2 / 2D where dx is the length and D is diffusion rate
-    const double tau 		 = 0.7; 	// (sec) characteristic time scale for ion to travel one cell length (SMC length is ~50 um)
+    // tau is dx^2 / 2D where dx is the length and D is diffusion rate
     const double tau2 		 = 2.8; 	// (sec) characteristic time scale for ion to travel from PVS to SC (AC length is ~100 um, based on protoplasmic astrocyte process length of ~50 um)
 
     // NO pathway
@@ -376,9 +374,9 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 	const double delta			= 1.235e-2;
 	const double K_G			= 8.82;
 	const double Ca_3			= 0.4;
-	const double Ca_4			= 0.35;
+	const double Ca_4			= 0.15;
 	const double v_5			= 8e-3;
-	const double v_7			= -13.57e-3;
+	const double v_7			= -15e-3;
 	const double eet_shift		= 2e-3;
 	const double gam_cae_k		= 200;
 	const double gam_cai_k		= 0.01;
@@ -398,8 +396,8 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 	const double V_eet			= 72;
 	const double Ca_decay_k		= 0.5;
 	const double Capmin_k		= 2000;
-	const double reverseBK		= -0.08135;
-	const double switchBK		= 0;
+	const double reverseBK		= 0;
+	const double switchBK		= 1;
 	const double trpv_switch	= 1;
 	const double z_Ca			= 2;
 
