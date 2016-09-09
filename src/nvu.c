@@ -349,9 +349,9 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     flu_E_BK_k         	= (R_gas * Temp) / (z_K  * Farad) * log(state_K_p / flu_K_k);   // V
     flu_J_NaK_k        	= J_NaK_max * ( pow(flu_Na_k,1.5) / ( pow(flu_Na_k,1.5) + pow(K_Na_k,1.5) ) ) * ( flu_K_s / (flu_K_s + K_K_s) );    // uMm s-1
     flu_v_k            	= ( g_Na_k * flu_E_Na_k + g_K_k * flu_E_K_k + g_Cl_k  * flu_E_Cl_k + g_NBC_k * flu_E_NBC_k - flu_J_NaK_k * Farad/unitcon + g_BK_k * state_w_k * flu_E_BK_k) / (g_Na_k + g_K_k + g_Cl_k + g_NBC_k + g_BK_k * state_w_k);  // V
-    flu_J_KCC1_k       	= flux_ft(t,x,y) * (R_gas * Temp * g_KCC1_k) / (pow(Farad,2)) * log(((flu_K_s) * (flu_Cl_s))/((flu_K_k)*(flu_Cl_k))) * unitcon;   //uMm s-1
+    flu_J_KCC1_k       	= 1 * (R_gas * Temp * g_KCC1_k) / (pow(Farad,2)) * log(((flu_K_s) * (flu_Cl_s))/((flu_K_k)*(flu_Cl_k))) * unitcon;   //uMm s-1
     flu_J_NBC_k        	= g_NBC_k / Farad * ((flu_v_k) - (flu_E_NBC_k))*unitcon;       //uMm s-1
-    flu_J_NKCC1_k     	= flux_ft(t,x,y) * (g_NKCC1_k * R_gas * Temp) / (pow(Farad,2))  * log(((flu_K_s) * (flu_Na_s) * pow(flu_Cl_s,2)) /((flu_K_k) * (flu_Na_k) * pow(flu_Cl_k,2)))*unitcon;        //uMm s-1
+    flu_J_NKCC1_k     	= 1 * (g_NKCC1_k * R_gas * Temp) / (pow(Farad,2))  * log(((flu_K_s) * (flu_Na_s) * pow(flu_Cl_s,2)) /((flu_K_k) * (flu_Na_k) * pow(flu_Cl_k,2)))*unitcon;        //uMm s-1
     flu_J_Na_k   		= g_Na_k / Farad * (flu_v_k - flu_E_Na_k) * unitcon;              //uMm s-1
     flu_J_K_k    		= g_K_k  / Farad * ((flu_v_k) - (flu_E_K_k )) * unitcon;          //uMm s-1
     flu_J_BK_k   		= g_BK_k / Farad * state_w_k * (flu_v_k - flu_E_BK_k) * unitcon;  //uMm s-1
@@ -558,7 +558,7 @@ double flux_ft(double t, double x, double y)
         flux_space = 0;
     }
 
-    double flux_out = flux_min + (flux_max-flux_min) * flux_time * flux_space;
+    double flux_out = 1; //flux_min + (flux_max-flux_min) * flux_time * flux_space;
 
     return flux_out;
 }
