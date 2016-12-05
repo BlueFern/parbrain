@@ -404,7 +404,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 
 	/****** Model fluxes/algebraic variables and state variables ******/
 
-    double pt; // pressure stuff
+    double pt, P_str, delta_p; // pressure stuff
 
     // Initialise state variables
     double state_r;
@@ -421,7 +421,6 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     double flu_M, flu_h_r, flu_v_cpl_i, flu_c_cpl_i, flu_I_cpl_i, flu_rho_i, flu_ip3_i, flu_SRuptake_i, flu_CICR_i, flu_extrusion_i, flu_leak_i, flu_VOCC_i, flu_NaCa_i, flu_NaK_i, flu_Cl_i, flu_K_i, flu_Kactivation_i, flu_degrad_i, flu_v_KIR_i, flu_G_KIR_i, flu_J_KIR_i, flu_J_stretch_i; // SMC fluxes
     double flu_v_cpl_j, flu_c_cpl_j, flu_I_cpl_j, flu_rho_j, flu_O_j, flu_ip3_j, flu_ERuptake_j, flu_CICR_j, flu_extrusion_j, flu_leak_j, flu_cation_j, flu_BKCa_j, flu_SKCa_j, flu_K_j, flu_R_j, flu_degrad_j, flu_J_stretch_j; // EC fluxes
     double flu_K1_c, flu_K6_c; // Mech fluxes
-    double P_str; // pressure
     double flu_c_w, flu_P_NR2AO, flu_P_NR2BO, flu_I_Ca, flu_phi_N, flu_dphi_N, flu_N, flu_CaM, flu_W_tau_w, flu_F_tau_w, flu_k4, flu_R_cGMP2, flu_K2_c, flu_K5_c, flu_tau_w, E_5c, V_max_pde;    // NO pathway fluxes
     double flu_ip3_k, flu_er_leak, flu_pump_k, flu_I_TRPV_k, flu_TRPV_k, flu_E_TRPV_k, B_cyt, G, v_3, H_Ca_k, eta, minf_k, t_Ca_k, flu_VOCC_k;
     double F_r, E, R_0;
@@ -482,8 +481,9 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 // Fluxes:
 
     // pressure
-    pt 					= P0 / 2 * (p + nvu_w->pcap); // x P0 to make dimensional, pressure difference in Pa
-	P_str 				= pt * PA2MMHG; // pressure difference in mmHg
+    pt 					= P0 / 2 * (p + nvu_w->pcap); // x P0 to make dimensional, transmural pressure in Pa
+	P_str 				= pt * PA2MMHG; // transmural pressure in mmHg
+	delta_p				= P0 * (p - nvu_w->pcap); // dimensional pressure drop over leaf vessel
 
     // SC fluxes
     R_s        	    	= R_tot - state_R_k;                            // state_R_k is AC volume-area ratio, R_s is SC
@@ -575,7 +575,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 	flu_CaM             = state_ca_n / flu_N;                                      // concentration of calmodulin / calcium complexes ; (100)
 
 	//flu_tau_w           = 9.1e4 * state_r * R_0_passive_k; // radius is non-dimensional! r = state_r*R_0_passive_k
-	flu_tau_w			= state_r * R_0_passive_k * P_str / (2*200e-6); // WSS using pressure from the H tree
+	flu_tau_w			= (R_0_passive_k * state_r) * delta_p / (2*200e-6); // WSS using pressure from the H tree. L_0 = 200 um
 
 	flu_W_tau_w         = W_0 * pow((flu_tau_w + sqrt(16 * pow(delt_wss,2) + pow(flu_tau_w,2)) - 4 * delt_wss),2) / (flu_tau_w + sqrt(16 * pow(delt_wss,2) + pow(flu_tau_w,2))) ;  // - tick
 	flu_F_tau_w         = 1 / (1 + alp * exp(-flu_W_tau_w)) - 1 / (1 + alp); // -(1/(1+alp)) was added to get no NO at 0 wss (!) - tick
