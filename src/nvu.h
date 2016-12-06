@@ -148,6 +148,9 @@ double flux_ft(double t, double x, double y);
 	
 //time- and space-dependent PLC input
 double PLC_input(double t, double x, double y);
+
+// ECS K+ input
+double ECS_input(double t, double x, double y);
 	
 //factorial
 double factorial(int c);

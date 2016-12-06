@@ -646,8 +646,8 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     du[ AMp  	] = K3_c * state_Mp + flu_K6_c * state_AM - (K4_c + flu_K5_c) * state_AMp;
     du[ AM   	] = flu_K5_c * state_AMp - ( K7_c + flu_K6_c ) * state_AM;
 
-    //ECS:				smc efflux				SC flux					 				PVS flux
-    du[ K_e		] = - flu_NaK_i + flu_K_i - ( (state_K_e - flu_K_s) / tau2);
+    //ECS:				smc efflux				SC flux
+    du[ K_e		] = - flu_NaK_i + flu_K_i - ( (state_K_e - flu_K_s) / tau2) + ECS_input(t,x,y);
 
     /***********NO pathway***********/
 
@@ -722,8 +722,8 @@ double nvu_Glu(double t, double x, double y)
 {
     double Glu_min = 0;
     double Glu_max = 1846; // uM - one vesicle (Santucci)
-    double t_up   = 200;
-    double t_down = 400;
+    double t_up   = 2000;
+    double t_down = 4000;
 //    double blocks_activated = 4;
 //    double Glu_out = ((0.5 + 0.5 *(tanh(100000*(x-0.0004)+1))) *(0.5 + 0.5 *(tanh(100000*(y-0.0004)+1))))        *          ((Glu_min + (Glu_max - Glu_min) / 2.0 * (1 + tanh(10*(t - t_up))) + (Glu_min - Glu_max) / 2.0 * (1 + tanh(10*(t - t_down)))));
 //    double ampl = 3;
@@ -755,8 +755,8 @@ double rho_input(double t, double x, double y)
 {
     double rho_min = 0.1;
     double rho_max = 0.7;
-    double t_up   = 200;
-    double t_down = 400;
+    double t_up   = 2000;
+    double t_down = 4000;
 //    double ampl = 3;
 //    double ramp = 0.003;
 //    double x_centre = 0;
@@ -784,8 +784,8 @@ double K_input(double t, double x, double y)
 {
     double K_input_min 	= 0;
     double K_input_max 	= 2.5;
-    double t_up   		= 200;				// Signal starts at time = 5 ***
-    double t_down 		= 400;
+    double t_up   		= 2000;				// Signal starts at time = 5 ***
+    double t_down 		= 4000;
     double lengthpulse 	= t_down - t_up;
     double lengtht1 	= 10;
     double t0 			= t_up;
@@ -871,7 +871,7 @@ double flux_ft(double t, double x, double y)
         flux_space = 0;
     }
 
-    double flux_out = flux_min + (flux_max-flux_min) * flux_time * flux_space;
+    double flux_out = 1; //flux_min + (flux_max-flux_min) * flux_time * flux_space;
 
     return flux_out;
 }
@@ -896,7 +896,43 @@ double PLC_input(double t, double x, double y)
     return PLC_out;
 }
 
+double ECS_input(double t, double x, double y)
+{
+    double ECS_max 		= 9e3;
+    double t_up   		= 100;
+    double t_down 		= 200;
+    double lengthpulse 	= t_down - t_up;
+    double lengtht1 	= 20;
+    double t0 			= t_up;
+    double t1 			= t0 + lengtht1;
+    double t2 			= t0 + lengthpulse;
+    double t3 			= t1 + lengthpulse;
 
+    double ampl = 3;
+    double ramp = 0.003;
+    double x_centre = 0;
+    double y_centre = 0;
+
+    double ECS_space = fmin(1.0, ampl * (exp(-((pow((x - x_centre), 2) + pow((y - y_centre), 2)) / (2 * pow(ramp, 2))))));
+
+    double ECS_time;
+    if (t >= t0 && t <= t1)
+    {
+        ECS_time = 1;
+    }
+    else if (t >= t2 && t <= t3)
+    {
+    	ECS_time = - 1;
+    }
+    else
+    {
+    	ECS_time = 0;
+    }
+
+    double ECS_out = ECS_max * ECS_space * ECS_time;
+
+    return ECS_out;
+}
 
 // Initial conditions. If you want spatial inhomegeneity, make it a
 // function of the coordinates x and y. u0 is already allocated, you just
@@ -904,59 +940,59 @@ double PLC_input(double t, double x, double y)
 void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w)
 {
 
-    u0[i_radius]  = 1;   						//0 //! 2.48
+    u0[i_radius]  = 1.1445;   						//0 //! 2.48
 
-    u0[R_k]       = 6.1e-8;                    //1
-    u0[N_Na_k]    = 9.9796e-4;                 //2
-    u0[N_K_k]     = 5.52782e-3;                //3
-    u0[N_HCO3_k]  = 0.58804e-3;                //4
-    u0[N_Cl_k]    = 0.32879e-3;                //5
-    u0[w_k]       = 0.1815e-3;                 //10
+    u0[R_k]       = 6.0987e-8;                    //1
+    u0[N_Na_k]    = 1.0023e-3;                 //2
+    u0[N_K_k]     = 5.5225e-3;                //3
+    u0[N_HCO3_k]  = 0.59308e-3;                //4
+    u0[N_Cl_k]    = 0.32275e-3;                //5
+    u0[w_k]       = 5.13e-5;                 //10
 
-    u0[N_Na_s]    = 4.301041e-3;               //6
-    u0[N_K_s]     = 0.0807e-3;                 //7
-    u0[N_HCO3_s]  = 0.432552e-3;               //8 
+    u0[N_Na_s]    = 4.2967e-3;               //6
+    u0[N_K_s]     = 0.083305e-3;                 //7
+    u0[N_HCO3_s]  = 0.42752e-3;               //8
 
-    u0[K_p]       = 3e3;                       //9
+    u0[K_p]       = 3334.6;                       //9
 
-    u0[ca_i]      = 0.1649;                       //11
-    u0[ca_sr_i]   = 1.361;                       //12
-    u0[v_i]       = -50.3;                       //13
-    u0[w_i]       = 0.234;                       //14
+    u0[ca_i]      = 0.268;                       //11
+    u0[ca_sr_i]   = 1.1515;                       //12
+    u0[v_i]       = -35.88;                       //13
+    u0[w_i]       = 0.214;                       //14
     u0[ip3_i]     = 0.45;                       //15
     u0[K_i]       = 1e5;                       //16
 
-    u0[ca_j]      = 0.5628;                       //17
-    u0[ca_er_j]   = 0.8392;                       //18
-    u0[v_j]       = -65.24;                       //19
+    u0[ca_j]      = 0.5855;                       //17
+    u0[ca_er_j]   = 0.8115;                       //18
+    u0[v_j]       = -65.67;                       //19
     u0[ip3_j]     = 1.35;                       //20
 
-    u0[Mp]        = 0.25;                      //21
-    u0[AMp]       = 0.25;                      //22
-    u0[AM]        = 0.25;                      //23
+    u0[Mp]        = 0.0852;                      //21
+    u0[AMp]       = 0.0632;                     //22
+    u0[AM]        = 0.278;                      //23
 
-    u0[K_e]		  = 3e3;					//24
+    u0[K_e]		  = 3095;					//24
 
     // NO pathway*****************
-	u0[NOn]       = 0.1;                    //28
-	u0[NOk]       = 0.1;                    //29
-	u0[NOi]       = 0.05;                   //30
-	u0[NOj]       = 0.05;                   //31
-	u0[cGMP]      = 6;                      //32
-	u0[eNOS]      = 0.7;                    //33
-	u0[nNOS]      = 0.3;                    //34
-	u0[ca_n]      = 0.0001;                 //35
-	u0[E_b]       = 0.3;                    //36
-	u0[E_6c]      = 0.2;                    //37
+	u0[NOn]       = 0.1815;                    //28
+	u0[NOk]       = 0.125;                    //29
+	u0[NOi]       = 0.0684;                   //30
+	u0[NOj]       = 0.067;                   //31
+	u0[cGMP]      = 8.92;                      //32
+	u0[eNOS]      = 0.71;                    //33
+	u0[nNOS]      = 0.318;                    //34
+	u0[ca_n]      = 0.1;                 //35
+	u0[E_b]       = 0.353;                    //36
+	u0[E_6c]      = 0.48;                    //37
 
 	// AC Ca2+*******************
-	u0[ca_k]     = 0.1;                    	//38
-	u0[s_k]      = 400;                    	//39
-	u0[h_k]      = 0.1e-3;                  //40
-	u0[ip3_k]    = 0.01e-3;                 //41
-	u0[eet_k]    = 0.1e-3;                  //42
-	u0[m_k]      = 0;                    	//43
-	u0[ca_p]     = 2e3;                    //44
+	u0[ca_k]     = 0.1605;                    	//38
+	u0[s_k]      = 500;                    	//39
+	u0[h_k]      = 0.3839;                  //40
+	u0[ip3_k]    = 0.0483;                 //41
+	u0[eet_k]    = 0.605;                  //42
+	u0[m_k]      = 0.562;                    	//43
+	u0[ca_p]     = 1758;                    //44
 
     // Only here so they can be shown in Paraview for some time when the signals are turned on (as a check), so choose t within t0 and t1
     u0[PLC_i]     = PLC_input(15,x,y);		// 24
