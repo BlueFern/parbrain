@@ -48,13 +48,45 @@ static const int Mp        = 21;
 static const int AMp       = 22;
 static const int AM        = 23;
 
-// ECS
-static const int K_e	   = 24;
+// Neuron - ions
+static const int v_sa	   = 24;
+static const int v_d	   = 25;
+static const int K_sa	   = 26;
+static const int Na_sa	   = 27;
+static const int Cl_sa	   = 28;
+static const int K_d	   = 29;
+static const int Na_d	   = 30;
+static const int Cl_d	   = 31;
+static const int K_e	   = 32;
+static const int Na_e	   = 33;
+static const int Cl_e	   = 34;
+
+// Neuron - other
+static const int Buff_e	   = 35;
+static const int Buff_s	   = 36;
+static const int O2		   = 37;
+static const int CBV	   = 38;
+static const int K_buff	   = 39;
+
+// Neuron Gating Variables
+static const int m1	   	   = 40;
+static const int m2	   	   = 41;
+static const int m3	   	   = 42;
+static const int m4	   	   = 43;
+static const int m5	   	   = 44;
+static const int m6	   	   = 45;
+static const int m7	   	   = 46;
+static const int m8	   	   = 47;
+static const int h1	   	   = 48;
+static const int h2	   	   = 49;
+static const int h3	   	   = 50;
+static const int h4	   	   = 51;
+static const int h5	   	   = 52;
+static const int h6	   	   = 53;
 
 // Other
-static const int PLC_i     = 25; //!
-static const int K_df_i    = 26; //!
-static const int K_flux_i  = 27; //!
+static const int PLC_i     = 54; //!
+static const int current_i    = 55; //!
 
 // Constants we may want to use that are defined in brain.c. 
 extern const double RMIN;   // radius of smallest vessel
@@ -115,11 +147,8 @@ double nvu_p0(double t);
 //time- and space-dependent Glu input
 //double nvu_Glu(double t, double x, double y);
 
-//time- and space-dependent K+ input
-double K_input(double t, double x, double y);
-	
-//time- and space-dependent flux_ft input
-double flux_ft(double t, double x, double y);
+//time- and space-dependent current input
+double current_input(double t, double x, double y);
 	
 //time- and space-dependent PLC input
 double PLC_input(double t, double x, double y);

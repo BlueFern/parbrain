@@ -25,42 +25,70 @@ nvu_workspace *nvu_init(void)
     // pressure and state variables here. An equation is considered to be
     // dependent on pressure if it contains any pressure (transmural or
     // drop) or flow term
-    int dfdp_pattern[] = {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; 	// neq * 1 column vector
+    int dfdp_pattern[] = {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; 	// neq * 1 column vector
 
     // Column: variables the eq depends on
     // Row: variables that depend on that eq variable
-    int dfdx_pattern[] = {1,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0, 		//remember indexing starts at 0
-    		              0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    		              0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    		              0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    		              0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    		              0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    		              0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    		              0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,
-    		              0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    		              0,0,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,
-    		              0,0,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    		              1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,1,0,0,0,0,1,1,1,0,0,0,0,
-    		              0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    		              0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,
-    		              0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,
-    		              0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,
-    		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,
-    		              1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,
-    		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,
-    		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,
-    		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,
-    		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,
-    		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,
-    		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,
-						  0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,
-    		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 }; // column major, neq*neq
+    int dfdx_pattern[] = {1,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0, 		//remember indexing starts at 0
+    		              0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+    		              0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+    		              0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+    		              0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+    		              0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+    		              0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+    		              0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+    		              0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+    		              0,0,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+    		              0,0,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+    		              1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,1,0,0,0,0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+    		              0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+    		              0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+    		              0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+    		              0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+    		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+    		              1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+    		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+    		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+    		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+    		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+    		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+    		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+						  0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+						  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+						  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+						  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+						  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+						  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+						  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+						  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+						  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+						  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+						  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+						  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+						  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+						  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+						  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+						  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+						  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+						  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+						  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+						  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+						  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+						  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+						  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+						  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+						  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+						  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+						  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+						  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+						  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+						  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+    		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    		              0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; // column major, neq*neq
 
     // Initialise the workspace
     nvu_w = malloc(sizeof *nvu_w);
-    nvu_w->neq = 28; //27;
+    nvu_w->neq = 56; 
 
     // Construct sparse matrices containing the sparsity patterns
     // TODO: modify dense2sparse so we can just use two calls to that,
@@ -134,7 +162,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 {
 
 // general constants:
-	const double Farad       = 96500         ;// [C mol-1] Faradays constant.
+	const double F       	 = 96500         ;// [C mol-1] Faradays constant.
 	const double R_gas       = 8.315         ;// [J mol-1K-1]
 	const double Temp        = 300           ;// [K]
     const double unitcon     = 1e3           ;// [-] Factor to convert equations to another unit.
@@ -259,14 +287,53 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     const double K5_c        = 0.5 * C_Hillmann;
     const double K7_c        = 0.1 * C_Hillmann;
     const double gam_cross   = 17 * C_Hillmann;
+	
+// Neuron constants
+	const double SC_coup	 = 9.5;
+	const double tns 		 = 3;
+	const double g 			 = 20;
+	const double Farad 		 = 96.485;
+	const double E_Cl_sa	 = -70;
+	const double E_Cl_d		 = -70;
+	const double Ra			 = 1.83e5;
+	const double dhod 		 = 4.5e-2;
+	const double As 		 = 1.586e-5;
+	const double Ad			 = 2.6732e-4;
+	const double Vs			 = 2.16e-9;
+	const double Vd			 = 5.614e-9;
+	const double fe			 = 0.15;
+	const double Cm			 = 7.5e-7;
+	const double ph			 = 26.6995;
+	const double Mu			 = 8e-4;
+	const double B0 		 = 500;
+	const double gNaP_GHk	 = 2e-6;
+	const double gKDR_GHk	 = 10e-5;
+	const double gKA_GHk	 = 1e-5;
+	const double gNMDA_GHk	 = 1e-5;
+	const double gNaT_GHk    = 10e-5;
+	const double gNaleak_sa	 = 4.1333e-5;
+	const double gKleak_sa	 = 1.4623e-4;
+	const double gClleak_sa	 = 41.333e-5;
+	const double gNaleak_d	 = 4.1915e-5;
+	const double gKleak_d	 = 1.4621e-4;
+	const double gClleak_d	 = 41.915e-5;
+	const double Imax		 = 0.052;
+	const double O2_0		 = 2e-2;
+	const double alph 		 = 0.05;
+	const double D_Na 		 = 1.33e-5;
+	const double D_K 		 = 1.96e-5;
+	const double D_Cl 		 = 2.03e-5;
+	const double K_init_e 	 = 2.9;
+	const double Na_init_sa  = 10;
+	const double Na_init_d 	 = 10;
+	const double LU_R_init	 = 1.9341e-5;
+	const double CBF_init 	 = 3.2e-2;
+	const double O2_b 		 = 4e-2;
+	const double gamm		 = 0.1;
+	const double Mg			 = 1.2;
+	
 
-    // ECS:
-    const double VR_pe       = 0.001; 	// [-]       The estimated volume ratio of PVS to ECS: Model Estimation
-    // tau is dx^2 / 2D where dx is the length and D is diffusion rate
-    const double tau 		 = 0.7; 	// (sec) characteristic time scale for ion to travel one cell length (SMC length is ~50 um)
-    const double tau2 		 = 2.8; 	// (sec) characteristic time scale for ion to travel from PVS to SC (AC length is ~100 um, based on protoplasmic astrocyte process length of ~50 um)
-
-    double pt, e, r0, q, g; // pressure stuff
+    double pt, e, r0, q, g, P_str; // pressure stuff
 
     // Initialise state variables
     double state_r, AMp_AM;
@@ -274,15 +341,15 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     double state_ca_i, state_ca_sr_i, state_v_i, state_w_i, state_ip3_i, state_K_i; // SMC state
     double state_ca_j, state_ca_er_j, state_v_j, state_ip3_j; // EC state
     double state_Mp, state_AM, state_AMp; // Mech state
-    double state_K_e; // ECS state
-    double state_PLC_i, state_K_df_i, state_K_flux_i; // input
+    double state_v_sa, state_v_d, state_K_sa, state_Na_sa, state_Cl_sa, state_K_d, state_Na_d, state_Cl_d, state_K_e, state_Na_e, state_Cl_e, state_Buff_e, state_Buff_s, state_O2, state_CBV, state_K_buff, state_m1, state_m2, state_m3, state_m4, state_m5, state_m6, state_m7, state_m8, state_h1, state_h2, state_h3, state_h4,, state_h5, state_h6;
 
     // Fluxes
     double R_s, flu_N_Cl_s, flu_Na_k, flu_K_k, flu_HCO3_k, flu_Cl_k, flu_Na_s, flu_K_s, flu_HCO3_s, flu_Cl_s, flu_E_Na_k, flu_E_K_k, flu_E_Cl_k, flu_E_NBC_k, flu_E_BK_k, flu_J_NaK_k, flu_v_k, flu_J_KCC1_k, flu_J_NBC_k, flu_J_NKCC1_k, flu_J_Na_k, flu_J_K_k, flu_J_BK_k, flu_w_inf, flu_phi_w; // AC fluxes
     double flu_M, flu_E_K_i, flu_h_r, flu_v_cpl_i, flu_c_cpl_i, flu_I_cpl_i, flu_rho_i, flu_ip3_i, flu_SRuptake_i, flu_CICR_i, flu_extrusion_i, flu_leak_i, flu_VOCC_i, flu_NaCa_i, flu_NaK_i, flu_Cl_i, flu_K_i, flu_Kactivation_i, flu_degrad_i, flu_v_KIR_i, flu_G_KIR_i, flu_J_KIR_i, flu_J_stretch_i; // SMC fluxes
     double flu_v_cpl_j, flu_c_cpl_j, flu_I_cpl_j, flu_rho_j, flu_O_j, flu_ip3_j, flu_ERuptake_j, flu_CICR_j, flu_extrusion_j, flu_leak_j, flu_cation_j, flu_BKCa_j, flu_SKCa_j, flu_K_j, flu_R_j, flu_degrad_j, flu_J_stretch_j; // EC fluxes
     double flu_K1_c, flu_K6_c; // Mech fluxes   
-    double P_str;
+	double J_KDR_sa, J_KA_sa, J_Kleak_sa, J_Kpump_sa, J_NaP_sa, J_Naleak_sa, J_Napump_sa, J_NaT_sa, J_KDR_d, J_KA_d, J_Kleak_d, J_Kpump_d, J_NMDA_K_d, J_NaP_d, J_Naleak_d, J_Napump_d, J_NMDA_Na_d, J_pump1_sa, J_pump1_d, J_pump1init_sa, J_pump1init_d;
+	double 	flu_J_tot_sa, flu_J_tot_d, flu_J_K_tot_sa, flu_J_Na_tot_sa, flu_J_Cl_tot_sa, flu_J_K_tot_d, flu_J_Na_tot_d, flu_J_Cl_tot_d, flu_J_O2_vascular, flu_J_O2_background, flu_J_O2_pump, flu_J_CBF_norm;
 
     // State Variables:
     state_r  	  = u[i_radius];
@@ -314,11 +381,39 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     state_AMp     = u[AMp];
     state_AM      = u[AM];
 
-    state_K_e	  = u[K_e];
-
-    state_PLC_i   = u[PLC_i];
-    state_K_df_i  = u[K_df_i];
-    state_K_flux_i= u[K_flux_i];
+    state_v_sa	  = u[v_sa];
+	state_v_d	  = u[v_d];
+	state_K_sa	  = u[K_sa];
+	state_Na_sa	  = u[Na_sa];
+	state_Cl_sa	  = u[Cl_sa];
+	state_K_d	  = u[K_d];
+	state_Na_d	  = u[Na_d];
+	state_Cl_d	  = u[Cl_d];
+	state_K_e	  = u[K_e];
+	state_Na_e	  = u[Na_e];
+	state_Cl_e	  = u[Cl_e];
+	
+	state_Buff_e  = u[Buff_e];
+	state_Buff_s  = u[Buff_s];
+	state_O2	  = u[O2];
+	state_CBV	  = u[CBV];
+	state_K_buff  = u[K_buff];
+	
+	state_m1	  = u[m1];
+	state_m2	  = u[m2];
+	state_m3	  = u[m3];
+	state_m4	  = u[m4];
+	state_m5	  = u[m5];
+	state_m6	  = u[m6];
+	state_m7	  = u[m7];
+	state_m8	  = u[m8];
+	state_h1	  = u[h1];
+	state_h2	  = u[h2];
+	state_h3	  = u[h3];
+	state_h4	  = u[h4];
+	state_h5	  = u[h5];
+	state_h6	  = u[h6];
+	
 
 // Fluxes:
     AMp_AM = state_AMp + state_AM;
@@ -342,25 +437,25 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     flu_HCO3_s         	= state_N_HCO3_s / R_s;                     //
     flu_Cl_s           	= flu_N_Cl_s / R_s;                         //
 
-    flu_E_Na_k         	= (R_gas * Temp) / (z_Na * Farad) * log(flu_Na_s / flu_Na_k);    // V
-    flu_E_K_k          	= (R_gas * Temp) / (z_K  * Farad) * log(flu_K_s / flu_K_k );     // V
-    flu_E_Cl_k         	= (R_gas * Temp) / (z_Cl * Farad) * log(flu_Cl_s / flu_Cl_k);    // V
-    flu_E_NBC_k        	= (R_gas * Temp) / (z_NBC* Farad) * log((flu_Na_s * pow(flu_HCO3_s,2))/(flu_Na_k * pow(flu_HCO3_k,2)));     // V
-    flu_E_BK_k         	= (R_gas * Temp) / (z_K  * Farad) * log(state_K_p / flu_K_k);   // V
+    flu_E_Na_k         	= (R_gas * Temp) / (z_Na * F) * log(flu_Na_s / flu_Na_k);    // V
+    flu_E_K_k          	= (R_gas * Temp) / (z_K  * F) * log(flu_K_s / flu_K_k );     // V
+    flu_E_Cl_k         	= (R_gas * Temp) / (z_Cl * F) * log(flu_Cl_s / flu_Cl_k);    // V
+    flu_E_NBC_k        	= (R_gas * Temp) / (z_NBC* F) * log((flu_Na_s * pow(flu_HCO3_s,2))/(flu_Na_k * pow(flu_HCO3_k,2)));     // V
+    flu_E_BK_k         	= (R_gas * Temp) / (z_K  * F) * log(state_K_p / flu_K_k);   // V
     flu_J_NaK_k        	= J_NaK_max * ( pow(flu_Na_k,1.5) / ( pow(flu_Na_k,1.5) + pow(K_Na_k,1.5) ) ) * ( flu_K_s / (flu_K_s + K_K_s) );    // uMm s-1
-    flu_v_k            	= ( g_Na_k * flu_E_Na_k + g_K_k * flu_E_K_k + g_Cl_k  * flu_E_Cl_k + g_NBC_k * flu_E_NBC_k - flu_J_NaK_k * Farad/unitcon + g_BK_k * state_w_k * flu_E_BK_k) / (g_Na_k + g_K_k + g_Cl_k + g_NBC_k + g_BK_k * state_w_k);  // V
-    flu_J_KCC1_k       	= 1 * (R_gas * Temp * g_KCC1_k) / (pow(Farad,2)) * log(((flu_K_s) * (flu_Cl_s))/((flu_K_k)*(flu_Cl_k))) * unitcon;   //uMm s-1
-    flu_J_NBC_k        	= g_NBC_k / Farad * ((flu_v_k) - (flu_E_NBC_k))*unitcon;       //uMm s-1
-    flu_J_NKCC1_k     	= 1 * (g_NKCC1_k * R_gas * Temp) / (pow(Farad,2))  * log(((flu_K_s) * (flu_Na_s) * pow(flu_Cl_s,2)) /((flu_K_k) * (flu_Na_k) * pow(flu_Cl_k,2)))*unitcon;        //uMm s-1
-    flu_J_Na_k   		= g_Na_k / Farad * (flu_v_k - flu_E_Na_k) * unitcon;              //uMm s-1
-    flu_J_K_k    		= g_K_k  / Farad * ((flu_v_k) - (flu_E_K_k )) * unitcon;          //uMm s-1
-    flu_J_BK_k   		= g_BK_k / Farad * state_w_k * (flu_v_k - flu_E_BK_k) * unitcon;  //uMm s-1
+    flu_v_k            	= ( g_Na_k * flu_E_Na_k + g_K_k * flu_E_K_k + g_Cl_k  * flu_E_Cl_k + g_NBC_k * flu_E_NBC_k - flu_J_NaK_k * F/unitcon + g_BK_k * state_w_k * flu_E_BK_k) / (g_Na_k + g_K_k + g_Cl_k + g_NBC_k + g_BK_k * state_w_k);  // V
+    flu_J_KCC1_k       	= 1 * (R_gas * Temp * g_KCC1_k) / (pow(F,2)) * log(((flu_K_s) * (flu_Cl_s))/((flu_K_k)*(flu_Cl_k))) * unitcon;   //uMm s-1
+    flu_J_NBC_k        	= g_NBC_k / F * ((flu_v_k) - (flu_E_NBC_k))*unitcon;       //uMm s-1
+    flu_J_NKCC1_k     	= 1 * (g_NKCC1_k * R_gas * Temp) / (pow(F,2))  * log(((flu_K_s) * (flu_Na_s) * pow(flu_Cl_s,2)) /((flu_K_k) * (flu_Na_k) * pow(flu_Cl_k,2)))*unitcon;        //uMm s-1
+    flu_J_Na_k   		= g_Na_k / F * (flu_v_k - flu_E_Na_k) * unitcon;              //uMm s-1
+    flu_J_K_k    		= g_K_k  / F * ((flu_v_k) - (flu_E_K_k )) * unitcon;          //uMm s-1
+    flu_J_BK_k   		= g_BK_k / F * state_w_k * (flu_v_k - flu_E_BK_k) * unitcon;  //uMm s-1
     flu_w_inf    		= 0.5 * (1+tanh(((flu_v_k)+v_6)/v_4));                            //[-]
     flu_phi_w    		= psi_w * cosh(((flu_v_k)+v_6)/(2*v_4));                          //s-1
 
     // SMC fluxes
     flu_M               = 1 - state_Mp - state_AM - state_AMp;
-    flu_E_K_i           = ( R_gas * Temp ) / ( z_K  * Farad ) * unitcon * log( state_K_p / state_K_i );
+    flu_E_K_i           = ( R_gas * Temp ) / ( z_K  * F ) * unitcon * log( state_K_p / state_K_i );
     flu_h_r             = 0.1 * state_r; 												//(non-dimensional!)
     flu_v_cpl_i		    = - g_hat * ( state_v_i - state_v_j );
     flu_c_cpl_i         = - p_hat * ( state_ca_i - state_ca_j );
@@ -403,6 +498,21 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     flu_R_j 			= G_R * ( state_v_j - v_rest);
     flu_degrad_j 		= k_j * state_ip3_j;
     flu_J_stretch_j     = G_stretch / (1 + exp(-alpha1*(P_str * state_r / flu_h_r - sig0))) * (state_v_j - Esac);
+		
+	// Neuron fluxes
+	flu_J_tot_sa		= J_Na_tot_sa + J_K_tot_sa + J_Cl_tot_sa;
+	flu_J_tot_d			= J_Na_tot_d + J_K_tot_d + J_Cl_tot_d;
+	flu_J_K_tot_sa		= J_KDR_sa + J_KA_sa + J_Kleak_sa + J_Kpump_sa;
+	flu_J_Na_tot_sa		= J_NaP_sa + J_Naleak_sa + J_Napump_sa + J_NaT_sa;
+	flu_J_Cl_tot_sa		= p.gClleak_sa * (v_sa - p.E_Cl_sa);
+	flu_J_K_tot_d		= J_KDR_d + J_KA_d + J_Kleak_d + J_Kpump_d + J_NMDA_K_d;
+	flu_J_Na_tot_d		= J_NaP_d + J_Naleak_d + J_Napump_d + J_NMDA_Na_d;
+	flu_J_Cl_tot_d		= p.gClleak_d * (v_d - p.E_Cl_d);
+	flu_J_O2_vascular	= CBF .* ((p.O2_b - O2) ./ (p.O2_b - p.O2_0));
+	flu_J_O2_background = p.CBF_init * P_02 * (1 - p.gamm);
+	flu_J_O2_pump 		= p.CBF_init * P_02 * p.gamm .* ((J_pump1_sa + J_pump1_d) ./ (J_pump1init_sa + J_pump1init_d));
+	flu_J_CBF_norm 		= CBF/0.03219;
+
 
 // Mech fluxes
     flu_K1_c         	= gam_cross * pow(state_ca_i,3);
@@ -445,14 +555,49 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     du[ Mp   	] = K4_c * state_AMp + flu_K1_c * flu_M - (K2_c + K3_c) * state_Mp;
     du[ AMp  	] = K3_c * state_Mp + flu_K6_c * state_AM - (K4_c + K5_c) * state_AMp;
     du[ AM   	] = K5_c * state_AMp - ( K7_c + flu_K6_c ) * state_AM;
+	
 
-    //ECS:				smc efflux				SC flux					 				                   PVS flux
-    du[ K_e		] = - flu_NaK_i + flu_K_i - ( (state_K_e - flu_K_s) / tau2) + ECS_input(t, x, y); // - VR_pe * ( (state_K_e - state_K_p) / tau);
+    // Neuron - ions
+	du[ v_sa	] = 1/p.Cm * ( -flu_J_tot_sa + 1 / (2 * p.Ra * p.dhod.^2) * (state_v_d - state_v_sa) + current_input(t,x,y) );
+	du[ v_d		] = 1/p.Cm * (-flu_J_tot_d + 1 / (2 * p.Ra * p.dhod.^2) * (state_v_sa - state_v_d));
+    du[ K_sa	] = -p.As / (p.Farad * p.Vs) * flu_J_K_tot_sa + p.D_K * (p.Vd + p.Vs) ./ (2 * p.dhod.^2 * p.Vs) * (state_K_d - state_K_sa);
+    du[ Na_sa	] = -p.As / (p.Farad * p.Vs) * flu_J_Na_tot_sa + p.D_Na * (p.Vd + p.Vs) ./ (2 * p.dhod.^2 * p.Vs) * (state_Na_d - state_Na_sa);
+	du[ Cl_sa	] = -p.As / (p.Farad * p.Vs) * flu_J_Cl_tot_sa + p.D_Cl * (p.Vd + p.Vs) ./ (2 * p.dhod.^2 * p.Vs) * (state_Cl_d - state_Cl_sa);
+	du[ K_d		] = -p.Ad / (p.Farad * p.Vd) * flu_J_K_tot_d + p.D_K * (p.Vs + p.Vd) ./ (2 * p.dhod.^2 * p.Vd) * (state_K_sa - state_K_d);
+	du[ Na_d	] = -p.Ad / (p.Farad * p.Vd) * flu_J_Na_tot_d + p.D_Na * (p.Vs + p.Vd) ./ (2 * p.dhod.^2 * p.Vd) * (state_Na_sa - state_Na_d);
+	du[ Cl_d	] = -p.Ad / (p.Farad * p.Vd) * flu_J_Cl_tot_d + p.D_Cl * (p.Vs + p.Vd) ./ (2 * p.dhod.^2 * p.Vd) * (state_Cl_sa - state_Cl_d);
+	
+	du[ Na_e	] = 1/(p.Farad * p.fe) * (((p.As * flu_J_Na_tot_sa) / p.Vs) + ((p.Ad * flu_J_Na_tot_d) / p.Vd));
+	du[ Cl_e	] = 1/(p.Farad * p.fe) * (((p.As * flu_J_Cl_tot_sa) / p.Vs) + ((p.Ad * flu_J_Cl_tot_d) / p.Vd));
+	
+	// Neuron - other
+	du[ Buff_e	] = p.Mu * state_K_e .* (p.B0 - state_Buff_e) ./ (1 + exp(-((state_K_e - 5.5) ./ 1.09))) - (p.Mu * state_Buff_e);
+	du[ Buff_s	] = p.Mu * state_K_buff .* (p.B0 - state_Buff_s) ./ (1 + exp(-((state_K_buff - 5.5) ./ 1.09))) - (p.Mu * state_Buff_s);
+	du[ O2		] = flu_J_O2_vascular - flu_J_O2_background - flu_J_O2_pump;
+	du[ CBV		] = 1/(p.tns + p.g) .* ( flu_J_CBF_norm - state_CBV.^2.5 ); 
+	du[ K_buff	] = p.SC_coup ./ (p.Farad * p.fe) * ( (p.As .* flu_J_K_tot_sa) / p.Vs  + ( p.Ad .* flu_J_K_tot_d) / (p.Vd ) ) - du[ Buff_s];
+	
+	du[ K_e		] = 1/(p.Farad * p.fe) * (((p.As * flu_J_K_tot_sa) / p.Vs)  + ((p.Ad * flu_J_K_tot_d) / p.Vd)) - du[ Buff_e] + ECS_input(t,x,y);
+	
+	// Neuron Gating Variables
+	du[ m1		] =	1000 * ((m1alpha .* (1 - state_m1)) - (m1beta .* state_m1));
+	du[ m2		] =	1000 * ((m2alpha .* (1 - state_m2)) - (m2beta .* state_m2));
+	du[ m3		] =	1000 * ((m3alpha .* (1 - state_m3)) - (m3beta .* state_m3));
+	du[ m4		] = 1000 * ((m4alpha .* (1 - state_m4)) - (m4beta .* state_m4));	
+	du[ m5		] =	1000 * ((m5alpha .* (1 - state_m5)) - (m5beta .* state_m5));
+	du[ m6		] =	1000 * ((m6alpha .* (1 - state_m6)) - (m6beta .* state_m6));
+	du[ m7		] =	1000 * ((m7alpha .* (1 - state_m7)) - (m7beta .* state_m7)); 
+	du[ m8		] =	1000 * ((m8alpha .* (1 - state_m8)) - (m8beta .* state_m8));
+	du[ h1		] = 1000 * ((h1alpha .* (1 - state_h1)) - (h1beta .* state_h1));	
+	du[ h2		] =	1000 * ((h2alpha .* (1 - state_h2)) - (h2beta .* state_h2));
+	du[ h3		] =	1000 * ((h3alpha .* (1 - state_h3)) - (h3beta .* state_h3));
+	du[ h4		] =	1000 * ((h4alpha .* (1 - state_h4)) - (h4beta .* state_h4));
+	du[ h5		] =	1000 * ((h5alpha .* (1 - state_h5)) - (h5beta .* state_h5));
+	du[ h6		] =	1000 * ((h6alpha .* (1 - state_h6)) - (h6beta .* state_h6));
 
     // State variables so they can be plotted in Paraview, but only for one time (initial condition set in nvu_ics, use t for when the signal is turned on)
-    du[PLC_i	] = 0;
-    du[K_df_i	] = 0;
-    du[K_flux_i	] = 0;
+    du[PLC_i		] = 0;
+    du[current_i	] = 0;
 }
 
 // Time-varying pressure at the root of the tree. 1 is nominal value. If
@@ -468,10 +613,10 @@ double nvu_p0(double t)
 }
 
 // Space- & time-varying K+ input signal (simulating neuronal activity)
-double K_input(double t, double x, double y)
+double current_input(double t, double x, double y)
 {
-    double K_input_min 	= 0;
-    double K_input_max 	= 2.67;
+    double current_input_min 	= 0;
+    double current_input_max 	= 0.02;
     double t_up   		= 1000;
     double t_down 		= 2000;
     double lengthpulse 	= t_down - t_up;
@@ -491,76 +636,38 @@ double K_input(double t, double x, double y)
     double ga 			= factorial(alpha - 1);
     double gb 			= factorial(beta - 1);
 
-    //double K_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
-    //double K_space =((0.5 + 0.5 *(tanh(1e5 * (x-0.0004)+1))) *(0.5 + 0.5 *(tanh(1e5 *(y-0.0004)+1))));
+    //double current_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
+    //double current_space =((0.5 + 0.5 *(tanh(1e5 * (x-0.0004)+1))) *(0.5 + 0.5 *(tanh(1e5 *(y-0.0004)+1))));
 
-    double K_space;
+    double current_space;
     // only in corner
     if (x <= 0 && y <= 0)
     {
-        K_space = 1;
+        current_space = 1;
     }
     else
     {
-        K_space = 0;
+        current_space = 0;
     }
 
-    double K_time;
+    double current_time;
     if (t >= t0 && t <= t1)
     {
-        //K_time = F_input * gab / (ga * gb) * pow((1-(t-t0) / deltat),(beta - 1)) * pow(((t - t0) / deltat),(alpha-1)); 
-        K_time = 1 * gab / (ga * gb) * pow((1 - (t - t0) / deltat), (beta - 1)) * pow(((t - t0) / deltat), (alpha-1));
+        //current_time = F_input * gab / (ga * gb) * pow((1-(t-t0) / deltat),(beta - 1)) * pow(((t - t0) / deltat),(alpha-1)); 
+        current_time = 1 * gab / (ga * gb) * pow((1 - (t - t0) / deltat), (beta - 1)) * pow(((t - t0) / deltat), (alpha-1));		//TODO: rectpuls for input
     }
     else if (t >= t2 && t <= t3)
     {
-        //K_time = - F_input;
-        K_time = - 1;
+        //current_time = - F_input;
+        current_time = - 1;
     }   
     else
     {
-        K_time = 0;
+        current_time = 0;
     }
 
-    double K_out = K_input_min + (K_input_max - K_input_min) * K_space * K_time; // 0 if t3 < t or x,y <= 0
-    return K_out;
-}
-
-// Block function to switch cotransporter channels on and off (K+ input)
-double flux_ft(double t, double x, double y)
-{
-    double flux_min 	= 0;
-    double flux_max 	= 1;
-    double t_up   		= 100;
-    double t_down 		= 200;
-    double lengthpulse 	= t_down - t_up;
-    double lengtht1 	= 10;
-    double t0 			= t_up;
-    double t1 			= t0 + lengtht1;
-    double ampl = 3;
-    double ramp = 0.003;
-    double x_centre = 0;//-0.0008;
-    double y_centre = 0;//-0.0008;
-
-    double flux_time = 0.5 * tanh((t - t0) / 0.0005) - 0.5 * tanh((t - t1 - lengthpulse) / 0.0005);
-    //double flux_time = 0.5 * tanh((t-t0)/0.005) - 0.5 * tanh((t-t1-lengthpulse)/0.005);
-
-    //double flux_space = fmin(1.0,ampl*(exp(- ((pow((x-x_centre),2)+pow((y-y_centre),2)) / (2 * pow(ramp,2))))));
-    //double flux_space =((0.5 + 0.5 *(tanh(1e5 * (x-0.0004)+1))) *(0.5 + 0.5 *(tanh(1e5 *(y-0.0004)+1))));  
-
-    double flux_space;
-    // only in corner
-    if (x <= 0 && y <= 0)
-    {
-        flux_space = 1;
-    }
-    else
-    {
-        flux_space = 0;
-    }
-
-    double flux_out = 1; //flux_min + (flux_max-flux_min) * flux_time * flux_space;
-
-    return flux_out;
+    double current_out = current_input_min + (current_input_max - current_input_min) * current_space * current_time; // 0 if t3 < t or x,y <= 0
+    return current_out;
 }
 
 
@@ -639,6 +746,8 @@ double factorial(int c)
 // need to fill in the entries
 void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w)
 {
+	
+	//TODO: get ICs from stable state in single NVU code
 
     u0[i_radius]  = 1;   						//0
 
@@ -671,11 +780,41 @@ void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w)
     u0[AMp]       = 0.25;                      //22
     u0[AM]        = 0.25;                      //23
 
-    u0[K_e]		  = 3e3;
+    u0[v_sa]	  = -70;
+	u0[v_d]	      = -70;
+	u0[K_sa]	  = 133.5;
+	u0[Na_sa]	  = 9.9854;
+	u0[Cl_sa]	  = 10.464;
+	u0[K_d]	  	  = 133.5;
+	u0[Na_d]	  = 9.9853;
+	u0[Cl_d]	  = 10.464;
+	u0[K_e]	  	  = 3.5;
+	u0[Na_e]	  = 139.76;
+	u0[Cl_e]	  = 144.1;
+	
+	u0[Buff_e]	  = 170;
+	u0[Buff_s]	  = 170;
+	u0[O2]		  = 0.0227;
+	u0[CBV]	  	  = 1;
+	u0[K_buff]	  = 3.5;
+	
+	u0[m1]	  = 0.0128;
+	u0[m2]	  = 0.001;
+	u0[m3]	  = 0.119;
+	u0[m4]	  = 0.012;
+	u0[m5]	  = 0.00087;
+	u0[m6]	  = 0.0012;
+	u0[m7]	  = 0.1193;
+	u0[m8]	  = 0.005;
+	u0[h1]	  = 0.9718;
+	u0[h2]	  = 0.12;
+	u0[h3]	  = 0.9718;
+	u0[h4]	  = 0.99;
+	u0[h5]	  = 0.12;
+	u0[h6]	  = 0.996;
 
     // Only here so they can be shown in Paraview for some time when the signals are turned on (as a check), so choose t within t0 and t1
-    u0[PLC_i]     = PLC_input(15,x,y);
-    u0[K_df_i]    = K_input(15,x,y);
-    u0[K_flux_i]  = flux_ft(15,x,y);
+    u0[PLC_i]     	 = PLC_input(150,x,y);
+    u0[current_i]    = current_input(150,x,y);
 
 }

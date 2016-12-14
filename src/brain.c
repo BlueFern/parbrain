@@ -5,14 +5,14 @@ const int NDEFAULT      = 9;
 const int NSUBDEFAULT   = 3;
 const int NSYMBOLS      = 4;
 
-const double RMIN  = 10e-6 ;  							// m, radius of smallest vessel
+const double RMIN  = 20e-6 ;  							// m, radius of smallest vessel
 const double BIFURCATION_SCALE = 1.4142135623730951;	// = sqrt(2), amount the radius decreases by when going down a level
 const double L0    = 200e-6;  							// m (for nondimensionalising), length characteristic value
-const double LRR   = 20    ;  							// Nondimensional, length to radius ratio
+const double LRR   = 10    ;  							// Nondimensional, length to radius ratio
 const double MU    = 3.5e-3;  							// Pa s, blood viscosity
 
 // External variables (initialised in nvu.h, also used in nvu.c)
-const double R0    = 10e-6 ;  // m (for nondimensionalising)
+const double R0    = 20e-6 ;  // m (for nondimensionalising)
 const double P0    = 8000  ;  // Pa (scaling factor for nondim)
 const double PCAP  = 4000  ;  // Pa (capillary bed pressure)
 
