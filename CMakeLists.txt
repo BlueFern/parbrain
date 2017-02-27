@@ -24,7 +24,7 @@ set(SRCs src/run_parbrain.c src/solver.c src/brain.c src/matops.c src/nvu.c src/
 
 add_executable(parBrainSim ${SRCs} ${HDRs})
 target_link_libraries(parBrainSim 
-	${MPI_LIBRARIES}
+	${MPI_C_LIBRARIES}
 	${CXSPARSE_LIBRARIES}
 	m)
 
