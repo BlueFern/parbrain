@@ -327,7 +327,7 @@ int main(int argc, char *argv[]) {
 
 // 4. Add binary data as attributes to cells:
 
-	char const *var_names[] = {"radius_coupled","R_k","N_Na_k","N_K_k","N_HCO3_k","N_Cl_k","N_Na_s","N_K_s","N_HCO3_s","K_p","w_k","ca_i","ca_sr_i","v_i","w_i","ip3_i","K_i","ca_j","ca_er_j","v_j","ip3_j","Mp","AMp","AM","K_e","PLC_input","K_input","flux_ft","NOn","NOk","NOi","NOj","cGMP","eNOS","nNOS","ca_n","E_b","E_6c","ca_k","s_k","h_k","ip3_k","eet_k","m_k","ca_p"};
+	char const *var_names[] = {"R","R_k","Na_k","K_k","HCO3_k","Cl_k","Na_s","K_s","HCO3_s","K_p","w_k","Ca_i","s_i","v_i","w_i","IP3_i","K_i","Ca_j","s_j","v_j","IP3_j","Mp","AMp","AM","K_e","PLC_input","K_input","flux_ft","NO_n","NO_k","NO_i","NO_j","cGMP","eNOS","nNOS","Ca_n","E_b","E_6c","Ca_k","s_k","h_k","IP3_k","eet_k","m_k","Ca_p"};
 
 	// 4.1 Time step loop:
 	double time_tb, time_tree;
@@ -370,6 +370,23 @@ int main(int argc, char *argv[]) {
 		{
 			double temp_array_tb[n_state_vars];
 			is_tissue.read((char *) temp_array_tb, sizeof(temp_array_tb));  // Read state variables from binary file.
+
+			// Convert variables into a nicer form!
+
+			temp_array_tb[0] = 20 * temp_array_tb[0]; // Convert radius to um
+			temp_array_tb[9] = 0.001 * temp_array_tb[9]; // Convert Kp to mM
+			temp_array_tb[24] = 0.001 * temp_array_tb[24]; // Convert Ke to mM
+
+			temp_array_tb[2] = temp_array_tb[2] / temp_array_tb[1]; // Convert N_Na_k to Na_k;
+			temp_array_tb[3] = temp_array_tb[3] / temp_array_tb[1]; // Convert N_k_k to K_k;
+			temp_array_tb[4] = temp_array_tb[4] / temp_array_tb[1]; // Convert N_HCO3_k to HCO3_k;
+			temp_array_tb[5] = temp_array_tb[5] / temp_array_tb[1]; // Convert N_Cl_k to Cl_k;
+
+			temp_array_tb[6] = temp_array_tb[6] / (8.79e-8 - temp_array_tb[1]); // Convert N_Na_s to Na_s;
+			temp_array_tb[7] = 0.001 * temp_array_tb[7] / (8.79e-8 - temp_array_tb[1]); // Convert N_K_s to K_s in mM;
+			temp_array_tb[8] = temp_array_tb[8] / (8.79e-8 - temp_array_tb[1]); // Convert N_HCO3_s to HCO3_s;
+
+
 
 			for (int v = 0; v < n_state_vars; v++)
 			{
@@ -428,7 +445,7 @@ int main(int argc, char *argv[]) {
 			branchPolyData->GetCellData()->AddArray(flowArray);
 
 	        tubeFilter->SetInputData(branchPolyData);
-			tubeFilter->SetRadius(0.00012*(stateVars[0]->GetValue(line_id))-0.0001);  	// varying radii - different depending on NVU version
+			tubeFilter->SetRadius(0.00014*(0.05*stateVars[0]->GetValue(line_id))-0.0001);  	// varying radii - different depending on NVU version TODO: make this dependent on max and min values of radius.
 			tubeFilter->SetNumberOfSides(20);
 			tubeFilter->CappingOn();  												  	// Cap tubes.
 			appendFilter->AddInputConnection(tubeFilter->GetOutputPort());
