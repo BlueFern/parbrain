@@ -161,7 +161,7 @@ void set_domain_neighbours(int idx, int m, int n, int *neighbours)
 void set_edge_indices(int nlocal, int mlocal, nvu_workspace *w)
 {
 	// TODO: Free this memory.
-	w->edge_indices = malloc(nlocal * mlocal * sizeof(int));
+	w->edge_indices = malloc((nlocal + mlocal) * 2 * sizeof(int));
 
 	for(int i = 0; i < mlocal; i++)
 	{
