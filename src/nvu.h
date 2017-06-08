@@ -11,7 +11,7 @@
 typedef struct ghost_block ghost_block;
 
 // State variable indexing (TODO: shouldn't be initialised here but is needed in various files - make external or something?)
-static const int radius  = 0; // radius has to be 0, this is assumed elsewhere
+static const int i_radius  = 0; // radius has to be 0, this is assumed elsewhere
 
 // AC
 static const int R_k       = 1;
@@ -30,18 +30,18 @@ static const int N_HCO3_s  = 8;
 static const int K_p       = 9;
 
 // SMC
-static const int Ca_i      = 11; // or use enum
-static const int s_i   = 12;
+static const int ca_i      = 11; // or use enum
+static const int ca_sr_i   = 12;
 static const int v_i       = 13;
 static const int w_i       = 14;
-static const int IP3_i     = 15;
+static const int ip3_i     = 15;
 static const int K_i       = 16;
 
 // EC
-static const int Ca_j      = 17;
-static const int s_j   = 18;
+static const int ca_j      = 17;
+static const int ca_er_j   = 18;
 static const int v_j       = 19;
-static const int IP3_j     = 20;
+static const int ip3_j     = 20;
 
 // Mech
 static const int Mp        = 21;
@@ -57,25 +57,25 @@ static const int K_df_i    = 26; //!
 static const int K_flux_i  = 27; //!
 
 // NO pathway
-static const int NO_n        = 28;
-static const int NO_k        = 29;
-static const int NO_i        = 30;
-static const int NO_j        = 31;
+static const int NOn        = 28;
+static const int NOk        = 29;
+static const int NOi        = 30;
+static const int NOj        = 31;
 static const int cGMP       = 32;
 static const int eNOS       = 33;
 static const int nNOS       = 34;
-static const int Ca_n       = 35;
+static const int ca_n       = 35;
 static const int E_b        = 36;
 static const int E_6c       = 37;
 
 // AC Ca2+
-static const int Ca_k       = 38;
+static const int ca_k       = 38;
 static const int s_k        = 39;
 static const int h_k        = 40;
-static const int IP3_k      = 41;
+static const int ip3_k      = 41;
 static const int eet_k      = 42;
 static const int m_k        = 43;
-static const int Ca_p       = 44;
+static const int ca_p       = 44;
 
 // Constants we may want to use that are defined in brain.c. 
 extern const double RMIN;   // radius of smallest vessel
@@ -140,9 +140,6 @@ double nvu_Glu(double t, double x, double y);
 //time- and space-dependent K+ input
 double K_input(double t, double x, double y);
 
-//time- and space-dependent rho (glutamate) input
-double rho_input(double t, double x, double y);
-	
 //time- and space-dependent flux_ft input
 double flux_ft(double t, double x, double y);
 	
