@@ -678,6 +678,18 @@ double factorial(int c)
     return result;
 }
 
+// Time-varying pressure at the root of the tree. 1 is nominal value. If
+// you want to work in unscaled units, make sure you *multiply* by P0
+// afterwards
+double nvu_p0(double t)
+{
+    //double p0 = 1. * 8000 / P0; // 8000 Pa   original: 1.5 * 8000 / P0;
+    //double p0 = (0.5 * sin(t) + 1) * 8000 / P0; //
+    double p0 = 1.5 * 8000 / P0;	// no time dependence
+
+    return p0;
+}
+
 // Space- & time-varying glutamate input signal
 double nvu_Glu(double t, double x, double y)
 {
