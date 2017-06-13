@@ -23,7 +23,7 @@ nvu_workspace *nvu_init(void)
 
     // Initialise the workspace
     nvu_w = malloc(sizeof *nvu_w);
-    nvu_w->neq = 45;
+    nvu_w->neq = 42;
 
     // Sparsity patterns (approximated by matrices full of 1s)
     int dfdp_pattern[nvu_w->neq],i;
@@ -609,12 +609,6 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 
 	//PVS:
     du[ca_p]	= (-flu_TRPV_k / VR_pa) + (flu_VOCC_k / VR_ps) - Ca_decay_k * (state_ca_p - Capmin_k);
-
-
-    // State variables so they can be plotted in Paraview, but only for one time (initial condition set in nvu_ics, use t for when the signal is turned on)
-    du[PLC_i	] = 0;
-    du[K_df_i	] = 0;
-    du[K_flux_i	] = 0;
 }
 
 // Time-varying pressure at the root of the tree. 1 is nominal value. If
@@ -835,84 +829,75 @@ void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w)
 		u0[eet_k]    = 0.337187;
 		u0[m_k]      = 0.896358;
 		u0[ca_p]     = 1713.39;
-
-    // Only here so they can be shown in Paraview for some time when the signals are turned on (as a check), so choose t within t0 and t1
-    u0[PLC_i]     = PLC_input(15,x,y);		// 24
-    u0[K_df_i]    = K_input(15,x,y);		// 25
-    u0[K_flux_i]  = 0;		// 26
-
 }
-
-// TODO: is this necessary?
-int sizecheck(double *x, int n, double tol) { // n - # of equations total (nblocks*nequs)
-    int smallenough = 1;
-
-    double x0[45] =
-    {		1,   	// 0
-		 	1e-7,	// 1
-			1e-4,	// 2
-			1e-3,	// 3
-			1e-4,	// 4
-			1e-4,	// 5
-			1e-3,	// 6
-			1e-5, 	// 7
-			1e-4,	// 8
-			1e+3,	// 9
-			1e-4,	// 10
-			1e-1,	// 11 *
-			1.0,	// 12
-			1e-1,	// 13
-			1e-1, 	// 14
-			1e-1,	// 15 **
-			1e+5,	// 16
-			1.0,	// 17
-			1e-1,	// 18
-			1e1,	// 19 *
-			1.0,	// 20 **
-			1e-1,	// 21
-			1e-1,	// 22
-			1e-1,	// 23
-			1e+3,	// 24
-			1,
-			1,
-			1,
-			1,		//28
-			1,		//29
-			1e-1,	//30
-			1e-1,	//31
-			1e2,	//32
-			1,		//33
-			1,		//34
-			1e-2,	//35
-			1,		//36
-			1,		//37
-			1,		//38
-			1e+3,	//39
-			1e-3,	//40
-			1e-3,	//41
-			1e-3,	//42
-			1,		//43
-			1e4		//44
-
-	};
-
-    for (int i = 0; i < n; i++)
-    {
-// 	    for (int la = 0; la < 45; la++)
-// 	    {
-//            printf("***** tolerance check: var = %d: %e %e  %e \n", la, x[la], x0[la % 27], fabs(x[la] / x0[la % 27])); // TEST
+//
+//// TODO: is this necessary?
+//int sizecheck(double *x, int n, double tol) { // n - # of equations total (nblocks*nequs)
+//    int smallenough = 1;
+//
+//    double x0[42] =
+//    {		1,   	// 0
+//		 	1e-7,	// 1
+//			1e-4,	// 2
+//			1e-3,	// 3
+//			1e-4,	// 4
+//			1e-4,	// 5
+//			1e-3,	// 6
+//			1e-5, 	// 7
+//			1e-4,	// 8
+//			1e+3,	// 9
+//			1e-4,	// 10
+//			1e-1,	// 11 *
+//			1.0,	// 12
+//			1e-1,	// 13
+//			1e-1, 	// 14
+//			1e-1,	// 15 **
+//			1e+5,	// 16
+//			1.0,	// 17
+//			1e-1,	// 18
+//			1e1,	// 19 *
+//			1.0,	// 20 **
+//			1e-1,	// 21
+//			1e-1,	// 22
+//			1e-1,	// 23
+//			1e+3,	// 24
+//			1,		//28
+//			1,		//29
+//			1e-1,	//30
+//			1e-1,	//31
+//			1e2,	//32
+//			1,		//33
+//			1,		//34
+//			1e-2,	//35
+//			1,		//36
+//			1,		//37
+//			1,		//38
+//			1e+3,	//39
+//			1e-3,	//40
+//			1e-3,	//41
+//			1e-3,	//42
+//			1,		//43
+//			1e4		//44
+//
+//	};
+//
+//    for (int i = 0; i < n; i++)
+//    {
+//// 	    for (int la = 0; la < 45; la++)
+//// 	    {
+////            printf("***** tolerance check: var = %d: %e %e  %e \n", la, x[la], x0[la % 27], fabs(x[la] / x0[la % 27])); // TEST
+////        }
+//
+//        smallenough &= (fabs(x[i] / x0[i % 42]) < tol);  // W->neq hardcoded
+//        //smallenough &= (fabs(x[i]) < tol);
+//        //printf("%f \n", x[i]);
+//
+//        if (!smallenough)
+//        {
+//            break;
 //        }
-
-        smallenough &= (fabs(x[i] / x0[i % 45]) < tol);  // W->neq hardcoded
-        //smallenough &= (fabs(x[i]) < tol);
-        //printf("%f \n", x[i]);
-
-        if (!smallenough)
-        {
-            break;
-        }
-    }
-
-    return smallenough;
-}
+//    }
+//
+//    return smallenough;
+//}
 

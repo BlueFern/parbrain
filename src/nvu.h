@@ -51,31 +51,26 @@ static const int AM        = 23;
 // ECS
 static const int K_e	   = 24;
 
-// Other
-static const int PLC_i     = 25; //!
-static const int K_df_i    = 26; //!
-static const int K_flux_i  = 27; //!
-
 // NO pathway
-static const int NOn        = 28;
-static const int NOk        = 29;
-static const int NOi        = 30;
-static const int NOj        = 31;
-static const int cGMP       = 32;
-static const int eNOS       = 33;
-static const int nNOS       = 34;
-static const int ca_n       = 35;
-static const int E_b        = 36;
-static const int E_6c       = 37;
+static const int NOn        = 25;
+static const int NOk        = 26;
+static const int NOi        = 27;
+static const int NOj        = 28;
+static const int cGMP       = 29;
+static const int eNOS       = 30;
+static const int nNOS       = 31;
+static const int ca_n       = 32;
+static const int E_b        = 33;
+static const int E_6c       = 34;
 
 // AC Ca2+
-static const int ca_k       = 38;
-static const int s_k        = 39;
-static const int h_k        = 40;
-static const int ip3_k      = 41;
-static const int eet_k      = 42;
-static const int m_k        = 43;
-static const int ca_p       = 44;
+static const int ca_k       = 35;
+static const int s_k        = 36;
+static const int h_k        = 37;
+static const int ip3_k      = 38;
+static const int eet_k      = 39;
+static const int m_k        = 40;
+static const int ca_p       = 41;
 
 // Constants we may want to use that are defined in brain.c. 
 extern const double RMIN;   // radius of smallest vessel
