@@ -329,6 +329,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 	const double switchBK		= 1;
 	const double trpv_switch	= 1;
 	const double z_Ca			= 2;
+	const double m_c			= 4;
 
 
 	/****** Model fluxes/algebraic variables and state variables ******/
@@ -497,7 +498,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 	flu_P_NR2AO         = nvu_Glu(t, x, y) / (betA + nvu_Glu(t, x, y));
 	flu_P_NR2BO         = nvu_Glu(t, x, y) / (betB + nvu_Glu(t, x, y));
 	flu_I_Ca            = (-4 * v_n * G_M * P_Ca_P_M * (Ca_ex/M)) / (1+exp(-80*(v_n+0.02))) * (exp(2 * v_n * Farad / (R_gas * Temp))) / (1 - exp(2 * v_n * Farad / (R_gas * Temp))) * (0.63 * flu_P_NR2AO + 11 * flu_P_NR2BO);
-	flu_CaM             = state_ca_n / 4;                                      // concentration of calmodulin / calcium complexes ; (100)
+	flu_CaM             = state_ca_n / m_c;                                      // concentration of calmodulin / calcium complexes ; (100)
     flu_tau_w			= (R_0_passive_k * state_r) * delta_p / (2*200e-6); // WSS using pressure from the H tree. L_0 = 200 um
 
 	flu_W_tau_w         = W_0 * pow((flu_tau_w + sqrt(16 * pow(delt_wss,2) + pow(flu_tau_w,2)) - 4 * delt_wss),2) / (flu_tau_w + sqrt(16 * pow(delt_wss,2) + pow(flu_tau_w,2))) ;  // - tick
