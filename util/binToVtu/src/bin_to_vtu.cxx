@@ -327,7 +327,8 @@ int main(int argc, char *argv[]) {
 
 // 4. Add binary data as attributes to cells:
 
-	char const *var_names[] = {"R","R_k","Na_k","K_k","HCO3_k","Cl_k","Na_s","K_s","HCO3_s","K_p","w_k","Ca_i","s_i","v_i","w_i","IP3_i","K_i","Ca_j","s_j","v_j","IP3_j","Mp","AMp","AM","K_e","PLC_input","K_input","flux_ft","NO_n","NO_k","NO_i","NO_j","cGMP","eNOS","nNOS","Ca_n","E_b","E_6c","Ca_k","s_k","h_k","IP3_k","eet_k","m_k","Ca_p"};
+	char const *var_names[] = {"R","R_k","Na_k","K_k","HCO3_k","Cl_k","Na_s","K_s","HCO3_s","K_p","w_k","Ca_i","s_i","v_i","w_i","IP3_i","K_i","Ca_j","s_j","v_j","IP3_j","Mp","AMp","AM","NO_n","NO_k","NO_i","NO_j","cGMP","eNOS","nNOS","Ca_n","E_b","E_6c","Ca_k","s_k","h_k","IP3_k","eet_k","m_k","Ca_p","v_sa","v_d","K_sa","Na_sa","K_d","Na_d","K_e","Na_e","Buff_e","O2","CBV","DHG","m1","m2","m3","m4","m5","m6","m7","m8","h1","h2","h3","h4","h5","h6"};
+
 
 	// 4.1 Time step loop:
 	double time_tb, time_tree;

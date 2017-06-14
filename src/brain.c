@@ -77,6 +77,7 @@ void evaluate(workspace *W, double t, double *y, double *dy)
     }
     // Solve for pressure and flow: takes p0 and pcap (boundary conditions) as input
     solve(W, nvu_p0(t), W->nvu_w->pcap);
+
     // Evaluate the right hand side equations
     rhs(W, t, y, W->p, dy);
 

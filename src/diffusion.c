@@ -34,7 +34,7 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
     	double flu_diff_K = (neighbour_K_e - state_K_e) / tau;
 
     	// Update the derivative.
-    	du[K_e] += flu_diff_K;
+    	//du[K_e] += flu_diff_K;
     }
 }
 
