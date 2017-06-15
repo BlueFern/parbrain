@@ -330,6 +330,8 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 	const double Glu_max		= 1846;
 	const double Glu_slope 		= 0.1;
 	const double Ke_switch		= 5.5;
+	const double rho_min		= 0.1;
+	const double rho_max		= 0.7;
 
 	// Neuron constants
 	const double SC_coup	 = 11.5;
@@ -599,7 +601,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 
 // NO pathway fluxes
 
-	Glu 			= 0.5 * Glu_max * ( 1 + tanh( (state_K_e - Ke_switch) / Glu_slope) );
+	Glu 				= 0.5 * Glu_max * ( 1 + tanh( (state_K_e - Ke_switch) / Glu_slope) );
 
 	flu_P_NR2AO         = Glu / (betA + Glu);
 	flu_P_NR2BO         = Glu / (betB + Glu);
@@ -621,7 +623,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 
 // AC Ca2+ fluxes
 
-	rho				= 0.1 + 0.6/1846 * Glu;
+	rho				= rho_min + (rho_max - rho_min)/Glu_max * Glu;
 
     flu_ip3_k 		= J_max * pow(( state_ip3_k / ( state_ip3_k + K_I ) * state_ca_k / ( state_ca_k + K_act ) * state_h_k ) , 3) * (1.0 - state_ca_k / state_s_k);
 	flu_er_leak 	= P_L * ( 1.0 - state_ca_k / state_s_k );
@@ -658,53 +660,53 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 	m1beta 			= exp(-((0.143 * state_v_sa) + 5.67)) / (6 * (1 + exp(-((0.143 * state_v_sa) + 5.67))));
 	h1alpha 		= 5.12e-8 * exp(-((0.056 * state_v_sa) + 2.94));
 	h1beta 			= 1.6e-6 / (1 + exp(-(((0.2 * state_v_sa)) + 8)));
-	J_NaP_sa 		= (pow(m1,2) * h1 * gNaP_GHk * Farad * state_v_sa * (state_Na_sa - (exp(-state_v_sa / ph) * state_Na_e))) / (ph * (1 - exp(-state_v_sa / ph)));
+	J_NaP_sa 		= (pow(state_m1,2) * state_h1 * gNaP_GHk * Farad * state_v_sa * (state_Na_sa - (exp(-state_v_sa / ph) * state_Na_e))) / (ph * (1 - exp(-state_v_sa / ph)));
 
 	// Na+ flux through NaT in soma/axon
 	m8alpha 		= 0.32 * ((-state_v_sa - 51.9) / (exp(-(0.25 * state_v_sa + 12.975)) - 1));
 	m8beta 			= 0.28 * ((state_v_sa + 24.89) / (exp(0.2 * state_v_sa + 4.978) - 1));
 	h6alpha 		= 0.128 * exp(-(0.056 * state_v_sa + 2.94));
 	h6beta 			= 4 / (1 + exp(-(0.2 * state_v_sa + 6)));
-	J_NaT_sa 		= (pow(m8,3) * h6 * gNaT_GHk * Farad * state_v_sa * (state_Na_sa - (exp(-state_v_sa / ph) * state_Na_e))) / (ph * (1 - exp(-state_v_sa / ph)));
+	J_NaT_sa 		= (pow(state_m8,3) * state_h6 * gNaT_GHk * Farad * state_v_sa * (state_Na_sa - (exp(-state_v_sa / ph) * state_Na_e))) / (ph * (1 - exp(-state_v_sa / ph)));
 
 	// K+ flux through KDR in soma/axon
 	m2alpha 		= 0.016 * ((state_v_sa + 34.9) / (1 - exp(-((0.2 * state_v_sa) + 6.98))));
 	m2beta 			= 0.25 * exp(-((0.025 * state_v_sa) + 1.25));
-	J_KDR_sa 		= (pow(m2,2) * gKDR_GHk * Farad * state_v_sa * (state_K_sa - (exp(-state_v_sa / ph) * state_K_e))) / (ph * (1 - exp(-state_v_sa / ph)));
+	J_KDR_sa 		= (pow(state_m2,2) * gKDR_GHk * Farad * state_v_sa * (state_K_sa - (exp(-state_v_sa / ph) * state_K_e))) / (ph * (1 - exp(-state_v_sa / ph)));
 
 	// K+ flux through KA in soma/axon
 	m3alpha 		= 0.02 * ((state_v_sa + 56.9) / (1 - exp(-((0.1 * state_v_sa) + 5.69))));
 	m3beta 			= 0.0175 * ((state_v_sa + 29.9) / (exp(((0.1 * state_v_sa) + 2.99)) - 1));
 	h2alpha 		= 0.016 * exp(-((0.056 * state_v_sa) + 4.61));
 	h2beta 			= 0.5 / (1 + exp(-((0.2 * state_v_sa) + 11.98)));
-	J_KA_sa 		= (pow(m3,2) * h2 * gKA_GHk * Farad * state_v_sa * (state_K_sa - (exp(-state_v_sa / ph) * state_K_e))) / (ph * (1 - exp(-state_v_sa / ph)));
+	J_KA_sa 		= (pow(state_m3,2) * state_h2 * gKA_GHk * Farad * state_v_sa * (state_K_sa - (exp(-state_v_sa / ph) * state_K_e))) / (ph * (1 - exp(-state_v_sa / ph)));
 
 	// Na+ flux through NaP in dendrite
 	m4alpha 		= 1 / (6 * (1 + exp(-((0.143 * state_v_d) + 5.67))));
 	m4beta 			= exp(-((0.143 * state_v_d) + 5.67)) / (6 * (1 + exp(-((0.143 * state_v_d) + 5.67))));
 	h3alpha 		= 5.12e-8 * exp(-((0.056 * state_v_d) + 2.94));
 	h3beta 			= 1.6e-6 / (1 + exp(-(((0.2 * state_v_d)) + 8)));
-	J_NaP_d 		= (pow(m4,2) * h3 * gNaP_GHk * Farad * state_v_d * (state_Na_d - (exp(-state_v_d / ph) * state_Na_e))) / (ph * (1 - exp(-state_v_d / ph)));
+	J_NaP_d 		= (pow(state_m4,2) * state_h3 * gNaP_GHk * Farad * state_v_d * (state_Na_d - (exp(-state_v_d / ph) * state_Na_e))) / (ph * (1 - exp(-state_v_d / ph)));
 
 	// Na+ and K+ flux through NMDA in dendrite
 	m5alpha 		= 0.5 / (1 + exp((13.5 - state_K_e) / 1.42));
 	m5beta 			= 0.5 - m5alpha;
 	h4alpha 		= 1 / (2000 * (1 + exp((state_K_e - 6.75) / 0.71)));
 	h4beta 			= 5e-4 - h4alpha;
-	J_NMDA_K_d 		= ( (m5 * h4 * gNMDA_GHk * Farad * state_v_d * (state_K_d - (exp(-state_v_d / ph) * state_K_e))) / (ph * (1 - exp(-state_v_d / ph))) ) / (1 + 0.33 * Mg * exp(-(0.07 * state_v_d + 0.7)));
-	J_NMDA_Na_d 	= ( (m5 * h4 * gNMDA_GHk * Farad * state_v_d * (state_Na_d - (exp(-state_v_d / ph) * state_Na_e))) / (ph * (1 - exp(-state_v_d / ph))) ) / (1 + 0.33 * Mg * exp(-(0.07 * state_v_d + 0.7)));
+	J_NMDA_K_d 		= ( (state_m5 * state_h4 * gNMDA_GHk * Farad * state_v_d * (state_K_d - (exp(-state_v_d / ph) * state_K_e))) / (ph * (1 - exp(-state_v_d / ph))) ) / (1 + 0.33 * Mg * exp(-(0.07 * state_v_d + 0.7)));
+	J_NMDA_Na_d 	= ( (state_m5 * state_h4 * gNMDA_GHk * Farad * state_v_d * (state_Na_d - (exp(-state_v_d / ph) * state_Na_e))) / (ph * (1 - exp(-state_v_d / ph))) ) / (1 + 0.33 * Mg * exp(-(0.07 * state_v_d + 0.7)));
 
 	// K+ flux through KDR in dendrite
 	m6alpha 		= 0.016 * ((state_v_d + 34.9) / (1 - exp(-((0.2 * state_v_d) + 6.98))));
 	m6beta 			= 0.25 * exp(-((0.025 * state_v_d) + 1.25));
-	J_KDR_d 		=(pow(m6,2) * gKDR_GHk * Farad * state_v_d * (state_K_d - (exp(-state_v_d / ph) * state_K_e))) / (ph * (1 - exp(-state_v_d / ph)));
+	J_KDR_d 		= (pow(state_m6,2) * gKDR_GHk * Farad * state_v_d * (state_K_d - (exp(-state_v_d / ph) * state_K_e))) / (ph * (1 - exp(-state_v_d / ph)));
 
 	// K+ flux through KA in dendrite
 	m7alpha 		= 0.02 * ((state_v_d + 56.9) / (1 - exp(-((0.1 * state_v_d) + 5.69))));
 	m7beta 			= 0.0175 * ((state_v_d + 29.9) / (exp(((0.1 * state_v_d) + 2.99)) - 1));
 	h5alpha 		= 0.016 * exp(-((0.056 * state_v_d) + 4.61));
 	h5beta 			= 0.5 / (1 + exp(-((0.2 * state_v_d) + 11.98)));
-	J_KA_d 			= (pow(m7,2) * h5 * gKA_GHk * Farad * state_v_d * (state_K_d - (exp(-state_v_d / ph) * state_K_e))) / (ph * (1 - exp(-state_v_d / ph)));
+	J_KA_d 			= (pow(state_m7,2) * state_h5 * gKA_GHk * Farad * state_v_d * (state_K_d - (exp(-state_v_d / ph) * state_K_e))) / (ph * (1 - exp(-state_v_d / ph)));
 
 	// ATPase pump
 	J_pump1_sa 		= pow((1 + (K_init_e / state_K_e)),-2) * pow((1 + (Na_init_sa / state_Na_sa)),-3);
@@ -982,86 +984,86 @@ double ECS_input(double t, double x, double y)
 // need to fill in the entries
 void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w)
 {
-		// Current ICs optimised for J_PLC = 0.11
-		u0[i_radius]  = 1.49986;
+		// Current ICs optimised for J_PLC = 0.11!!
+		u0[i_radius]  = 1.1486;
 
 	    u0[R_k]       = 0.06e-6;
-	    u0[N_Na_k]    = 0.00115629;
-	    u0[N_K_k]     = 0.00554052;
-	    u0[N_HCO3_k]  = 0.000582264;
-	    u0[N_Cl_k]    = 0.000505576;
-	    u0[w_k]       = 3.61562e-5;
+	    u0[N_Na_k]    = 0.0010961;
+	    u0[N_K_k]     = 0.0055247;
+	    u0[N_HCO3_k]  = 0.00054791;
+	    u0[N_Cl_k]    = 0.00046402;
+	    u0[w_k]       = 1.693161e-4;
 
-	    u0[N_Na_s]    = 0.00414271;
-	    u0[N_K_s]     = 7.27797e-5;
-	    u0[N_HCO3_s]  = 0.000438336;
+	    u0[N_Na_s]    = 0.00420714;
+	    u0[N_K_s]     = 7.9445e-5;
+	    u0[N_HCO3_s]  = 4.72678e-4;
 
-	    u0[K_p]       = 3246.44;
+	    u0[K_p]       = 3045;
 
-	    u0[ca_i]      = 0.137077;
-	    u0[ca_sr_i]   = 1.20037;
-	    u0[v_i]       = -58.5812;
-	    u0[w_i]       = 0.38778;
-	    u0[ip3_i]     = 0.45;
+	    u0[ca_i]      = 0.2637;
+	    u0[ca_sr_i]   = 1.1687;
+	    u0[v_i]       = -34.7;
+	    u0[w_i]       = 0.2206;
+	    u0[ip3_i]     = 0.275;
 	    u0[K_i]       = 99994.8;
 
-	    u0[ca_j]      = 0.537991;
-	    u0[ca_er_j]   = 0.872007;
-	    u0[v_j]       = -64.8638;
-	    u0[ip3_j]     = 1.35;
+	    u0[ca_j]      = 0.8331;
+	    u0[ca_er_j]   = 0.6266;
+	    u0[v_j]       = -68.27;
+	    u0[ip3_j]     = 0.825;
 
-	    u0[Mp]        = 0.0165439;
-	    u0[AMp]       = 0.00434288;
-	    u0[AM]        = 0.0623458;
+	    u0[Mp]        = 0.0842;
+	    u0[AMp]       = 0.0621;
+	    u0[AM]        = 0.2745;
 
 	    // NO pathway
-		u0[NOn]       = 0.273264;
-		u0[NOk]       = 0.21676;
-		u0[NOi]       = 0.160269;
-		u0[NOj]       = 0.159001;
-		u0[cGMP]      = 11.6217;
-		u0[eNOS]      = 2.38751;
-		u0[nNOS]      = 0.317995;
+		u0[NOn]       = 0.1671;
+		u0[NOk]       = 0.1106;
+		u0[NOi]       = 0.0541;
+		u0[NOj]       = 0.0529;
+		u0[cGMP]      = 8.2889;
+		u0[eNOS]      = 0.4495;
+		u0[nNOS]      = 0.3178;
 		u0[ca_n]      = 0.1;
-		u0[E_b]       = 0.184071;
-		u0[E_6c]      = 0.586609;
+		u0[E_b]       = 0.4074;
+		u0[E_6c]      = 0.4399;
 
 		// AC Ca2+ pathway
-		u0[ca_k]     = 0.133719;
-		u0[s_k]      = 502.461;
-		u0[h_k]      = 0.427865;
+		u0[ca_k]     = 0.1612;
+		u0[s_k]      = 447.49;
+		u0[h_k]      = 0.3828;
 		u0[ip3_k]    = 0.048299;
-		u0[eet_k]    = 0.337187;
-		u0[m_k]      = 0.896358;
-		u0[ca_p]     = 1713.39;
+		u0[eet_k]    = 0.6124;
+		u0[m_k]      = 0.5712;
+		u0[ca_p]     = 1746.3;
 
 		// Neuron - ions
 		u0[v_sa]     = -70;
 		u0[v_d]      = -70;
-		u0[K_sa]     = 133.5;
-		u0[Na_sa]    = 9.9854;
-		u0[K_d]      = 133.5;
-		u0[Na_d]     = 9.9853;
-		u0[K_e]      = 3.5006;
-		u0[Na_e]     = 139.76;
+		u0[K_sa]     = 133.8;
+		u0[Na_sa]    = 9.273;
+		u0[K_d]      = 134.1;
+		u0[Na_d]     = 9.324;
+		u0[K_e]      = 3.487;
+		u0[Na_e]     = 149.5;
 
 		// Neuron - other
-		u0[Buff_e]   = 170;
-		u0[O2]       = 0.022715;
-		u0[CBV]      = 1;
-		u0[DHG]      = 1;
+		u0[Buff_e]   = 167.2;
+		u0[O2]       = 0.0281;
+		u0[CBV]      = 1.317;
+		u0[DHG]      = 0.666;
 
 		// Neuron - gating variables
-		u0[m1]     	= 0.012869;
-		u0[m2]     	= 0.0012175;
-		u0[m3]     	= 0.1193;
-		u0[m4]     	= 0.012869;
-		u0[m5]     	= 0.00087377;
-		u0[m6]     	= 0.0012175;
-		u0[m7]     	= 0.1193;
-		u0[m8]     	= 0.005;
+		u0[m1]     	= 0.01281;
+		u0[m2]     	= 0.001209;
+		u0[m3]     	= 0.1190;
+		u0[m4]     	= 0.01284;
+		u0[m5]     	= 0.0008656;
+		u0[m6]     	= 0.001213;
+		u0[m7]     	= 0.1191;
+		u0[m8]     	= 0.004962;
 		u0[h1]     	= 0.9718;
-		u0[h2]     	= 0.12053;
+		u0[h2]     	= 0.1213;
 		u0[h3]     	= 0.9718;
 		u0[h4]     	= 0.99005;
 		u0[h5]     	= 0.12053;
