@@ -374,7 +374,7 @@ int main(int argc, char *argv[]) {
 
 			// Convert variables into a nicer form!
 
-			temp_array_tb[0] = 20 * temp_array_tb[0]; // Convert radius to um
+			temp_array_tb[0] = 20 * temp_array_tb[0]; // Convert radius to um from nondimensional
 			temp_array_tb[9] = 0.001 * temp_array_tb[9]; // Convert Kp to mM
 			temp_array_tb[24] = 0.001 * temp_array_tb[24]; // Convert Ke to mM
 

@@ -30,7 +30,7 @@ static const int N_HCO3_s  = 8;
 static const int K_p       = 9;
 
 // SMC
-static const int ca_i      = 11; // or use enum
+static const int ca_i      = 11;
 static const int ca_sr_i   = 12;
 static const int v_i       = 13;
 static const int w_i       = 14;

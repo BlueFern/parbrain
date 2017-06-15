@@ -334,6 +334,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 	const double rho_max		= 0.7;
 
 	// Neuron constants
+	const double wallMech	 = 1.1;
 	const double SC_coup	 = 11.5;
 	const double Farad 		 = 96.485;
 	const double E_Cl_sa	 = -70;
@@ -397,7 +398,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 
 	/****** Model fluxes/algebraic variables and state variables ******/
 
-    double trans_p, trans_P_mmHg, delta_p; // pressure stuff
+    double trans_p, trans_P_mmHg, delta_p_L; // pressure stuff
 
     // Initialise state variables
     double state_r;
@@ -517,9 +518,9 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 	state_R_dim			= state_r * R_0_passive_k;
 
     // pressure
-    trans_p 			= P0 / 2 * (p + nvu_w->pcap); // x P0 to make dimensional, transmural pressure in Pa
-	trans_P_mmHg 		= trans_p * PA2MMHG; // transmural pressure in mmHg
-	delta_p				= P0 * (p - nvu_w->pcap); // dimensional pressure drop over leaf vessel
+    trans_p 			= P0 / 2 * (p + nvu_w->pcap); 				// x P0 to make dimensional, transmural pressure in Pa.  4000 in matlab code
+	trans_P_mmHg 		= trans_p * PA2MMHG; 						// transmural pressure in mmHg.   30 in matlab code
+	delta_p_L			= P0 * (p - nvu_w->pcap) / 200e-6; 			// dimensional pressure drop over leaf vessel divided by length of the vessel (200um). 18.2Pa / 200e-6m = 91000 in matlab code
 
     // SC fluxes
     R_s        	    	= R_tot - state_R_k;                            // state_R_k is AC volume-area ratio, R_s is SC
@@ -607,7 +608,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 	flu_P_NR2BO         = Glu / (betB + Glu);
 	flu_I_Ca            = (-4 * v_n * G_M * P_Ca_P_M * (Ca_ex/M)) / (1+exp(-80*(v_n+0.02))) * (exp(2 * v_n * F / (R_gas * Temp))) / (1 - exp(2 * v_n * F / (R_gas * Temp))) * (0.63 * flu_P_NR2AO + 11 * flu_P_NR2BO);
 	flu_CaM             = state_ca_n / m_c;                                      // concentration of calmodulin / calcium complexes ; (100)
-    flu_tau_w			= state_R_dim * delta_p / (2*200e-6); // WSS using pressure from the H tree. L_0 = 200 um
+    flu_tau_w			= state_R_dim/2 * delta_p_L; // WSS using pressure from the H tree. L_0 = 200 um
 
 	flu_W_tau_w         = W_0 * pow((flu_tau_w + sqrt(16 * pow(delt_wss,2) + pow(flu_tau_w,2)) - 4 * delt_wss),2) / (flu_tau_w + sqrt(16 * pow(delt_wss,2) + pow(flu_tau_w,2))) ;  // - tick
 	flu_F_tau_w         = 1 / (1 + alp * exp(-flu_W_tau_w)) - 1 / (1 + alp); // -(1/(1+alp)) was added to get no NO at 0 wss (!) - tick
@@ -821,9 +822,9 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     du[ip3_j    ] = flu_I_cpl_j + J_PLC - flu_degrad_j ;  // **
 
     // Mech:
-    du[ Mp   	] = K4_c * state_AMp + flu_K1_c * flu_M - (flu_K2_c + K3_c) * state_Mp;
-    du[ AMp  	] = K3_c * state_Mp + flu_K6_c * state_AM - (K4_c + flu_K5_c) * state_AMp;
-    du[ AM   	] = flu_K5_c * state_AMp - ( K7_c + flu_K6_c ) * state_AM;
+    du[ Mp   	] = wallMech * ( K4_c * state_AMp + flu_K1_c * flu_M - (flu_K2_c + K3_c) * state_Mp );
+    du[ AMp  	] = wallMech * ( K3_c * state_Mp + flu_K6_c * state_AM - (K4_c + flu_K5_c) * state_AMp );
+    du[ AM   	] = wallMech * ( flu_K5_c * state_AMp - ( K7_c + flu_K6_c ) * state_AM );
 
     /***********NO pathway***********/
 
@@ -872,8 +873,10 @@ double nvu_p0(double t)
 {
     //double p0 = 1. * 8000 / P0; // 8000 Pa   original: 1.5 * 8000 / P0;
     //double p0 = (0.5 * sin(t) + 1) * 8000 / P0; //
-    double p0 = 1.5 * 8000 / P0;	// no time dependence?
 
+    double p0 = 4100 / P0;	// for H-tree of size 3 so that the pressure drop over the last leaf is about 18.2 Pa to match with the single NVU model
+    //double p0 = 4160 / P0;	// for H-tree of size 7
+    //double p0 = ? / P0;		// for H-tree of size 13. less than 4300 (gives 0.5039, want 0.5023)
     return p0;
 }
 
@@ -893,8 +896,8 @@ double factorial(int c)
 double current_input(double t, double x, double y)
 {
     double I_strength 	= 0.025;
-    double t_up   		= 1000;
-    double t_down 		= 2000;
+    double t_up   		= 50;
+    double t_down 		= 58;
 
     double current_space;
     // only in corner
@@ -985,23 +988,23 @@ double ECS_input(double t, double x, double y)
 void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w)
 {
 		// Current ICs optimised for J_PLC = 0.11!!
-		u0[i_radius]  = 1.1486;
+		u0[i_radius]  = 1.1485;
 
 	    u0[R_k]       = 0.06e-6;
 	    u0[N_Na_k]    = 0.0010961;
 	    u0[N_K_k]     = 0.0055247;
 	    u0[N_HCO3_k]  = 0.00054791;
 	    u0[N_Cl_k]    = 0.00046402;
-	    u0[w_k]       = 1.693161e-4;
+	    u0[w_k]       = 1.703e-4;
 
 	    u0[N_Na_s]    = 0.00420714;
 	    u0[N_K_s]     = 7.9445e-5;
 	    u0[N_HCO3_s]  = 4.72678e-4;
 
-	    u0[K_p]       = 3045;
+	    u0[K_p]       = 3045.1;
 
 	    u0[ca_i]      = 0.2637;
-	    u0[ca_sr_i]   = 1.1687;
+	    u0[ca_sr_i]   = 1.1686;
 	    u0[v_i]       = -34.7;
 	    u0[w_i]       = 0.2206;
 	    u0[ip3_i]     = 0.275;
@@ -1013,60 +1016,60 @@ void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w)
 	    u0[ip3_j]     = 0.825;
 
 	    u0[Mp]        = 0.0842;
-	    u0[AMp]       = 0.0621;
-	    u0[AM]        = 0.2745;
+	    u0[AMp]       = 0.0622;
+	    u0[AM]        = 0.2746;
 
 	    // NO pathway
 		u0[NOn]       = 0.1671;
 		u0[NOk]       = 0.1106;
 		u0[NOi]       = 0.0541;
-		u0[NOj]       = 0.0529;
-		u0[cGMP]      = 8.2889;
-		u0[eNOS]      = 0.4495;
-		u0[nNOS]      = 0.3178;
+		u0[NOj]       = 0.0528;
+		u0[cGMP]      = 8.2826;
+		u0[eNOS]      = 0.4479;
+		u0[nNOS]      = 0.318;
 		u0[ca_n]      = 0.1;
-		u0[E_b]       = 0.4074;
-		u0[E_6c]      = 0.4399;
+		u0[E_b]       = 0.4077;
+		u0[E_6c]      = 0.4396;
 
 		// AC Ca2+ pathway
 		u0[ca_k]     = 0.1612;
-		u0[s_k]      = 447.49;
+		u0[s_k]      = 480.8;
 		u0[h_k]      = 0.3828;
 		u0[ip3_k]    = 0.048299;
-		u0[eet_k]    = 0.6124;
-		u0[m_k]      = 0.5712;
-		u0[ca_p]     = 1746.3;
+		u0[eet_k]    = 0.6123;
+		u0[m_k]      = 0.5710;
+		u0[ca_p]     = 1746.4;
 
 		// Neuron - ions
-		u0[v_sa]     = -70;
-		u0[v_d]      = -70;
-		u0[K_sa]     = 133.8;
-		u0[Na_sa]    = 9.273;
-		u0[K_d]      = 134.1;
-		u0[Na_d]     = 9.324;
-		u0[K_e]      = 3.487;
-		u0[Na_e]     = 149.5;
+		u0[v_sa]     = -70.0337;
+		u0[v_d]      = -70.0195;
+		u0[K_sa]     = 134.1858;
+		u0[Na_sa]    = 9.2691;
+		u0[K_d]      = 134.4198;
+		u0[Na_d]     = 9.3203;
+		u0[K_e]      = 3.493;
+		u0[Na_e]     = 150;
 
 		// Neuron - other
-		u0[Buff_e]   = 167.2;
+		u0[Buff_e]   = 165.9812;
 		u0[O2]       = 0.0281;
-		u0[CBV]      = 1.317;
-		u0[DHG]      = 0.666;
+		u0[CBV]      = 1.3167;
+		u0[DHG]      = 0.6665;
 
 		// Neuron - gating variables
 		u0[m1]     	= 0.01281;
 		u0[m2]     	= 0.001209;
 		u0[m3]     	= 0.1190;
 		u0[m4]     	= 0.01284;
-		u0[m5]     	= 0.0008656;
+		u0[m5]     	= 0.000869;
 		u0[m6]     	= 0.001213;
 		u0[m7]     	= 0.1191;
 		u0[m8]     	= 0.004962;
 		u0[h1]     	= 0.9718;
-		u0[h2]     	= 0.1213;
+		u0[h2]     	= 0.1214;
 		u0[h3]     	= 0.9718;
-		u0[h4]     	= 0.99005;
-		u0[h5]     	= 0.12053;
+		u0[h4]     	= 0.9899;
+		u0[h5]     	= 0.1210;
 		u0[h6]     	= 0.9961;
 
 
