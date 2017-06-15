@@ -113,7 +113,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 
 // NE & AC constants:
     const double L_p         = 2.1e-9        ;// [m uM-1s-1]
-    const double R_tot       = 8.79e-8       ;// [m]   total volume surface area ratio AC+SC
+    //const double R_tot       = 8.79e-8       ;// [m]   total volume surface area ratio AC+SC  **see nvu.h
     const double X_k         = 12.41e-3      ;// [uMm]
     const double z_Na        = 1             ;// [-]
     const double z_K         = 1             ;// [-]
@@ -335,7 +335,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 
 	// Neuron constants
 	const double wallMech	 = 1.1;
-	const double SC_coup	 = 11.5;
+	//const double SC_coup	 = 11.5;		** see nvu.h
 	const double Farad 		 = 96.485;
 	const double E_Cl_sa	 = -70;
 	const double E_Cl_d		 = -70;
@@ -896,8 +896,8 @@ double factorial(int c)
 double current_input(double t, double x, double y)
 {
     double I_strength 	= 0.025;
-    double t_up   		= 50;
-    double t_down 		= 58;
+    double t_up   		= 10;
+    double t_down 		= 18;
 
     double current_space;
     // only in corner

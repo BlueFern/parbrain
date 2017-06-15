@@ -7,6 +7,11 @@
 
 #include <cs.h>
 
+// TODO: needed in multiple files so are stated here but needs to be done in a nicer way!
+static const double R_tot	= 8.79e-8;
+static const double SC_coup	= 11.5;
+
+
 // Forward declaration to avoid errors
 typedef struct ghost_block ghost_block;
 
