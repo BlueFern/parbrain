@@ -7,10 +7,8 @@
 
 #include <cs.h>
 
-// TODO: needed in multiple files so are stated here but needs to be done in a nicer way!
-static const double R_tot	= 8.79e-8;
-static const double SC_coup	= 11.5;
-
+// TODO: needed in multiple files so stated here but needs to be done in a nicer way!
+	static const double SC_coup	= 11.5; // used in both nvu.c and diffusion.c
 
 // Forward declaration to avoid errors
 typedef struct ghost_block ghost_block;
@@ -166,9 +164,6 @@ double nvu_p0(double t);
 //time- and space-dependent current input
 double current_input(double t, double x, double y);
 
-//time- and space-dependent flux_ft input
-double flux_ft(double t, double x, double y);
-	
 //time- and space-dependent PLC input
 double PLC_input(double t, double x, double y);
 

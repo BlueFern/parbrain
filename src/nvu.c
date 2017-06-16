@@ -113,7 +113,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 
 // NE & AC constants:
     const double L_p         = 2.1e-9        ;// [m uM-1s-1]
-    //const double R_tot       = 8.79e-8       ;// [m]   total volume surface area ratio AC+SC  **see nvu.h
+    const double R_tot       = 8.79e-8       ;// [m]   total volume surface area ratio AC+SC  **see nvu.h
     const double X_k         = 12.41e-3      ;// [uMm]
     const double z_Na        = 1             ;// [-]
     const double z_K         = 1             ;// [-]
@@ -379,17 +379,18 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 	// BOLD constants
 	const double tau_MTT	= 3;
 	const double tau_TAT	= 20;
-	const double d			= 4;
-	const double a_1		= 3.4;
-	const double a_2		= 1;
-	const double V_0		= 0.03;
-	const double E_0		= 0.4;
+	const double d			= 0.4;
+//	const double E_0		= 0.4;
+//	const double a_1		= 3.4;
+//	const double a_2		= 1;
+//	const double V_0		= 0.03;
+
 
 	// Steady state values used for normalisation of BOLD signal and change in CBF
 		// J_PLC = 0.11
-		const double DHG_0		= 0.6662;
-		const double CBV_0		= 1.317;
-		const double CBF_0		= 0.0637;
+//		const double DHG_0		= 0.6662;
+//		const double CBV_0		= 1.317;
+//		const double CBF_0		= 0.0637;
 
 		// J_PLC = 0.3
 //		const double DHG_0		= 1.0753;
@@ -433,7 +434,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     double J_pump1_sa, J_pump1init_sa, J_pump1_d, J_pump1init_d, J_pump2, J_pump_sa, J_pump_d, J_Napump_sa, J_Kpump_sa, J_Napump_d, J_Kpump_d, J_pump2_0, J_pump2_O2_0;
     double J_Na_tot_sa, J_K_tot_sa, J_leak_tot_sa, J_Na_tot_d, J_K_tot_d, J_leak_tot_d, J_tot_sa, J_tot_d;
     double P_02, CBF, J_O2_vascular, J_O2_background, J_O2_pump;
-    double f_out, CMRO2, CMRO2_init, OEF, BOLD, Delta_CBF;
+    double f_out, CMRO2, CMRO2_init, OEF;
     double Glu;
 
 
@@ -745,10 +746,11 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 	f_out 			= pow(state_CBV,(1/d)) + tau_TAT * (1/(tau_MTT + tau_TAT) * ( CBF/CBF_init  - pow(state_CBV,(1/d)) ));
 	CMRO2 			= J_O2_background + J_O2_pump;
 	CMRO2_init 		= CBF_init * P_02;
-	OEF 			= CMRO2 * E_0 / CBF;
+	//OEF 			= CMRO2 * E_0 / CBF;
 
-	BOLD 			= 100 * V_0 * ( a_1 * (1 - state_DHG/DHG_0) - a_2 * (1 - state_CBV/CBV_0) ); // divides DHG, CBV and CBF by initial values, will depend on J_PLC
-	Delta_CBF		= (CBF - CBF_0)/CBF_0;
+	// Not actually used here - used in bin_to_vtu
+	//BOLD 			= 100 * V_0 * ( a_1 * (1 - state_DHG/DHG_0) - a_2 * (1 - state_CBV/CBV_0) ); // divides DHG, CBV and CBF by initial values, will depend on J_PLC
+	//CBF_change		= (CBF - CBF_0)/CBF_0;
 
 
 // Differential Equations:
@@ -758,7 +760,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 	// Neuron - other
     du[Buff_e]   = Mu * state_K_e * (B0 - state_Buff_e) / (1 + exp(-((state_K_e - 5.5) / 1.09))) - (Mu * state_Buff_e); // [mM]?
     du[O2]       = J_O2_vascular - J_O2_background - J_O2_pump; 						// [mM]
-    du[CBV]      = 1/(tau_MTT + tau_TAT) * ( CBF/CBF_init  - pow(state_CBV,(1/d)) );	// [-]
+    du[CBV]      = (1/(tau_MTT + tau_TAT)) * ( CBF/CBF_init  - pow(state_CBV,(1/d)) );	// [-]
     du[DHG]      = 1/tau_MTT * ( CMRO2/CMRO2_init - state_DHG/state_CBV * f_out );		// [-]
 
     // Neuron - ions (mV or mM)
@@ -896,8 +898,8 @@ double factorial(int c)
 double current_input(double t, double x, double y)
 {
     double I_strength 	= 0.025;
-    double t_up   		= 10;
-    double t_down 		= 18;
+    double t_up   		= 50;
+    double t_down 		= 58;
 
     double current_space;
     // only in corner

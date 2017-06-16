@@ -31,7 +31,7 @@ Converts the data from the simulate script into vtu files for Paraview
 int main(int argc, char *argv[]) {
 
 	// General parameters:
-	#define BLOCK_LENGTH 4e-4	// Length of one tissue block [m].
+	#define BLOCK_LENGTH 4e-4	// Length of one tissue block.
 	char Prefix[] = "";
 
 //*****************************************************************************************
@@ -177,7 +177,7 @@ int main(int argc, char *argv[]) {
     int n_rows_h = n_rows;                 		// Row variable - gets updated.
     int n_cols_h = n_cols;                 		// Column variable - gets updated.
 	int n_levels = log2(n_blocks) + 1;       	// Number of bifurcations.
-	int n_branches = POW_OF_2(n_levels) - 1;    	// Number of branches. 							*** 1 << n_bifr = 2^n_bifr ***
+	int n_branches = POW_OF_2(n_levels) - 1;    	// Number of branches.
 	int n_nodes = POW_OF_2(n_levels - 1) - 1; 	// Number of nodes. (?) - Leaf nodes excluded!
 
     double xpoints_tree[n_branches];    // x coordinates for points for tree - branches & pressure.
@@ -327,8 +327,9 @@ int main(int argc, char *argv[]) {
 
 // 4. Add binary data as attributes to cells:
 
-	char const *var_names[] = {"R","R_k","Na_k","K_k","HCO3_k","Cl_k","Na_s","K_s","HCO3_s","K_p","w_k","Ca_i","s_i","v_i","w_i","IP3_i","K_i","Ca_j","s_j","v_j","IP3_j","Mp","AMp","AM","NO_n","NO_k","NO_i","NO_j","cGMP","eNOS","nNOS","Ca_n","E_b","E_6c","Ca_k","s_k","h_k","IP3_k","eet_k","m_k","Ca_p","v_sa","v_d","K_sa","Na_sa","K_d","Na_d","K_e","Na_e","Buff_e","O2","CBV","DHG","m1","m2","m3","m4","m5","m6","m7","m8","h1","h2","h3","h4","h5","h6"};
+	char const *var_names[] = {"R","R_k","Na_k","K_k","HCO3_k","Cl_k","Na_s","K_s","HCO3_s","K_p","w_k","Ca_i","s_i","v_i","w_i","IP3_i","K_i","Ca_j","s_j","v_j","IP3_j","Mp","AMp","AM","NO_n","NO_k","NO_i","NO_j","cGMP","eNOS","nNOS","Ca_n","E_b","E_6c","Ca_k","s_k","h_k","IP3_k","eet_k","m_k","Ca_p","v_sa","v_d","K_sa","Na_sa","K_d","Na_d","K_e","Na_e","Buff_e","O2","CBV","DHG","m1","m2","m3","m4","m5","m6","m7","m8","h1","h2","h3","h4","h5","h6","D_CBF","BOLD"};
 
+	int n_output = n_state_vars + 2; // 2 extra output variables (BOLD,CBF), see below
 
 	// 4.1 Time step loop:
 	double time_tb, time_tree;
@@ -344,7 +345,7 @@ int main(int argc, char *argv[]) {
 		std::vector<vtkSmartPointer<vtkDoubleArray> > stateVars; //Create vector of arrays for each state variable.
 
 		// Set state variable names.
-		for (int v = 0; v < n_state_vars; v++)
+		for (int v = 0; v < n_output; v++)
 		{
 			vtkSmartPointer<vtkDoubleArray> array_tb = vtkSmartPointer<vtkDoubleArray>::New(); 	// Create array.
 			array_tb->SetName(var_names[v]);
@@ -372,7 +373,7 @@ int main(int argc, char *argv[]) {
 			double temp_array_tb[n_state_vars];
 			is_tissue.read((char *) temp_array_tb, sizeof(temp_array_tb));  // Read state variables from binary file.
 
-			// Convert variables into a nicer form!
+			// Convert variables into a nicer form! ****************************************************************************************
 
 			temp_array_tb[0] = 20 * temp_array_tb[0]; // Convert radius to um from nondimensional
 			temp_array_tb[9] = 0.001 * temp_array_tb[9]; // Convert Kp to mM
@@ -387,15 +388,23 @@ int main(int argc, char *argv[]) {
 			temp_array_tb[7] = 0.001 * temp_array_tb[7] / (8.79e-8 - temp_array_tb[1]); // Convert N_K_s to K_s in mM;
 			temp_array_tb[8] = temp_array_tb[8] / (8.79e-8 - temp_array_tb[1]); // Convert N_HCO3_s to HCO3_s;
 
+			temp_array_tb[51] = temp_array_tb[51]/1.317;	// Convert CBV to normalised
+			temp_array_tb[52] = temp_array_tb[52]/0.6662;	// Convert DHG to normalised
 
+			// Make extra things for output - BOLD, CBF. Few things hardcoded in, see nvu.c for formulas
+			double CBF 			= 0.032 * (pow((temp_array_tb[0]*1e-6),4) / pow(1.9341e-5,4));
+			double CBF_change 	= (CBF - 0.0637)/0.0637;
+			double BOLD 		= 100 * 0.03 * ( 3.4 * (1 - temp_array_tb[52]) - 1 * (1 - temp_array_tb[51]) );
 
 			for (int v = 0; v < n_state_vars; v++)
 			{
-				stateVars[v]->InsertNextValue(temp_array_tb[v]);
+				stateVars[v] -> InsertNextValue(temp_array_tb[v]);
 			}
+			stateVars[n_state_vars]   -> InsertNextValue(CBF_change);
+			stateVars[n_state_vars+1] -> InsertNextValue(BOLD);
 		}
 
-		for (int v = 0; v < n_state_vars; v++)
+		for (int v = 0; v < n_output; v++)
 		{
 			uGrid->GetCellData()->AddArray(stateVars[v]);
 		}
