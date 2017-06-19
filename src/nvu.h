@@ -6,9 +6,7 @@
 #endif
 
 #include <cs.h>
-
-// TODO: needed in multiple files so stated here but needs to be done in a nicer way!
-	static const double SC_coup	= 11.5; // used in both nvu.c and diffusion.c
+#include "constants.h"
 
 // Forward declaration to avoid errors
 typedef struct ghost_block ghost_block;
@@ -20,7 +18,7 @@ static const int i_radius  = 0; // radius has to be 0, this is assumed elsewhere
 static const int R_k       = 1;
 static const int N_Na_k    = 2;
 static const int N_K_k     = 3;
-static const int N_HCO3_k  = 4;
+static const int N_HCO3_k  = 4;NVU_H
 static const int N_Cl_k    = 5;
 static const int w_k       = 10;
 
@@ -167,7 +165,7 @@ double current_input(double t, double x, double y);
 //time- and space-dependent PLC input
 double PLC_input(double t, double x, double y);
 
-// ECS K+ input
+// ECS K+ inpNVU_Hut
 double ECS_input(double t, double x, double y);
 	
 //factorial

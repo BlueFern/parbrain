@@ -898,8 +898,8 @@ double factorial(int c)
 double current_input(double t, double x, double y)
 {
     double I_strength 	= 0.025;
-    double t_up   		= 50;
-    double t_down 		= 58;
+    double t_up   		= 20;
+    double t_down 		= 36;
 
     double current_space;
     // only in corner
