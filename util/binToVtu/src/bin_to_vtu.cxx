@@ -28,6 +28,8 @@ Converts the data from the simulate script into vtu files for Paraview
 
 #define POW_OF_2(x) (1 << (x)) // macro for 2^x using bitwise shift
 
+//TODO: add dependence on constants.h, remove argv[2] and have as DT_WRITE * T_FINAL (number of output files), actually just have these constants put into the info.dat file and pull from there! (write_info line 394 in brain.c)
+
 int main(int argc, char *argv[]) {
 
 	// General parameters:
@@ -68,7 +70,7 @@ int main(int argc, char *argv[]) {
 	std::string header;
 	std::getline(conf_file, header); // Skip header line.
 
-	int conf_array[7];  // Create temporary array that stores parameters from configuration file (info.dat).
+	int conf_array[7];  // Create temporary array that stores parameters from configuration file (info.dat). TODO: change 7
 	int b;
 	int i = 0;
 
@@ -353,13 +355,13 @@ int main(int argc, char *argv[]) {
 		}
 
 		// 4.1.2 H-Tree:
-		std::vector<vtkSmartPointer<vtkDoubleArray> > flowVar; 
+		std::vector<vtkSmartPointer<vtkDoubleArray> > flowVar;
 		vtkSmartPointer<vtkDoubleArray> array_tree = vtkSmartPointer<vtkDoubleArray>::New(); // Create array.
 		array_tree->SetName("blood_flow"); // Only one array for flow variables.
 		flowVar.push_back(array_tree);
 
 		// 4.1.3 H-Tree - unscaled
-		std::vector<vtkSmartPointer<vtkDoubleArray> > flowVar_unscaled; 	
+		std::vector<vtkSmartPointer<vtkDoubleArray> > flowVar_unscaled;
 		vtkSmartPointer<vtkDoubleArray> array_tree_unscaled = vtkSmartPointer<vtkDoubleArray>::New(); // Create array.
 		array_tree_unscaled->SetName("blood_flow_unscaled"); // Only one array for flow variables.
 		flowVar_unscaled.push_back(array_tree_unscaled);

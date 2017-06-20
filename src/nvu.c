@@ -5,16 +5,6 @@
 #include "nvu.h"
 #include <math.h>
 
-// Pressure constants
-static const double HRR        = 0.1   ;  // Nondimensional (thickness to radius ratio)
-static const double RSCALE     = 0.6   ;  // Dimensionless
-static const double E0         = 66e3  ;  // Pa
-static const double EPASSIVE   = 66e3  ;  // Pa
-static const double EACTIVE    = 233e3 ;  // Pa
-static const double ETA        = 2.8e2 ;  // Pa s
-static const double T0         = 1     ;  // s
-static const double PA2MMHG    = 0.00750061683; // convert from Pa to mmHg
-
 // nvu_init: this user-supplied function does any precomputation required
 // for the model.
 nvu_workspace *nvu_init(void)
@@ -23,7 +13,7 @@ nvu_workspace *nvu_init(void)
 
     // Initialise the workspace
     nvu_w = malloc(sizeof *nvu_w);
-    nvu_w->neq = 67;                 // Must specify here
+    nvu_w->neq = NEQ;                 // Must specify here
 
     // Sparsity patterns (approximated by matrices full of 1s)
     int dfdp_pattern[nvu_w->neq],i;
@@ -94,310 +84,15 @@ void *nvu_free(nvu_workspace *nvu_w)
     return nvu_w;
 }
 
-// right hand side evaluation function. 
-//      t       time, 
-//      x,y     spatial coordinates, 
-//      p       the pressure at the top of the vessel, 
+// right hand side evaluation function.
+//      t       time,
+//      x,y     spatial coordinates,
+//      p       the pressure at the top of the vessel,
 //      u       state variables, the first of which is the vessel radius
 //      du      output vector, in the same order (already allocated)
 void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_workspace *nvu_w)
 {
-
-/****** Model parameters ******/
-
-// general constants:
-	const double F           = 96500         ;// [C mol-1] Faradays constant.
-	const double R_gas       = 8.315         ;// [J mol-1K-1]
-	const double Temp        = 300           ;// [K]
-    const double unitcon     = 1e3           ;// [-] Factor to convert equations to another unit.
-
-// NE & AC constants:
-    const double L_p         = 2.1e-9        ;// [m uM-1s-1]
-    const double R_tot       = 8.79e-8       ;// [m]   total volume surface area ratio AC+SC  **see nvu.h
-    const double X_k         = 12.41e-3      ;// [uMm]
-    const double z_Na        = 1             ;// [-]
-    const double z_K         = 1             ;// [-]
-    const double z_Cl        = -1            ;// [-]
-    const double z_NBC       = -1            ;// [-]
-    const double g_K_k       = 40            ;// [ohm-1m-2]
-    const double g_KCC1_k    = 1e-2          ;// [ohm-1m-2]
-    const double g_NBC_k     = 7.57e-1       ;// [ohm-1m-2]
-    const double g_Cl_k      = 8.797e-1      ;// [ohm-1m-2]
-    const double g_NKCC1_k   = 5.54e-2       ;// [ohm-1m-2]
-    const double g_Na_k      = 1.314         ;// [ohm-1m-2]
-    const double J_NaK_max   = 1.42e-3       ;// [uMm s-1]
-    const double K_Na_k      = 10e3          ;// [uM]
-    const double K_K_s       = 1.5e3         ;// [uM]
-
-// Perivascular Space constants:
-	const double R_decay     = 0.15; 	// s^-1
-	const double K_p_min 	 = 3e3; 	// uM
-
-// BK channel constants:
-    const double A_ef_k      = 3.7e-9        ; 				// m2       Area of an endfoot of an astrocyte, equal to Area astrocyte at synaptic cleft
-    const double v_4         = 8e-3       ;				// V        A measure of the spread of the distribution
-    const double psi_w       = 2.664         ; 				// s-1      A characteristic time
-    const double G_BK_k      = 225         ; 				// !!!
-    const double g_BK_k      = G_BK_k * 1e-12 / A_ef_k ;	// ohm-1m-2  Specific capacitance of the BK-Channel in units of Ostby
-    const double VR_pa       = 0.001       	 ; 				// [-]       The estimated volume ratio of perivascular space to astrocyte: Model estimation
-    const double VR_ps       = 0.001         ; 				// [-]       The estimated volume ratio of perivascular space to SMC: Model Estimation
-
-// SMC constants:
-    const double F_il 		= 7.5e2;		//[-] scaling factor to fit the experimental data of Filosa
-    const double z_1 		=4.5;			//[-] parameter fitted on experimental data of Filosa
-    const double z_2 		=-1.12e2;		//[-] parameter fitted on experimental data of Filosa
-    const double z_3 		=4.2e-1;		//[-] parameter fitted on experimental data of Filosa
-    const double z_4 		=-1.26e1;		//[-] parameter fitted on experimental data of Filosa
-    const double z_5 		=-7.4e-2; 		//[-] parameter fitted on experimental data of Filosa
-    const double Fmax_i		= 0.23;			// (microM/s)
-    const double Kr_i 		= 1; 			// (microM) Half saturation constant for agonist-dependent Ca entry
-    const double G_Ca		= 0.00129;		// (microM/mV/s)
-    const double v_Ca1		= 100;			// (mV)
-    const double v_Ca2		= -24;			// (mV)
-    const double R_Ca		= 8.5;			// (mV)
-    const double G_NaCa		= 0.00316;		// (microM/mV/s)
-    const double c_NaCa		= 0.5;			// (microM)
-    const double v_NaCa		= -30;
-    const double B_i		= 2.025;
-    const double cb_i		= 1;
-    const double C_i		= 55;
-    const double sc_i		= 2;
-    const double cc_i		= 0.9;
-    const double D_i		= 0.24;
-    const double vd_i		= -100;
-    const double Rd_i		= 250;
-    const double L_i		= 0.025;
-    const double gam		= 1970; 		// mVmicroM-1 The change in membrane potential by a scaling factor
-    const double F_NaK		= 0.0432;
-    const double G_Cl		= 0.00134;
-    const double v_Cl		= -25;
-    const double G_K		= 0.00446;
-    const double vK_i		= -94;
-    const double lam 		= 45;
-    const double v_Ca3		= -27; 			// correct
-    const double R_K		= 12;
-    const double k_i		= 0.1;
-
-// Stretch-activated channels
-    const double G_stretch   = 0.0061;       // uM mV-1 s-1   (stretch activated channels)
-    const double Esac        = -18;          // mV
-    const double alpha1      = 0.0074;
-    const double sig0        = 500;
-
-// EC constants:
-    const double Fmax_j		= 0.23;			// [microM/s]
-    const double Kr_j		= 1;
-    const double B_j 		= 0.5;
-    const double cb_j		= 1;
-    const double C_j		= 5;
-    const double sc_j		= 2;
-    const double cc_j		= 0.9;
-    const double D_j		= 0.24;
-    const double L_j		= 0.025;
-    const double G_cat 		= 0.66e-3; 		//!
-    const double E_Ca		= 50;
-    const double m3cat		= -0.18; 		//-6.18 changed value!
-    const double m4cat 		= 0.37;
-    const double JO_j 		= 0.029; 		//constant Ca influx (EC)
-    const double C_m 		= 25.8;
-    const double G_tot		= 6927;
-    const double vK_j 		= -80;
-    const double a1			= 53.3;
-    const double a2			= 53.3;
-    const double b			= -80.8;
-    const double c 			= -0.4; 		//-6.4 changed value!
-    const double m3b		= 1.32e-3;
-    const double m4b		= 0.3;
-    const double m3s		= -0.28;
-    const double m4s		= 0.389;
-    const double G_R		= 955;
-    const double v_rest		= -31.1;
-    const double k_j		= 0.1;
-    const double J_PLC 		= 0.11;	//0.11 or 0.3 for oscillations *****************************
-    const double g_hat      = 0.5;
-    const double p_hat      = 0.05;
-    const double p_hatIP3   = 0.05;
-    const double C_Hillmann = 1;
-    const double K3_c        = 0.4 * C_Hillmann;
-    const double K4_c        = 0.1 * C_Hillmann;
-    const double K7_c        = 0.1 * C_Hillmann;
-    const double gam_cross   = 17 * C_Hillmann;
-    const double LArg_j		 = 100;
-
-    // NO pathway
-
-	const double LArg        = 100;
-	const double V_spine     = 8e-8;
-	const double k_ex        = 1600;
-	const double Ca_rest     = 0.1;
-	const double lambda      = 20;
-	const double V_maxNOS    = 25e-3;
-	const double V_max_NO_n  = 4.22;
-	const double K_mO2_n 	 = 243;
-	const double K_mArg_n	 = 1.5;
-	const double K_actNOS    = 9.27e-2;
-	const double D_NO 	     = 3300;
-	const double k_O2        = 9.6e-6;
-	const double On          = 200;
-	const double v_n         = -0.04;
-	const double Ok          = 200;
-	const double G_M         = 46000;
-	const double dist_nk     = 25;
-	const double dist_ki     = 25;
-	const double dist_ij     = 3.75;
-	const double tau_nk      = pow(dist_nk,2)/(2*D_NO);
-	const double tau_ki      = pow(dist_ki,2)/(2*D_NO);
-	const double tau_ij      = pow(dist_ij,2)/(2*D_NO);
-	const double P_Ca_P_M    = 3.6;
-	const double Ca_ex       = 2e3;
-	const double M           = 1.3e5;
-	const double betA        = 650 ;
-	const double betB        = 2800 ;
-	const double Oj          = 200;
-	const double K_dis       = 9e-2;
-	const double K_eNOS      = 4.5e-1;
-	const double mu2         = 0.0167;
-	const double g_max       = 0.06;
-	const double alp         = 2;
-	const double W_0         = 1.4;
-	const double delt_wss    = 2.86;
-	const double k_dno       = 0.01;
-	const double k1          = 2e3 ;
-	const double k2          = 0.1;
-	const double k3          = 3;
-	const double k_1         = 100;
-	const double V_max_sGC   = 0.8520;  //\muM s{-1}; (for m = 2)
-	const double k_pde       = 0.0195;// s{-1} (for m = 2)
-	const double C_4         = 0.011; // [s{-1} microM{-2}] (note: the changing units are correct!) (for m = 2)
-	const double K_m_pde     = 2;           		// [microM]
-	const double k_mlcp_b    = 0.0086;         // [s{-1}]
-	const double k_mlcp_c    = 0.0327;          //[s{-1}]
-	const double K_m_mlcp    = 5.5;        		// [microM]
-	const double bet_i       = 0.13; // translation factor for membrane potential dependence of KCa channel activation sigmoidal [microM2]
-	const double m 			 = 2;
-	const double gam_eNOS    = 0.1; // [-]
-	const double K_mO2_j     = 7.7;
-	const double V_NOj_max   = 1.22;
-	const double K_mArg_j    = 1.5;
-
-	// AC Ca2+
-	const double r_buff			= 0.05;
-	const double G_TRPV_k		= 50;
-	const double g_TRPV_k   	= G_TRPV_k * 1e-12 / A_ef_k;
-	const double J_max			= 2880;
-	const double K_act			= 0.17;
-	const double K_I			= 0.03;
-	const double P_L			= 0.0804;
-	const double k_pump			= 0.24;
-	const double V_max			= 20;
-	const double C_astr_k		= 40;
-	const double gamma_k		= 834.3;
-	const double B_ex 			= 11.35;
-	const double BK_end			= 40;
-	const double K_ex			= 0.26;
-	const double delta			= 1.235e-2;
-	const double K_G			= 8.82;
-	const double Ca_3			= 0.4;
-	const double Ca_4			= 0.35;
-	const double v_5			= 15e-3;
-	const double v_7			= -55e-3;
-	const double eet_shift		= 2e-3;
-	const double gam_cae_k		= 200;
-	const double gam_cai_k		= 0.01;
-	const double R_0_passive_k	= 20e-6;
-	const double epshalf_k		= 0.1;
-	const double kappa_k		= 0.1;
-	const double v1_TRPV_k		= 0.12;
-	const double v2_TRPV_k		= 0.013;
-	const double t_TRPV_k		= 0.9;
-	const double VR_ER_cyt		= 0.185;
-	const double K_inh			= 0.1;
-	const double k_on			= 2;
-	const double k_deg			= 1.25;
-	const double r_h			= 4.8;
-	const double Ca_k_min		= 0.1;
-	const double k_eet			= 7.2;
-	const double V_eet			= 72;
-	const double Ca_decay_k		= 0.5;
-	const double Capmin_k		= 2000;
-	const double reverseBK		= 0;
-	const double switchBK		= 1;
-	const double trpv_switch	= 1;
-	const double z_Ca			= 2;
-	const double m_c			= 4;
-
-	// Glutamate constants
-	const double Glu_max		= 1846;
-	const double Glu_slope 		= 0.1;
-	const double Ke_switch		= 5.5;
-	const double rho_min		= 0.1;
-	const double rho_max		= 0.7;
-
-	// Neuron constants
-	const double wallMech	 = 1.1;
-	//const double SC_coup	 = 11.5;		** see nvu.h
-	const double Farad 		 = 96.485;
-	const double E_Cl_sa	 = -70;
-	const double E_Cl_d		 = -70;
-	const double Ra			 = 1.83e5;
-	const double dhod 		 = 4.5e-2;
-	const double As 		 = 1.586e-5;
-	const double Ad			 = 2.6732e-4;
-	const double Vs			 = 2.16e-9;
-	const double Vd			 = 5.614e-9;
-	const double fe			 = 0.15;
-	const double Cm			 = 7.5e-7;
-	const double ph			 = 26.6995;
-	const double Mu			 = 8e-4;
-	const double B0 		 = 500;
-	const double gNaP_GHk	 = 2e-6;
-	const double gKDR_GHk	 = 10e-5;
-	const double gKA_GHk	 = 1e-5;
-	const double gNMDA_GHk	 = 1e-5;
-	const double gNaT_GHk    = 10e-5;
-	const double O2_0		 = 0.02;
-	const double alpha_O2     = 0.05;
-	const double D_Na 		 = 1.33e-5;
-	const double D_K 		 = 1.96e-5;
-	const double K_init_e 	 = 2.9;
-	const double Na_init_sa  = 10;
-	const double Na_init_d 	 = 10;
-	const double R_init	     = 1.9341e-5;
-	const double CBF_init 	 = 0.032;
-	const double O2_b 		 = 0.04;
-	const double gamma_O2    = 0.1;
-	const double Mg			 = 1.2;
-
-	const double gNaleak_sa	 = 6.2378e-5;
-	const double gKleak_sa	 = 2.1989e-4;
-	const double gleak_sa	 = 10*6.2378e-5;
-	const double gNaleak_d	 = 6.2961e-5;
-	const double gKleak_d	 = 2.1987e-4;
-	const double gleak_d	 = 10*6.2961e-5;
-	const double Imax		 = 0.013*6;
-
-	// BOLD constants
-	const double tau_MTT	= 3;
-	const double tau_TAT	= 20;
-	const double d			= 0.4;
-//	const double E_0		= 0.4;
-//	const double a_1		= 3.4;
-//	const double a_2		= 1;
-//	const double V_0		= 0.03;
-
-
-	// Steady state values used for normalisation of BOLD signal and change in CBF
-		// J_PLC = 0.11
-//		const double DHG_0		= 0.6662;
-//		const double CBV_0		= 1.317;
-//		const double CBF_0		= 0.0637;
-
-		// J_PLC = 0.3
-//		const double DHG_0		= 1.0753;
-//		const double CBV_0		= 0.9703;
-//		const double CBF_0		= 0.0295;
-
-	/****** Model fluxes/algebraic variables and state variables ******/
+	/*** Model fluxes/algebraic variables and state variables ***/
 
     double trans_p, trans_P_mmHg, delta_p_L; // pressure stuff
 
@@ -521,7 +216,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     // pressure
     trans_p 			= P0 / 2 * (p + nvu_w->pcap); 				// x P0 to make dimensional, transmural pressure in Pa.  4000 in matlab code
 	trans_P_mmHg 		= trans_p * PA2MMHG; 						// transmural pressure in mmHg.   30 in matlab code
-	delta_p_L			= P0 * (p - nvu_w->pcap) / 200e-6; 			// dimensional pressure drop over leaf vessel divided by length of the vessel (200um). 18.2Pa / 200e-6m = 91000 in matlab code
+	delta_p_L			= P0 * (p - nvu_w->pcap) / L0; 			// dimensional pressure drop over leaf vessel divided by length of the vessel (200um). 18.2Pa / 200e-6m = 91000 in matlab code
 
     // SC fluxes
     R_s        	    	= R_tot - state_R_k;                            // state_R_k is AC volume-area ratio, R_s is SC
@@ -574,7 +269,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     flu_v_KIR_i    		= z_1 * state_K_p / unitcon + z_2;                                  // mV           state_K_p,
     flu_G_KIR_i    		= exp( z_5 * state_v_i + z_3 * state_K_p / unitcon + z_4 );        // pS pF-1 =s-1  state_v_i, state_K_p
     flu_J_KIR_i    		= F_il/gam * (flu_G_KIR_i) * (state_v_i - (flu_v_KIR_i));            // mV s-1 //     state_v_i, state_K_p
-    
+
     // EC fluxes
     flu_v_cpl_j			= - g_hat * ( state_v_j - state_v_i );
     flu_c_cpl_j			= - p_hat * ( state_ca_j - state_ca_i );

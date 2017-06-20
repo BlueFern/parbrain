@@ -2,8 +2,6 @@
 
 void diffusion(int block_number, double t, double *u, double *du, nvu_workspace *w)
 {
-    const double tau_Ke = 4.3; // (sec) The diffusion rate - characteristic time scale for K+ to travel one NVU block
-    const double tau_Nae = 6.4; // (sec) The diffusion rate - characteristic time scale for Na+ to travel one NVU block
 
     // Offset into the neighbours array to get the indices
     // of the neighbours for the current tissue block.

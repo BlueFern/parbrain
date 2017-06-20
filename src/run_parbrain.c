@@ -4,7 +4,7 @@
 
 //        printf("%s, %s, %d\n", __FUNCTION__, __FILE__, __LINE__);
 
-// Main simulation program 
+// Main simulation program
 int main(int argc, char **argv)
 {
 
@@ -18,13 +18,13 @@ int main(int argc, char **argv)
 
     // Problem parameters
     odews->dt  	  = 1e-5; 			// time step  1e-5
-    odews->t0     = 0;   			// initial time 0
-    odews->tf     = 10;  			// final time  10
+    odews->t0     = T_0;   			// initial time 0
+    odews->tf     = T_FINAL;  			// final time  10
     odews->ftol   = 1e-3; 			// function evaluation tolerance for Newton convergence 1e-3
     odews->ytol   = 1e-3; 			// relative error tolerance for Newton convergence 1e-3
     odews->nconv  = 5;    			// Newton iteration threshold for Jacobian reevaluation 5
     odews->maxits = 100;   			// Maximum number of Newton iterations 100
-    odews->dtwrite = 0.1; 			// Time step for writing to file (and screen)
+    odews->dtwrite = DT_WRITE; 			// Time step for writing to file (and screen)
 
     // If optional command line argument is passed change the default final time.
     if (argc > 3)
