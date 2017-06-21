@@ -141,7 +141,7 @@ void init_parallel(workspace *W, int argc, char **argv)
         Nsub: number of levels in the small scale subtrees for Jacobian
         computation
     */
-    W->N    = N;
+    W->N    = NTREE;
     W->Nsub = NSUB;
 
     if (argc > 1)

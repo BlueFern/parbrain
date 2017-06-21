@@ -3,15 +3,22 @@
 
 // Optional command line arguments for parBrainSim: N, NSUB, T_FINAL (in that order). If none specified then the following are used.
 
+// TODO: switches (TRPV, NO, K, Ca etc), ECS input size, type of spatial input (centre vs corner etc)
+
+
 /*** Run parameters ***/
-    #define T_0             0         // Fnitial time
-    #define T_FINAL         100       // Final time
+    #define T_FINAL         100       // Final run time
+	#define T_STIM_0        20        // Start time for stimulation
+	#define T_STIM_END      36        // End time for stimulation
     #define DT_WRITE        0.1       // Time step for writing to file (and screen)
-    #define N               9         // Number of levels in the H-tree (where the tissue slice has 2^(N-1) tissue blocks)
-    #define NSUB            3         // Subtree size (usually 3 but must be smaller when N is small - adjust as needed)
+    #define NTREE           3         // Number of levels in the H-tree (where the tissue slice has 2^(N-1) tissue blocks)
+    #define NSUB            1         // Subtree size (usually 3 but must be smaller when N is small - adjust as needed)
+	#define P_TOP			4100	  // Pressure at the top of the tree, chosen so that the drop over the terminating arterioles is around 18.2 Pa to match with the single NVU model.
+									  // For NTREE=3, P_TOP=4100 Pa. For NTREE=7, P_TOP=4160 Pa. For NTREE=13, P_TOP=?
 
 /*** Commonly changed model parameters ***/
 
+	#define I_STRENGTH		0.025	  	// [A] strength of current input
     #define wallMech	    1.1         // rate of wall mechanics, 1 for normal (default 1.1)
     #define SC_coup	        11.5        // scaling factor for the change in SC K+ concentration based on extracellular K+ concentration (default 11.5)
     #define J_PLC 		    0.11 	    // 0.11 for steady state or 0.3 for oscillations
@@ -134,10 +141,10 @@
     #define C_m 		  25.8
     #define G_tot		  6927
     #define vK_j 		  -80
-    #define a1			  53.3
-    #define a2			  53.3
-    #define b			  -80.8
-    #define c 			  -0.4  		//-6.4 changed value!
+    #define a1_j		  53.3
+    #define a2_j		  53.3
+    #define b_j			  -80.8
+    #define c_j 		  -0.4  		//-6.4 changed value!
     #define m3b		      1.32e-3
     #define m4b		      0.3
     #define m3s		      -0.28
@@ -180,7 +187,7 @@
     #define tau_ij        pow(dist_ij,2)/(2*D_NO)
     #define P_Ca_P_M      3.6
     #define Ca_ex         2e3
-    #define M             1.3e5
+    #define M_mono        1.3e5
     #define betA          650
     #define betB          2800
     #define Oj            200
@@ -192,10 +199,10 @@
     #define W_0           1.4
     #define delt_wss      2.86
     #define k_dno         0.01
-    #define k1            2e3
-    #define k2            0.1
-    #define k3            3
-    #define k_1           100
+    #define k1_i          2e3
+    #define k2_i          0.1
+    #define k3_i          3
+    #define k_1_i         100
     #define V_max_sGC     0.8520   //\muM s{-1}  (for m   2)
     #define k_pde         0.0195 // s{-1} (for m   2)
     #define C_4           0.011  // [s{-1} microM{-2}] (note: the changing units are correct!) (for m   2)
@@ -204,7 +211,7 @@
     #define k_mlcp_c      0.0327           //[s{-1}]
     #define K_m_mlcp      5.5         		// [microM]
     #define bet_i         0.13  // translation factor for membrane potential dependence of KCa channel activation sigmoidal [microM2]
-    #define m 			  2
+    #define m_4			  2
     #define gam_eNOS      0.1  // [-]
     #define K_mO2_j       7.7
     #define V_NOj_max     1.22
@@ -276,7 +283,7 @@
     #define Cm			    7.5e-7
     #define ph			    26.6995
     #define Mu			    8e-4
-    #define B0 		        500
+    #define Buff0	        500
     #define gNaP_GHk	    2e-6
     #define gKDR_GHk	    10e-5
     #define gKA_GHk	        1e-5
@@ -298,7 +305,7 @@
 // BOLD constants
     #define tau_MTT	        3
     #define tau_TAT	        20
-    #define d			    0.4
+    #define d_BOLD		    0.4
     #define E_0		        0.4
     #define a_1		        3.4
     #define a_2		        1

@@ -18,7 +18,7 @@ int main(int argc, char **argv)
 
     // Problem parameters
     odews->dt  	  = 1e-5; 			// time step  1e-5
-    odews->t0     = T_0;   			// initial time 0
+    odews->t0     = 0;   			// initial time 0
     odews->tf     = T_FINAL;  			// final time  10
     odews->ftol   = 1e-3; 			// function evaluation tolerance for Newton convergence 1e-3
     odews->ytol   = 1e-3; 			// relative error tolerance for Newton convergence 1e-3

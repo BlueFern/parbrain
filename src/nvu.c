@@ -1,6 +1,5 @@
 // NVU 2.0
 
-// TODO: ini file with the following: J_PLC, switches (TRPV, NO, K, Ca etc), ECS input size, K input size, stimulation time t_0 and t_2 for each input, type of spatial input (centre vs corner etc), end of simulation time, number of cores etc etc
 
 #include "nvu.h"
 #include <math.h>
@@ -13,7 +12,7 @@ nvu_workspace *nvu_init(void)
 
     // Initialise the workspace
     nvu_w = malloc(sizeof *nvu_w);
-    nvu_w->neq = NEQ;                 // Must specify here
+    nvu_w->neq = NEQ;
 
     // Sparsity patterns (approximated by matrices full of 1s)
     int dfdp_pattern[nvu_w->neq],i;
@@ -60,14 +59,7 @@ nvu_workspace *nvu_init(void)
     nvu_w->dfdx_pattern = cs_compress(T);
     cs_spfree(T);
 
-    // Allocate other nvu workspace parameters ** remove obsolete variables
-//    double Rstar = R0;
-//    double hstar = HRR * Rstar;
-//    nvu_w->a1 = E0 * T0 * Rstar / (ETA * R0);
-//    nvu_w->a2 = P0 * Rstar * T0 / (ETA * hstar);
-//    nvu_w->a3 = Rstar / R0;
-//    nvu_w->a4 = 1 - RSCALE;
-//    nvu_w->a5 = EACTIVE / EPASSIVE - 1;
+    // Allocate other nvu workspace parameters
     nvu_w->pcap  = PCAP / P0; // pressure is nondimensional
     nvu_w->l  = 1; // normalised away
 
@@ -282,7 +274,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     flu_extrusion_j     = D_j * state_ca_j;
     flu_leak_j          = L_j * state_ca_er_j;
     flu_cation_j 		= G_cat * ( E_Ca - state_v_j) * 0.5 * ( 1 + tanh( ( log10( state_ca_j ) - m3cat )  /  m4cat  ) );
-    flu_BKCa_j 			= 0.2 * ( 1 + tanh( ( (  log10(state_ca_j) - c) * ( state_v_j - b ) - a1 ) / ( m3b* pow(( state_v_j + a2 * ( log10( state_ca_j ) - c ) - b),2) + m4b ) ) );
+    flu_BKCa_j 			= 0.2 * ( 1 + tanh( ( (  log10(state_ca_j) - c_j) * ( state_v_j - b_j ) - a1_j ) / ( m3b* pow(( state_v_j + a2_j * ( log10( state_ca_j ) - c_j ) - b_j),2) + m4b ) ) );
     flu_SKCa_j 			= 0.3 * ( 1 + tanh( ( log10(state_ca_j) - m3s ) /  m4s ));
     flu_K_j 			= G_tot * ( state_v_j - vK_j ) * ( flu_BKCa_j + flu_SKCa_j );
     flu_R_j 			= G_R * ( state_v_j - v_rest);
@@ -302,13 +294,13 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 
 	flu_P_NR2AO         = Glu / (betA + Glu);
 	flu_P_NR2BO         = Glu / (betB + Glu);
-	flu_I_Ca            = (-4 * v_n * G_M * P_Ca_P_M * (Ca_ex/M)) / (1+exp(-80*(v_n+0.02))) * (exp(2 * v_n * F / (R_gas * Temp))) / (1 - exp(2 * v_n * F / (R_gas * Temp))) * (0.63 * flu_P_NR2AO + 11 * flu_P_NR2BO);
+	flu_I_Ca            = (-4 * v_n * G_M * P_Ca_P_M * (Ca_ex/M_mono)) / (1+exp(-80*(v_n+0.02))) * (exp(2 * v_n * F / (R_gas * Temp))) / (1 - exp(2 * v_n * F / (R_gas * Temp))) * (0.63 * flu_P_NR2AO + 11 * flu_P_NR2BO);
 	flu_CaM             = state_ca_n / m_c;                                      // concentration of calmodulin / calcium complexes ; (100)
     flu_tau_w			= state_R_dim/2 * delta_p_L; // WSS using pressure from the H tree. L_0 = 200 um
 
 	flu_W_tau_w         = W_0 * pow((flu_tau_w + sqrt(16 * pow(delt_wss,2) + pow(flu_tau_w,2)) - 4 * delt_wss),2) / (flu_tau_w + sqrt(16 * pow(delt_wss,2) + pow(flu_tau_w,2))) ;  // - tick
 	flu_F_tau_w         = 1 / (1 + alp * exp(-flu_W_tau_w)) - 1 / (1 + alp); // -(1/(1+alp)) was added to get no NO at 0 wss (!) - tick
-	flu_k4              = C_4 * pow(state_cGMP, m);
+	flu_k4              = C_4 * pow(state_cGMP, m_4);
 	flu_R_cGMP2         = (pow(state_cGMP, 2)) / (pow(state_cGMP, 2) + pow(K_m_mlcp, 2)); // - tick
 	flu_K2_c            = 58.1395 * k_mlcp_b + 58.1395 * k_mlcp_c * flu_R_cGMP2;  // Factor is chosen to relate two-state model of Yang2005 to Hai&Murphy model
 	flu_K5_c            = flu_K2_c;
@@ -438,7 +430,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 	J_O2_pump 		= CBF_init * P_02 * gamma_O2 * ((J_pump1_sa + J_pump1_d) / (J_pump1init_sa + J_pump1init_d));
 
 	// BOLD //
-	f_out 			= pow(state_CBV,(1/d)) + tau_TAT * (1/(tau_MTT + tau_TAT) * ( CBF/CBF_init  - pow(state_CBV,(1/d)) ));
+	f_out 			= pow(state_CBV,(1/d_BOLD)) + tau_TAT * (1/(tau_MTT + tau_TAT) * ( CBF/CBF_init  - pow(state_CBV,(1/d_BOLD)) ));
 	CMRO2 			= J_O2_background + J_O2_pump;
 	CMRO2_init 		= CBF_init * P_02;
 	//OEF 			= CMRO2 * E_0 / CBF;
@@ -453,9 +445,9 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     /***********Neuron dynamics*********/
 
 	// Neuron - other
-    du[Buff_e]   = Mu * state_K_e * (B0 - state_Buff_e) / (1 + exp(-((state_K_e - 5.5) / 1.09))) - (Mu * state_Buff_e); // [mM]?
+    du[Buff_e]   = Mu * state_K_e * (Buff0 - state_Buff_e) / (1 + exp(-((state_K_e - 5.5) / 1.09))) - (Mu * state_Buff_e); // [mM]?
     du[O2]       = J_O2_vascular - J_O2_background - J_O2_pump; 						// [mM]
-    du[CBV]      = (1/(tau_MTT + tau_TAT)) * ( CBF/CBF_init  - pow(state_CBV,(1/d)) );	// [-]
+    du[CBV]      = (1/(tau_MTT + tau_TAT)) * ( CBF/CBF_init  - pow(state_CBV,(1/d_BOLD)) );	// [-]
     du[DHG]      = 1/tau_MTT * ( CMRO2/CMRO2_init - state_DHG/state_CBV * f_out );		// [-]
 
     // Neuron - ions (mV or mM)
@@ -535,8 +527,8 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 
     // SMC:
     du[NOi]       = (state_NOk - state_NOi) / tau_ki + (state_NOj - state_NOi) / tau_ij - k_dno * state_NOi ;
-    du[E_b]        = -k1 * state_E_b * state_NOi + k_1 * state_E_6c + flu_k4 * E_5c;
-    du[E_6c]       = k1 * state_E_b * state_NOi - k_1 * state_E_6c - k2 * state_E_6c - k3 * state_E_6c * state_NOi ;
+    du[E_b]        = -k1_i * state_E_b * state_NOi + k_1_i * state_E_6c + flu_k4 * E_5c;
+    du[E_6c]       = k1_i * state_E_b * state_NOi - k_1_i * state_E_6c - k2_i * state_E_6c - k3_i * state_E_6c * state_NOi ;
     du[cGMP]       = V_max_sGC * E_5c - V_max_pde * state_cGMP / (K_m_pde + state_cGMP);
 
     // EC:
@@ -571,9 +563,7 @@ double nvu_p0(double t)
     //double p0 = 1. * 8000 / P0; // 8000 Pa   original: 1.5 * 8000 / P0;
     //double p0 = (0.5 * sin(t) + 1) * 8000 / P0; //
 
-    double p0 = 4100 / P0;	// for H-tree of size 3 so that the pressure drop over the last leaf is about 18.2 Pa to match with the single NVU model
-    //double p0 = 4160 / P0;	// for H-tree of size 7
-    //double p0 = ? / P0;		// for H-tree of size 13. less than 4300 (gives 0.5039, want 0.5023)
+    double p0 = P_TOP / P0;	// for H-tree of size 3 so that the pressure drop over the last leaf is about 18.2 Pa to match with the single NVU model
     return p0;
 }
 
@@ -592,9 +582,9 @@ double factorial(int c)
 // Space- & time-varying K+ input signal (simulating neuronal activity)
 double current_input(double t, double x, double y)
 {
-    double I_strength 	= 0.025;
-    double t_up   		= 20;
-    double t_down 		= 36;
+    double I_strength 	= I_STRENGTH;
+    double t_up   		= T_STIM_0;
+    double t_down 		= T_STIM_END;
 
     double current_space;
     // only in corner
