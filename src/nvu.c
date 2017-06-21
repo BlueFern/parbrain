@@ -596,16 +596,23 @@ double current_input(double t, double x, double y)
     double t_up   		= T_STIM_0;
     double t_down 		= T_STIM_END;
 
-    double current_space;
-    // only in corner
-    if (x <= 0 && y <= 0)
-    {
-        current_space = 1;
-    }
-    else
-    {
-        current_space = 0;
-    }
+    double ampl = 3;
+    double ramp = 0.003;
+    double x_centre = 0;
+    double y_centre = 0;
+
+    double current_space = fmin(1.0, ampl * (exp(-((pow((x - x_centre), 2) + pow((y - y_centre), 2)) / (2 * pow(ramp, 2))))));
+
+//    double current_space;
+//    // only in corner
+//    if (x <= 0 && y <= 0)
+//    {
+//        current_space = 1;
+//    }
+//    else
+//    {
+//        current_space = 0;
+//    }
 
     double current_time;
     if (t >= t_up && t <= t_down)

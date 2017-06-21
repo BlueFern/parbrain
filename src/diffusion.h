@@ -11,12 +11,12 @@ typedef struct workspace workspace;
 static const int NUM_NEIGHBOURS = 4;
 
 // Number of variables stored in diffusion structs.
-static const int NUM_DIFF_VARS = 2;
+static const int NUM_DIFF_VARS = 1; //2;
 
 // Enumerator to keep track of the diffusion variables positions.
 enum diff_idx
 {
-	DIFF_K, DIFF_NA
+	DIFF_K //, DIFF_NA
 };
 
 // Ghost block to store diffusion variables. Ghost blocks are placed around
