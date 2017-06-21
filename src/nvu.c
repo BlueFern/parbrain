@@ -106,6 +106,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     double flu_v_cpl_j, flu_c_cpl_j, flu_I_cpl_j, flu_rho_j, flu_O_j, flu_ip3_j, flu_ERuptake_j, flu_CICR_j, flu_extrusion_j, flu_leak_j, flu_cation_j, flu_BKCa_j, flu_SKCa_j, flu_K_j, flu_R_j, flu_degrad_j, flu_J_stretch_j; // EC fluxes
     double flu_K1_c, flu_K6_c; // Mech fluxes
     double flu_c_w, flu_P_NR2AO, flu_P_NR2BO, flu_I_Ca, flu_CaM, flu_W_tau_w, flu_F_tau_w, flu_k4, flu_R_cGMP2, flu_K2_c, flu_K5_c, flu_tau_w, E_5c, V_max_pde;    // NO pathway fluxes
+    double flu_p_NO_n, flu_c_NO_n, flu_d_NO_n, flu_p_NO_j, flu_c_NO_j, flu_d_NO_j;
     double rho, flu_ip3_k, flu_er_leak, flu_pump_k, flu_I_TRPV_k, flu_TRPV_k, flu_E_TRPV_k, B_cyt, G, v_3, H_Ca_k, eta, minf_k, t_Ca_k, flu_VOCC_k;  // AC Ca2+ fluxes
     double F_r, E, R_0, state_R_dim;
     double E_Na_sa, E_K_sa, E_Na_d, E_K_d;
@@ -118,7 +119,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     double m5alpha, m5beta, h4alpha, h4beta, J_NMDA_K_d, J_NMDA_Na_d;
     double m6alpha, m6beta, J_KDR_d;
     double m7alpha, m7beta, h5alpha, h5beta, J_KA_d;
-    double J_pump1_sa, J_pump1init_sa, J_pump1_d, J_pump1init_d, J_pump2, J_pump_sa, J_pump_d, J_Napump_sa, J_Kpump_sa, J_Napump_d, J_Kpump_d, J_pump2_0, J_pump2_O2_0;
+    double J_pump1_sa, J_pump1init_sa, J_pump1_d, J_pump1init_d, J_pump2, O2_p, J_pump_sa, J_pump_d, J_Napump_sa, J_Kpump_sa, J_Napump_d, J_Kpump_d, J_pump2_0, J_pump2_O2_0;
     double J_Na_tot_sa, J_K_tot_sa, J_leak_tot_sa, J_Na_tot_d, J_K_tot_d, J_leak_tot_d, J_tot_sa, J_tot_d;
     double P_02, CBF, J_O2_vascular, J_O2_background, J_O2_pump;
     double f_out, CMRO2, CMRO2_init, OEF;
@@ -290,14 +291,18 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 
 // NO pathway fluxes
 
-	Glu 				= 0.5 * Glu_max * ( 1 + tanh( (state_K_e - Ke_switch) / Glu_slope) );
+	Glu 				= GluSwitch * ( 0.5 * Glu_max * ( 1 + tanh( (state_K_e - Ke_switch) / Glu_slope) ) );
 
 	flu_P_NR2AO         = Glu / (betA + Glu);
 	flu_P_NR2BO         = Glu / (betB + Glu);
 	flu_I_Ca            = (-4 * v_n * G_M * P_Ca_P_M * (Ca_ex/M_mono)) / (1+exp(-80*(v_n+0.02))) * (exp(2 * v_n * F / (R_gas * Temp))) / (1 - exp(2 * v_n * F / (R_gas * Temp))) * (0.63 * flu_P_NR2AO + 11 * flu_P_NR2BO);
 	flu_CaM             = state_ca_n / m_c;                                      // concentration of calmodulin / calcium complexes ; (100)
-    flu_tau_w			= state_R_dim/2 * delta_p_L; // WSS using pressure from the H tree. L_0 = 200 um
 
+	flu_p_NO_n			= NOswitch * ( state_nNOS * V_max_NO_n * On / (K_mO2_n + On) * LArg / (K_mArg_n + LArg) );
+    flu_c_NO_n			= (k_O2* pow(state_NOn,2) * On);
+	flu_d_NO_n			= ((state_NOn - state_NOk) / tau_nk);
+
+	flu_tau_w			= state_R_dim/2 * delta_p_L; // WSS using pressure from the H tree. L_0 = 200 um
 	flu_W_tau_w         = W_0 * pow((flu_tau_w + sqrt(16 * pow(delt_wss,2) + pow(flu_tau_w,2)) - 4 * delt_wss),2) / (flu_tau_w + sqrt(16 * pow(delt_wss,2) + pow(flu_tau_w,2))) ;  // - tick
 	flu_F_tau_w         = 1 / (1 + alp * exp(-flu_W_tau_w)) - 1 / (1 + alp); // -(1/(1+alp)) was added to get no NO at 0 wss (!) - tick
 	flu_k4              = C_4 * pow(state_cGMP, m_4);
@@ -305,6 +310,11 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 	flu_K2_c            = 58.1395 * k_mlcp_b + 58.1395 * k_mlcp_c * flu_R_cGMP2;  // Factor is chosen to relate two-state model of Yang2005 to Hai&Murphy model
 	flu_K5_c            = flu_K2_c;
 	flu_c_w             = 1/2 * ( 1 + tanh( (state_cGMP - 10.75) / 0.668 ) );
+
+
+	flu_p_NO_j			= NOswitch * ( V_NOj_max * state_eNOS * Oj / (K_mO2_j + Oj) * LArg_j / (K_mArg_j + LArg_j) );
+	flu_c_NO_j			= k_O2 * pow(state_NOj,2) * Oj;
+	flu_d_NO_j			= (state_NOi - state_NOj) / tau_ij - state_NOj * 4 * D_NO / (pow(25,2));
 
 	flu_Kactivation_i   = pow((state_ca_i + flu_c_w),2) / (pow((state_ca_i + flu_c_w),2) + bet_i * exp(-(state_v_i - v_Ca3) / R_K));
 	E_5c				= 1 - state_E_b - state_E_6c;
@@ -402,7 +412,11 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 	J_pump1init_sa 	= 0.0312;				// (1 + (K_init_e / K_init_e))^(-2) * (1 + (Na_init_sa / Na_init_sa)) ^ (-3);
 	J_pump1_d 		= pow((1 + (K_init_e / state_K_e)),-2) * pow((1 + (Na_init_d / state_Na_d)),-3);
 	J_pump1init_d 	= 0.0312;				// (1 + (K_init_e / K_init_e))^(-2) * (1 + (Na_init_d / Na_init_d)) ^ (-3);
-	J_pump2 		= 2 * pow((1 + O2_0 / (((1 - alpha_O2) * state_O2) + alpha_O2 * O2_0)),-1);
+
+		// Jpump2 uses 02_0 if oxygen is plentiful or O2 if limited. Default is limited, change using O2switch in constants.h
+		O2_p        	= O2_0 * (1 - O2switch) + state_O2 * O2switch;
+		J_pump2 		= 2 * pow((1 + O2_0 / (((1 - alpha_O2) * O2_p) + alpha_O2 * O2_0)),-1);
+
 	J_pump_sa 		= Imax * J_pump1_sa * J_pump2;
 	J_pump_d 		= Imax * J_pump1_d * J_pump2;
 	J_Napump_sa 	= 3 * J_pump_sa;
@@ -478,49 +492,49 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 
 	/***********General dynamics**********/
 
-    du[i_radius		] = 1 / ETA * (state_r * trans_p / flu_h_r - E * (state_R_dim - R_0)/R_0); // Radius - nondimensional (state_R_dim: dimensional)
+    du[i_radius] = 1 / ETA * (state_r * trans_p / flu_h_r - E * (state_R_dim - R_0)/R_0); // Radius - nondimensional (state_R_dim: dimensional)
 
     //AC:
-    du[ R_k     ] = 0; //L_p * (flu_Na_k + flu_K_k + flu_Cl_k + flu_HCO3_k - flu_Na_s - flu_K_s - flu_Cl_s - flu_HCO3_s + X_k / state_R_k);  // m s-1
-    du[ N_Na_k  ] = -flu_J_Na_k - 3 * flu_J_NaK_k + flu_J_NKCC1_k + flu_J_NBC_k;    // uMm s-1
-    du[ N_K_k   ] = -flu_J_K_k + 2 * flu_J_NaK_k + flu_J_NKCC1_k + flu_J_KCC1_k -flu_J_BK_k; // uMm s-1
-    du[ N_HCO3_k] = 2 * flu_J_NBC_k;                                                // uMm s-1
-    du[ N_Cl_k  ] = du[ N_Na_k] + du[ N_K_k] - du[ N_HCO3_k];                       // uMm s-1, modified equation compared to the one of Ostby  //
-    du[ w_k     ] = flu_phi_w * (flu_w_inf - state_w_k);                            // s-1
+    du[R_k] 		= 0; //L_p * (flu_Na_k + flu_K_k + flu_Cl_k + flu_HCO3_k - flu_Na_s - flu_K_s - flu_Cl_s - flu_HCO3_s + X_k / state_R_k);  // m s-1
+    du[N_Na_k] 		= -flu_J_Na_k - 3 * flu_J_NaK_k + flu_J_NKCC1_k + flu_J_NBC_k;    // uMm s-1
+    du[N_K_k] 		= -flu_J_K_k + 2 * flu_J_NaK_k + flu_J_NKCC1_k + flu_J_KCC1_k -flu_J_BK_k; // uMm s-1
+    du[N_HCO3_k] 	= 2 * flu_J_NBC_k;                                                // uMm s-1
+    du[N_Cl_k] 		= du[ N_Na_k] + du[ N_K_k] - du[ N_HCO3_k];                       // uMm s-1, modified equation compared to the one of Ostby  //
+    du[w_k]			= flu_phi_w * (flu_w_inf - state_w_k);                            // s-1
 
     //SC:
-    du[ N_Na_s  ] = - du[ N_Na_k] - SC_coup * du[K_e] * 1000 * R_s;                           // uMm s-1
-    du[ N_K_s   ] = flu_J_K_k - 2 * flu_J_NaK_k - flu_J_NKCC1_k - flu_J_KCC1_k + SC_coup * du[K_e] * 1000 * R_s;                 // uMm s-1
-    du[ N_HCO3_s] = - du[ N_HCO3_k];                                                // uMm s-1
+    du[N_Na_s] 		= - du[ N_Na_k] - SC_coup * du[K_e] * 1000 * R_s;                           // uMm s-1
+    du[N_K_s] 		= flu_J_K_k - 2 * flu_J_NaK_k - flu_J_NKCC1_k - flu_J_KCC1_k + SC_coup * du[K_e] * 1000 * R_s;                 // uMm s-1
+    du[N_HCO3_s] 	= - du[ N_HCO3_k];                                                // uMm s-1
 
     //PVS:
-    du[ K_p     ] = flu_J_BK_k / (VR_pa * state_R_k) + flu_J_KIR_i / VR_ps - R_decay * (state_K_p - K_p_min);         // uM s-1
+    du[K_p] 		= flu_J_BK_k / (VR_pa * state_R_k) + flu_J_KIR_i / VR_ps - R_decay * (state_K_p - K_p_min);         // uM s-1
 
     //SMC:
-    du[ ca_i    ] = flu_c_cpl_i + flu_rho_i * ( flu_ip3_i - flu_SRuptake_i + flu_CICR_i - flu_extrusion_i + flu_leak_i - flu_VOCC_i + flu_NaCa_i - 0.1* flu_J_stretch_i);
-    du[ ca_sr_i ] = flu_SRuptake_i - flu_CICR_i - flu_leak_i ;
-    du[ v_i     ] = flu_v_cpl_i + gam * ( - flu_NaK_i - flu_Cl_i - 2 * flu_VOCC_i - flu_NaCa_i - flu_K_i - flu_J_stretch_i - flu_J_KIR_i );
-    du[ w_i     ] = lam * (flu_Kactivation_i - state_w_i ) ;
-    du[ ip3_i   ] = flu_I_cpl_i - flu_degrad_i ;          // **
-    du[ K_i     ] = - flu_J_KIR_i - flu_K_i + flu_NaK_i;                                            // uM s-1
+    du[ca_i] 		= flu_c_cpl_i + flu_rho_i * ( flu_ip3_i - flu_SRuptake_i + flu_CICR_i - flu_extrusion_i + flu_leak_i - flu_VOCC_i + flu_NaCa_i - 0.1* flu_J_stretch_i);
+    du[ca_sr_i] 	= flu_SRuptake_i - flu_CICR_i - flu_leak_i ;
+    du[v_i] 		= flu_v_cpl_i + gam * ( - flu_NaK_i - flu_Cl_i - 2 * flu_VOCC_i - flu_NaCa_i - flu_K_i - flu_J_stretch_i - flu_J_KIR_i );
+    du[w_i] 		= lam * (flu_Kactivation_i - state_w_i ) ;
+    du[ip3_i] 		= flu_I_cpl_i - flu_degrad_i ;          // **
+    du[K_i]			= - flu_J_KIR_i - flu_K_i + flu_NaK_i;                                            // uM s-1
 
     //EC:
-    du[ca_j     ] = flu_c_cpl_j + flu_rho_j * ( flu_ip3_j - flu_ERuptake_j + flu_CICR_j - flu_extrusion_j + flu_leak_j + flu_cation_j + flu_O_j - flu_J_stretch_j ) ;
-    du[ca_er_j  ] = flu_ERuptake_j - flu_CICR_j - flu_leak_j ;
-    du[v_j      ] = flu_v_cpl_j - 1/C_m * ( flu_K_j + flu_R_j ) ;
-    du[ip3_j    ] = flu_I_cpl_j + J_PLC - flu_degrad_j ;  // **
+    du[ca_j] 		= flu_c_cpl_j + flu_rho_j * ( flu_ip3_j - flu_ERuptake_j + flu_CICR_j - flu_extrusion_j + flu_leak_j + flu_cation_j + flu_O_j - flu_J_stretch_j ) ;
+    du[ca_er_j] 	= flu_ERuptake_j - flu_CICR_j - flu_leak_j ;
+    du[v_j] 		= flu_v_cpl_j - 1/C_m * ( flu_K_j + flu_R_j ) ;
+    du[ip3_j] 		= flu_I_cpl_j + J_PLC - flu_degrad_j ;  // **
 
     // Mech:
-    du[ Mp   	] = wallMech * ( K4_c * state_AMp + flu_K1_c * flu_M - (flu_K2_c + K3_c) * state_Mp );
-    du[ AMp  	] = wallMech * ( K3_c * state_Mp + flu_K6_c * state_AM - (K4_c + flu_K5_c) * state_AMp );
-    du[ AM   	] = wallMech * ( flu_K5_c * state_AMp - ( K7_c + flu_K6_c ) * state_AM );
+    du[Mp] 			= wallMech * ( K4_c * state_AMp + flu_K1_c * flu_M - (flu_K2_c + K3_c) * state_Mp );
+    du[AMp] 		= wallMech * ( K3_c * state_Mp + flu_K6_c * state_AM - (K4_c + flu_K5_c) * state_AMp );
+    du[AM] 			= wallMech * ( flu_K5_c * state_AMp - ( K7_c + flu_K6_c ) * state_AM );
 
     /***********NO pathway***********/
 
     // NE:
     du[ca_n]       = (flu_I_Ca / (2*F * V_spine) - (k_ex * (state_ca_n - Ca_rest))) / (1 + lambda);     //\muM
     du[nNOS]       = V_maxNOS * flu_CaM / (K_actNOS + flu_CaM) - mu2 * state_nNOS ;                  //\muM
-    du[NOn]       = state_nNOS * V_max_NO_n * On / (K_mO2_n + On) * LArg / (K_mArg_n + LArg) - ((state_NOn - state_NOk) / tau_nk) - (k_O2* pow(state_NOn,2) * On);
+    du[NOn]        = flu_p_NO_n - flu_c_NO_n + flu_d_NO_n;
 
     // AC:
     du[NOk]       = (state_NOn - state_NOk) / tau_nk + (state_NOi - state_NOk) / tau_ki - k_O2 * pow(state_NOk,2) * Ok;
@@ -532,12 +546,8 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     du[cGMP]       = V_max_sGC * E_5c - V_max_pde * state_cGMP / (K_m_pde + state_cGMP);
 
     // EC:
-    du[eNOS]       = gam_eNOS * (K_dis * state_ca_j / (K_eNOS + state_ca_j))  // Ca-dependent activation - tick
-					+ (1 - gam_eNOS) * (g_max * flu_F_tau_w) // wss-dependent activation - tick
-					- mu2 * state_eNOS;      // deactivation - tick
-    du[NOj]       = V_NOj_max * state_eNOS * Oj / (K_mO2_j + Oj) * LArg_j / (K_mArg_j + LArg_j) // production - tick
-					- k_O2 * pow(state_NOj,2) * Oj // consumption
-					+ (state_NOi - state_NOj) / tau_ij - state_NOj * 4 * D_NO / (pow(25,2));
+    du[eNOS]       = gam_eNOS * (K_dis * state_ca_j / (K_eNOS + state_ca_j)) + (1 - gam_eNOS) * (g_max * flu_F_tau_w) - mu2 * state_eNOS;
+    du[NOj]       = flu_p_NO_j - flu_c_NO_j + flu_d_NO_j;
 
     /**********Astrocytic Calcium*******/
 

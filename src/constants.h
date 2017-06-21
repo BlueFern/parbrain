@@ -3,7 +3,7 @@
 
 // Optional command line arguments for parBrainSim: N, NSUB, T_FINAL (in that order). If none specified then the following are used.
 
-// TODO: switches (TRPV, NO, K, Ca etc), ECS input size, type of spatial input (centre vs corner etc)
+// TODO: type of spatial input (centre vs corner etc)
 
 
 /*** Run parameters ***/
@@ -16,11 +16,17 @@
 	static const double P_TOP			= 4100;	     // Pressure at the top of the tree, chosen so that the drop over the terminating arterioles is around 18.2 Pa to match with the single NVU model.
 									  	  	  	  	 // For NTREE=3, P_TOP=4100 Pa. For NTREE=7, P_TOP=4160 Pa. For NTREE=13, P_TOP=?
 
+/*** Switches for various pathways (default 1) ***/
+	static const double GluSwitch		= 1;		// 1: glutamate is released with current stimulation, 0: no glutamate
+	static const double NOswitch		= 1;		// 1: NO is produced in the NVU, 0: no NO production at all
+    static const double trpv_switch	    = 1;		// 1: TRPV4 channel is active, 0: completely closed (no flux)
+    static const double O2switch		= 1;		// 1: Oxygen is limited, 0: oxygen is plentiful
+
 /*** Commonly changed model parameters ***/
 
 	static const double I_STRENGTH		= 0.025;	  	// [A] strength of current input
-    static const double wallMech	    = 1.1;         // rate of wall mechanics, 1 for normal (default 1.1)
-    static const double SC_coup	        = 11.5;        // scaling factor for the change in SC K+ concentration based on extracellular K+ concentration (default 11.5)
+    static const double wallMech	    = 1.1;          // rate of wall mechanics, 1 for normal (default 1.1)
+    static const double SC_coup	        = 11.5;         // scaling factor for the change in SC K+ concentration based on extracellular K+ concentration (default 11.5)
     static const double J_PLC 		    = 0.11; 	    // 0.11 for steady state or 0.3 for oscillations
     static const double R_decay         = 0.15;  	    // [s^-1] rate of decay of K+ in the PVS (default 0.15)
 
@@ -259,7 +265,6 @@
     static const double Capmin_k		= 2000;
     static const double reverseBK		= 0;
     static const double switchBK		= 1;
-    static const double trpv_switch	    = 1;
     static const double z_Ca			= 2;
     static const double m_c			    = 4;
 
