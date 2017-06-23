@@ -300,7 +300,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 
 	flu_p_NO_n			= NOswitch * ( state_nNOS * V_max_NO_n * On / (K_mO2_n + On) * LArg / (K_mArg_n + LArg) );
     flu_c_NO_n			= (k_O2* pow(state_NOn,2) * On);
-	flu_d_NO_n			= ((state_NOn - state_NOk) / tau_nk);
+	flu_d_NO_n			= - ((state_NOn - state_NOk) / tau_nk);
 
 	flu_tau_w			= state_R_dim/2 * delta_p_L; // WSS using pressure from the H tree. L_0 = 200 um
 	flu_W_tau_w         = W_0 * pow((flu_tau_w + sqrt(16 * pow(delt_wss,2) + pow(flu_tau_w,2)) - 4 * delt_wss),2) / (flu_tau_w + sqrt(16 * pow(delt_wss,2) + pow(flu_tau_w,2))) ;  // - tick
