@@ -7,12 +7,12 @@
 
 
 /*** Run parameters ***/
-    static const double T_FINAL        	= 1;        // Final run time
+    static const double T_FINAL        	= 50;         // Final run time
 	static const double T_STIM_0       	= 20;        // Start time for stimulation
 	static const double T_STIM_END     	= 36;        // End time for stimulation
-    static const double DT_WRITE       	= 1;       // Time step for writing to file (and screen)
+    static const double DT_WRITE       	= 0.1;       	 // Time step for writing to file (and screen)
     static const int 	NTREE          	= 7;         // Number of levels in the H-tree (where the tissue slice has 2^(N-1) tissue blocks)
-    static const int 	NSUB           	= 1;         // Subtree size (usually 3 but must be smaller when N is small - adjust as needed)
+    static const int 	NSUB           	= 1;         // Subtree size (easiest to just keep as 1)
 	static const double P_TOP			= 4160;	     // Pressure at the top of the tree, chosen so that the drop over the terminating arterioles is around 18.2 Pa to match with the single NVU model.
 									  	  	  	  	 // For NTREE=3, P_TOP=4100 Pa. For NTREE=7, P_TOP=4160 Pa. For NTREE=13, P_TOP=?
 
@@ -326,20 +326,24 @@
     static const double T0          = 1;               // s
     static const double PA2MMHG     = 0.00750061683;   // convert from Pa to mmHg
 
+/*** Diffusion constants ***/
+// Number of variables stored in diffusion structs, currently K_e and Na_e.
+    static const int NUM_DIFF_VARS = 2; //2;
+
 // Rates of diffusion (characteristic times) for diffusion between tissue blocks
     static const double tau_Ke      = 4.3;  // (sec) The diffusion rate - characteristic time scale for K+ to travel one NVU block
     static const double tau_Nae     = 6.4;  // (sec) The diffusion rate - characteristic time scale for Na+ to travel one NVU block
 
 /*** H-tree constants ***/
 // Constants for the H-tree, don't change
-    static const double RMIN                = 10e-6;   					    // m, radius of smallest vessel
+    static const double RMIN                = 10e-6;   					    	// m, radius of smallest vessel
     static const double BIFURCATION_SCALE   = 1.4142135623730951; 	            //   sqrt(2), amount the radius decreases by when going down a level
     static const double L0                  = 200e-6;   						// m (for nondimensionalising), length characteristic value
     static const double LRR                 = 20;   							// Nondimensional, length to radius ratio
     static const double MU                  = 3.5e-3;   						// Pa s, blood viscosity
-    static const double R0                  = 10e-6;                           // m (for nondimensionalising)
-    static const double P0                  = 8000;                            // Pa (scaling factor for nondim)
-    static const double PCAP                = 4000;                            // Pa (capillary bed pressure)
+    static const double R0                  = 10e-6;                           	// m (for nondimensionalising)
+    static const double P0                  = 8000;                            	// Pa (scaling factor for nondim)
+    static const double PCAP                = 4000;                            	// Pa (capillary bed pressure)
 
 /*** State variable indexing ***/
 //only needs to be changed when more variables are added

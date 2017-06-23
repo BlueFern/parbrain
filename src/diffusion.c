@@ -8,7 +8,7 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
     int neigh_offset = block_number * NUM_NEIGHBOURS;
 
     double state_K_e = u[K_e];	// Extra-cellular potassium in our block.
-//    double state_Na_e = u[Na_e];	// Extra-cellular potassium in our block.
+    double state_Na_e = u[Na_e];	// Extra-cellular sodium in our block.
 
     // Iterate over all neighbours.
     for(int neigh_idx = 0; neigh_idx < NUM_NEIGHBOURS; neigh_idx++)
@@ -18,28 +18,28 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
 
     	// Neighbour's potassium value to be retrieved.
     	double neighbour_K_e = 0;
-//    	double neighbour_Na_e = 0;
+    	double neighbour_Na_e = 0;
 
     	if(neigh_idx_val < 0)
     	{
     		// If the neighbour is a ghost block, get the value from it.
     		neighbour_K_e = w->ghost_blocks[-neigh_idx_val - 1].vars[DIFF_K];
-//    		neighbour_Na_e = w->ghost_blocks[-neigh_idx_val - 1].vars[DIFF_NA];
+    		neighbour_Na_e = w->ghost_blocks[-neigh_idx_val - 1].vars[DIFF_NA];
     	}
     	else
     	{
     		// Otherwise it is a real tissue block.
     		neighbour_K_e = u[(neigh_idx_val - block_number) * w->neq + K_e];
-//    		neighbour_Na_e = u[(neigh_idx_val - block_number) * w->neq + Na_e];
+    		neighbour_Na_e = u[(neigh_idx_val - block_number) * w->neq + Na_e];
     	}
 
     	// Calculate the flux.
     	double flu_diff_K = (neighbour_K_e - state_K_e) / tau_Ke;
-//    	double flu_diff_Na = (neighbour_Na_e - state_Na_e) / tau_Nae;
+    	double flu_diff_Na = (neighbour_Na_e - state_Na_e) / tau_Nae;
 
     	// Update the derivatives.
     	du[K_e] += flu_diff_K;
-//    	du[Na_e] += flu_diff_Na;
+    	du[Na_e] += flu_diff_Na;
 //    	// As these two variables contain the term "SC_coup * du[K_e] * 1000 * R_s", they must also be updated!
     	double R_s = 8.79e-8 - u[R_k];
     	du[N_K_s] += SC_coup * flu_diff_K * 1000 * R_s;
@@ -69,7 +69,7 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
  * (\_/)\       '       `.   ,'       `.   ,'       .
  *  `-'\ `--.___,         . .           . .          .
  *    '\( ,_.-'
- *        \\               "             "            a:f
+ *        \\               "             "
  *        ^'
  */
 
@@ -202,7 +202,7 @@ void init_ghost_blocks(int nlocal, int mlocal, nvu_workspace *w)
     	w->ghost_blocks[i].vars = malloc(NUM_DIFF_VARS * sizeof(double));
 
     	w->ghost_blocks[i].vars[DIFF_K] = 3.493;
-//    	w->ghost_blocks[i].vars[DIFF_NA] = 150;
+    	w->ghost_blocks[i].vars[DIFF_NA] = 150;
     }
 }
 
@@ -221,33 +221,41 @@ void update_ghost_blocks(workspace *W, double *y)
 		// If neighbour exists.
 		if(W->domain_neighbours[side_idx] >= 0)
 		{
-			// TODO: This likely will have to be a derived type when we have more than one diffusion variable to post.
-			double *send_array = malloc(sizeof(double) * side_length);
-			double *receive_array = malloc(sizeof(double) * side_length);
+			// Allocate arrays for sending and receiving different variables (currently 2, change manually)
+			double *send_array_Ke = malloc(sizeof(double) * side_length);
+			double *send_array_Nae = malloc(sizeof(double) * side_length);
+			double *receive_array_Ke = malloc(sizeof(double) * side_length);
+			double *receive_array_Nae = malloc(sizeof(double) * side_length);
 
-			// Populate send array with values from the state variables array.
+			// Populate send arrays with values from the state variables array.
 			for(int i = 0; i < side_length; i++)
 			{
-				// Get the state variable based on the indices of the edge block for this side (and all other sides).
-				send_array[i] = y[W->neq * W->nvu_w->edge_indices[idx_offset + i] + K_e];
-//				send_array[i] = y[W->neq * W->nvu_w->edge_indices[idx_offset + i] + Na_e];
+				// Get the state variables based on the indices of the edge block for this side (and all other sides).
+				send_array_Ke[i] = y[W->neq * W->nvu_w->edge_indices[idx_offset + i] + K_e];
+				send_array_Nae[i] = y[W->neq * W->nvu_w->edge_indices[idx_offset + i] + Na_e];
 			}
 
 			// Simultaneously send and receive the values for the ghost blocks.
 			MPI_Sendrecv(
-					send_array, side_length, MPI_DOUBLE, W->domain_neighbours[side_idx], 0,
-					receive_array, side_length, MPI_DOUBLE, W->domain_neighbours[side_idx], 0,
+					send_array_Ke, side_length, MPI_DOUBLE, W->domain_neighbours[side_idx], 0,
+					receive_array_Ke, side_length, MPI_DOUBLE, W->domain_neighbours[side_idx], 0,
+					MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			MPI_Sendrecv(
+					send_array_Nae, side_length, MPI_DOUBLE, W->domain_neighbours[side_idx], 0,
+					receive_array_Nae, side_length, MPI_DOUBLE, W->domain_neighbours[side_idx], 0,
 					MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
 			// Copy received data into the ghost blocks.
 			for(int i = 0; i < side_length; i++)
 			{
-				W->nvu_w->ghost_blocks[idx_offset + i].vars[DIFF_K] = receive_array[i];
-//				W->nvu_w->ghost_blocks[idx_offset + i].vars[DIFF_NA] = receive_array[i];
+				W->nvu_w->ghost_blocks[idx_offset + i].vars[DIFF_K] = receive_array_Ke[i];
+				W->nvu_w->ghost_blocks[idx_offset + i].vars[DIFF_NA] = receive_array_Nae[i];
 			}
 
-			free(send_array);
-			free(receive_array);
+			free(send_array_Ke);
+			free(receive_array_Ke);
+			free(send_array_Nae);
+			free(receive_array_Nae);
 		}
 		// If there is no neighbour, copy the current block's value into the ghost block.
 		else
@@ -255,7 +263,7 @@ void update_ghost_blocks(workspace *W, double *y)
 			for(int i = 0; i < side_length; i++)
 			{
 				W->nvu_w->ghost_blocks[idx_offset + i].vars[DIFF_K] = y[W->neq * W->nvu_w->edge_indices[idx_offset + i] + K_e];
-//				W->nvu_w->ghost_blocks[idx_offset + i].vars[DIFF_NA] = y[W->neq * W->nvu_w->edge_indices[idx_offset + i] + Na_e];
+				W->nvu_w->ghost_blocks[idx_offset + i].vars[DIFF_NA] = y[W->neq * W->nvu_w->edge_indices[idx_offset + i] + Na_e];
 			}
 		}
 		idx_offset += side_length;

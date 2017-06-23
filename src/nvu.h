@@ -36,7 +36,7 @@ typedef struct nvu_workspace {
     double pcap;		// pressure at capillaries (min)
 
     // Indices of neighbours for every tissue block. Ghost blocks are numbered
-    // with negative indices in counter-clockwise flu_Kactivation_idirection.
+    // with negative indices in counter-clockwise direction.
     int *neighbours;
 
     // Indices of all edge tissue blocks for one MPI domain.
