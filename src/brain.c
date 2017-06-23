@@ -148,10 +148,6 @@ void init_parallel(workspace *W, int argc, char **argv)
     {
         W->N = atoi(argv[1]); // N has been specified at command line
     }
-    if (argc > 2)
-    {
-    	W->Nsub = atoi(argv[2]); // Nsub has been specified at command line
-    }
 
     W->N0 = (int) round(log2((double) W->n_procs));
     W->Np = W->N - W->N0; 		// Dependent on number of levels and number of cores running
@@ -404,7 +400,7 @@ void write_info(workspace *W)
         sprintf(infofilename, "%s%s", W->dirName, iSuffix);
 
         fp = fopen(infofilename, "w");
-        fprintf(fp, "n_processors    n_blocks_per_rank        n_state_vars   m_local         n_local         m_global        n_global\n");
+        fprintf(fp, "n_processors    n_blocks_per_rank        n_state_vars   m_local         n_local         m_global        n_global		t_final		dt_psec\n");
         fprintf(fp, "%-16d", W->n_procs);
         fprintf(fp, "%-16d", W->nblocks);
         fprintf(fp, "%-16d", W->neq);
@@ -412,6 +408,8 @@ void write_info(workspace *W)
         fprintf(fp, "%-16d", W->nlocal);
         fprintf(fp, "%-16d", W->mglobal);
         fprintf(fp, "%-16d", W->nglobal);
+        fprintf(fp, "%-16d", (int)T_FINAL);		//TODO: have t_final as a variable in W
+        fprintf(fp, "%-16d", DT_PSEC);
         fprintf(fp, "\n");
         fclose(fp);
 

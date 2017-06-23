@@ -36,23 +36,14 @@ int main(int argc, char *argv[]) {
 	#define BLOCK_LENGTH 4e-4	// Length of one tissue block.
 	char Prefix[] = "";
 
-//*****************************************************************************************
-// run with no arguments for debugging
-#if 0
-	char *dirName="np01_nlev03_sbtr01";
-	int tf = 10;
-#else
-	if (argc != 3)
+	if (argc != 2)
 	{
 		printf("Uh oh, spaghettio. You have not entered the correct number of arguments.\n");
-		std::cerr << "Usage: " << argv[0] << " <Data directory> <Final time>\n";
+		std::cerr << "Usage: " << argv[0] << " <Data directory>n";
 		exit(EXIT_FAILURE);
 	}
 
 	char *dirName=argv[1];       	// First argument: Folder name.
-	int tf = atoi(argv[2]); 		// Second argument: Final time (atoi: str -> int).
-#endif
-//******************************************************************************************
 
 	// Read configuration file:
 	char iSuffix[] = "/info.dat";
@@ -70,7 +61,7 @@ int main(int argc, char *argv[]) {
 	std::string header;
 	std::getline(conf_file, header); // Skip header line.
 
-	int conf_array[7];  // Create temporary array that stores parameters from configuration file (info.dat). TODO: change 7
+	int conf_array[10];  // Create temporary array that stores parameters from configuration file (info.dat).
 	int b;
 	int i = 0;
 
@@ -87,6 +78,8 @@ int main(int argc, char *argv[]) {
 	int n_local = conf_array[4];
 	int m_global = conf_array[5];
 	int n_global = conf_array[6];
+	int t_final = conf_array[7];
+	int dt_psec = conf_array[8];
 	int n_blocks = n_procs * n_blocks_per_rank;
 	int n_cols = n_local * n_global;  				// Number of columns of tissue blocks (j).
 	int n_rows = m_local * m_global;  				// Number of rows of tissue blocks (i).
@@ -336,7 +329,9 @@ int main(int argc, char *argv[]) {
 	// 4.1 Time step loop:
 	double time_tb, time_tree;
 
-	for (int i = 0; i <= tf; i++)
+	int num_of_output = t_final*dt_psec; // number of output files = final time x output timestep
+
+	for (int i = 0; i <= num_of_output; i++)
 	{
 		is_tissue.read((char *) &time_tb, sizeof(time_tb)); // Read time from both binary files (is not used for anything at the moment...)
 		is_flow.read((char *) &time_tree, sizeof(time_tree));

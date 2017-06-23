@@ -24,12 +24,12 @@ int main(int argc, char **argv)
     odews->ytol   = 1e-3; 			// relative error tolerance for Newton convergence 1e-3
     odews->nconv  = 5;    			// Newton iteration threshold for Jacobian reevaluation 5
     odews->maxits = 100;   			// Maximum number of Newton iterations 100
-    odews->dtwrite = DT_WRITE; 			// Time step for writing to file (and screen)
+    odews->dtwrite = 1/DT_PSEC; 			// Time step for writing to file (and screen)
 
     // If optional command line argument is passed change the default final time.
-    if (argc > 3)
+    if (argc > 2)
     {
-    	odews->tf = atoi(argv[3]);
+    	odews->tf = atoi(argv[2]);
     }
 
     // Initialise the solver with all the bits and pieces
