@@ -36,14 +36,25 @@ int main(int argc, char *argv[]) {
 	#define BLOCK_LENGTH 4e-4	// Length of one tissue block.
 	char Prefix[] = "";
 
-	if (argc != 2)
+//*****************************************************************************************
+// run with no arguments for debugging
+#if 0
+	char *dirName="np01_nlev03_sbtr01";
+	int tf = 10;
+#else
+	if (argc != 4)
 	{
 		printf("Uh oh, spaghettio. You have not entered the correct number of arguments.\n");
-		std::cerr << "Usage: " << argv[0] << " <Data directory>n";
+		std::cerr << "Usage: " << argv[0] << " <Data directory> <Final time> <Output per sec>\n";
 		exit(EXIT_FAILURE);
 	}
 
 	char *dirName=argv[1];       	// First argument: Folder name.
+	int tf = atoi(argv[2]); 		// Second argument: Final time (atoi: str -> int).
+	int dt_psec = atoi(argv[3]);	// Third argument: Output per second
+
+#endif
+//******************************************************************************************
 
 	// Read configuration file:
 	char iSuffix[] = "/info.dat";
@@ -61,7 +72,7 @@ int main(int argc, char *argv[]) {
 	std::string header;
 	std::getline(conf_file, header); // Skip header line.
 
-	int conf_array[10];  // Create temporary array that stores parameters from configuration file (info.dat).
+	int conf_array[8];  // Create temporary array that stores parameters from configuration file (info.dat).
 	int b;
 	int i = 0;
 
@@ -78,8 +89,7 @@ int main(int argc, char *argv[]) {
 	int n_local = conf_array[4];
 	int m_global = conf_array[5];
 	int n_global = conf_array[6];
-	int t_final = conf_array[7];
-	int dt_psec = conf_array[8];
+	int N_tree = conf_array[7];
 	int n_blocks = n_procs * n_blocks_per_rank;
 	int n_cols = n_local * n_global;  				// Number of columns of tissue blocks (j).
 	int n_rows = m_local * m_global;  				// Number of rows of tissue blocks (i).
@@ -325,13 +335,13 @@ int main(int argc, char *argv[]) {
 	char const *var_names[] = {"R","R_k","Na_k","K_k","HCO3_k","Cl_k","Na_s","K_s","HCO3_s","K_p","w_k","Ca_i","s_i","v_i","w_i","IP3_i","K_i","Ca_j","s_j","v_j","IP3_j","Mp","AMp","AM","NO_n","NO_k","NO_i","NO_j","cGMP","eNOS","nNOS","Ca_n","E_b","E_6c","Ca_k","s_k","h_k","IP3_k","eet_k","m_k","Ca_p","v_sa","v_d","K_sa","Na_sa","K_d","Na_d","K_e","Na_e","Buff_e","O2","CBV","DHG","m1","m2","m3","m4","m5","m6","m7","m8","h1","h2","h3","h4","h5","h6","D_CBF","BOLD"};
 
 	int n_output = n_state_vars + 2; // 2 extra output variables (BOLD,CBF), see below
+	int num_output_files = tf*dt_psec; // Number of files to output = final time * output per sec
 
 	// 4.1 Time step loop:
 	double time_tb, time_tree;
 
-	int num_of_output = t_final*dt_psec; // number of output files = final time x output timestep
 
-	for (int i = 0; i <= num_of_output; i++)
+	for (int i = 0; i <= num_output_files; i++)
 	{
 		is_tissue.read((char *) &time_tb, sizeof(time_tb)); // Read time from both binary files (is not used for anything at the moment...)
 		is_flow.read((char *) &time_tree, sizeof(time_tree));

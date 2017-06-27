@@ -19,17 +19,21 @@ int main(int argc, char **argv)
     // Problem parameters
     odews->dt  	  = 1e-5; 			// time step  1e-5
     odews->t0     = 0;   			// initial time 0
-    odews->tf     = T_FINAL;  			// final time  10
+    odews->tf     = T_FINAL;  		// final time  10
     odews->ftol   = 1e-3; 			// function evaluation tolerance for Newton convergence 1e-3
     odews->ytol   = 1e-3; 			// relative error tolerance for Newton convergence 1e-3
     odews->nconv  = 5;    			// Newton iteration threshold for Jacobian reevaluation 5
     odews->maxits = 100;   			// Maximum number of Newton iterations 100
-    odews->dtwrite = 1/DT_PSEC; 			// Time step for writing to file (and screen)
+    odews->dtwrite = (double) 1/DT_PSEC; 		// Time step for writing to file (and screen)
 
-    // If optional command line argument is passed change the default final time.
-    if (argc > 2)
+    // If optional command line arguments are passed change the default final time and output timestep.
+    if (argc > 3)
     {
-    	odews->tf = atoi(argv[2]);
+    	odews->tf = atoi(argv[3]);
+    }
+    if (argc > 4)
+    {
+    	odews->dtwrite = (double) 1/atoi(argv[4]);
     }
 
     // Initialise the solver with all the bits and pieces

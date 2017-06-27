@@ -1,19 +1,16 @@
 #ifndef SRC_CONSTANTS_H_
 #define SRC_CONSTANTS_H_
 
-// Optional command line argument for parBrainSim: N (tree size). If none specified then the following are used.
-
-// TODO: type of spatial input (centre vs corner etc)
-
+// Optional command line arguments for parBrainSim: N, NSUB, T_FINAL, DT_WRITE (in that order). If none specified then the following are used.
 
 /*** Run parameters ***/
     static const double T_FINAL        	= 2;        // Final run time
 	static const double T_STIM_0       	= 20;        // Start time for stimulation
 	static const double T_STIM_END     	= 36;        // End time for stimulation
-    static const int    DT_PSEC       	= 10;       // Number of steps taken per second for writing to file (and screen)
-    static const int 	NTREE          	= 7;         // Number of levels in the H-tree (where the tissue slice has 2^(N-1) tissue blocks)
+    static const int    DT_PSEC       	= 10;       // Time step for writing to file (and screen)
+    static const int 	NTREE          	= 3;         // Number of levels in the H-tree (where the tissue slice has 2^(N-1) tissue blocks)
     static const int 	NSUB           	= 1;         // Subtree size (easiest to just keep as 1)
-	static const double P_TOP			= 4160;	     // Pressure at the top of the tree, chosen so that the drop over the terminating arterioles is around 18.2 Pa to match with the single NVU model.
+	static const double P_TOP			= 4100;	     // Pressure at the top of the tree, chosen so that the drop over the terminating arterioles is around 18.2 Pa to match with the single NVU model.
 									  	  	  	  	 // For NTREE=3, P_TOP=4100 Pa. For NTREE=7, P_TOP=4160 Pa. For NTREE=13, P_TOP=?
 	static const int 	SPATIAL_CHOICE	= 0;	     // 1: current input is a Gaussian plateau into the centre (fixed size), 0: current input into lower left corner
 
