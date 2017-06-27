@@ -36,6 +36,8 @@ int main(int argc, char *argv[]) {
 	#define BLOCK_LENGTH 4e-4	// Length of one tissue block.
 	char Prefix[] = "";
 
+	std::cerr << "Reminder that usage: " << argv[0] << " <Data directory> <Final time> <Output per sec>\n";
+
 //*****************************************************************************************
 // run with no arguments for debugging
 #if 0

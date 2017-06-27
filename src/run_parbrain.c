@@ -26,6 +26,12 @@ int main(int argc, char **argv)
     odews->maxits = 100;   			// Maximum number of Newton iterations 100
     odews->dtwrite = (double) 1/DT_PSEC; 		// Time step for writing to file (and screen)
 
+    if (argc != 1)
+    {
+    	printf("Reminder that usage: mpirun -np <number of cores> %s <Number of levels in tree> <Final time> <Number of outputs per second>\n", argv[0]);
+    }
+
+
     // If optional command line arguments are passed change the default final time and output timestep.
     if (argc > 2)
     {
