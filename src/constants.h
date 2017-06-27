@@ -1,7 +1,7 @@
 #ifndef SRC_CONSTANTS_H_
 #define SRC_CONSTANTS_H_
 
-// Optional command line arguments for parBrainSim: N, NSUB, T_FINAL, DT_WRITE (in that order). If none specified then the following are used.
+// Optional command line arguments for parBrainSim: N, T_FINAL, DT_WRITE (in that order). If none specified then the following are used.
 
 /*** Run parameters ***/
     static const double T_FINAL        	= 2;        // Final run time

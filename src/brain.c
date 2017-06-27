@@ -148,10 +148,6 @@ void init_parallel(workspace *W, int argc, char **argv)
     {
         W->N = atoi(argv[1]); // N has been specified at command line
     }
-    if (argc > 2)
-    {
-    	W->Nsub = atoi(argv[2]); // Nsub has been specified at command line
-    }
 
     W->N0 = (int) round(log2((double) W->n_procs));
     W->Np = W->N - W->N0; 		// Dependent on number of levels and number of cores running
