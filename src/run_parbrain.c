@@ -40,7 +40,7 @@ int main(int argc, char **argv)
     // Initialise the solver with all the bits and pieces
     solver_init(odews, argc, argv);
 
-    if (argc != 1 && odews->W->rank == 0)
+    if (odews->W->rank == 0)
     {
     	printf("Reminder that usage: mpirun -np <number of cores> %s <Number of levels in tree> <Final time> <Number of outputs per second>\n", argv[0]);
     }

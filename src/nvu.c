@@ -451,7 +451,10 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 
 	// Not actually used here - used in bin_to_vtu
 	//BOLD 			= 100 * V_0 * ( a_1 * (1 - state_DHG/DHG_0) - a_2 * (1 - state_CBV/CBV_0) ); // divides DHG, CBV and CBF by initial values, will depend on J_PLC
-	//CBF_change		= (CBF - CBF_0)/CBF_0;
+	//CBF_change	= (CBF - CBF_0)/CBF_0;
+	//CBF_N			= CBF/CBF_0;
+	//HBT_N			= CBF_N * DHG_N / CMRO2_N;
+	//HBO_N			= (HBT_N - 1) - (DHG/DHG_0 - 1) + 1;
 
 
 // Differential Equations:
@@ -762,8 +765,8 @@ void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w)
 		// Neuron - other
 		u0[Buff_e]   = 165.9812;
 		u0[O2]       = 0.0281;
-		u0[CBV]      = 1.3167;
-		u0[DHG]      = 0.6665;
+		u0[CBV]      = 1.31557;
+		u0[DHG]      = 0.667547;
 
 		// Neuron - gating variables
 		u0[m1]     	= 0.01281;

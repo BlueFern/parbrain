@@ -15,10 +15,11 @@
 	static const int 	SPATIAL_CHOICE	= 0;	     // 1: current input is a Gaussian plateau into the centre (fixed size), 0: current input into lower left corner
 
 /*** Switches for various pathways (default 1) ***/
-	static const double GluSwitch		= 1;		// 1: glutamate is released with current stimulation, 0: no glutamate
-	static const double NOswitch		= 1;		// 1: NO is produced in the NVU, 0: no NO production at all
-    static const double trpv_switch	    = 1;		// 1: TRPV4 channel is active, 0: completely closed (no flux)
-    static const double O2switch		= 1;		// 1: Oxygen is limited, 0: oxygen is plentiful
+	static const double DIFFUSION_SWITCH 	= 0;		// 1: extracellular diffusion between blocks, 0: none
+	static const double GluSwitch			= 1;		// 1: glutamate is released with current stimulation, 0: no glutamate
+	static const double NOswitch			= 1;		// 1: NO is produced in the NVU, 0: no NO production at all
+    static const double trpv_switch	    	= 1;		// 1: TRPV4 channel is active, 0: completely closed (no flux)
+    static const double O2switch			= 1;		// 1: Oxygen is limited, 0: oxygen is plentiful
 
 /*** Commonly changed model parameters ***/
 

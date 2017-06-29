@@ -38,12 +38,15 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
     	double flu_diff_Na = (neighbour_Na_e - state_Na_e) / tau_Nae;
 
     	// Update the derivatives.
-    	du[K_e] += flu_diff_K;
-    	du[Na_e] += flu_diff_Na;
-//    	// As these two variables contain the term "SC_coup * du[K_e] * 1000 * R_s", they must also be updated!
-    	double R_s = 8.79e-8 - u[R_k];
-    	du[N_K_s] += SC_coup * flu_diff_K * 1000 * R_s;
-    	du[N_Na_s] += -SC_coup * flu_diff_K * 1000 * R_s;
+    	if (DIFFUSION_SWITCH > 0)
+		{
+			du[K_e] += flu_diff_K;
+			du[Na_e] += flu_diff_Na;
+	//    	// As these two variables contain the term "SC_coup * du[K_e] * 1000 * R_s", they must also be updated!
+			double R_s = 8.79e-8 - u[R_k];
+			du[N_K_s] += SC_coup * flu_diff_K * 1000 * R_s;
+			du[N_Na_s] += -SC_coup * flu_diff_K * 1000 * R_s;
+		}
     }
 }
 
