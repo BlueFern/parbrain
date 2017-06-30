@@ -31,7 +31,7 @@ Converts the data from the simulate script into vtu files for Paraview
 int main(int argc, char *argv[]) {
 
 	// General parameters:
-	#define BLOCK_LENGTH 1.24e-4	// Length of one tissue block.
+	#define BLOCK_LENGTH 4e-4	// Length of one tissue block so it matches with output size of tree (don't change).
 	char Prefix[] = "";
 
 	std::cerr << "Reminder that usage: " << argv[0] << " <Data directory> <Final time> <Output per sec>\n";

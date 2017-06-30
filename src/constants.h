@@ -11,7 +11,7 @@
     static const int 	NTREE          	= 3;         // Number of levels in the H-tree (where the tissue slice has 2^(N-1) tissue blocks)
     static const int 	NSUB           	= 1;         // Subtree size (easiest to just keep as 1)
 	static const double P_TOP			= 4100;	     // Pressure at the top of the tree, chosen so that the drop over the terminating arterioles is around 18.2 Pa to match with the single NVU model.
-									  	  	  	  	 // For NTREE=3, P_TOP=4100 Pa. For NTREE=7, P_TOP=4160 Pa. For NTREE=13, P_TOP=?
+									  	  	  	  	 // For NTREE=3, P_TOP=4100 Pa. For NTREE=7, P_TOP=4160 Pa. For NTREE=13, P_TOP=4175
 	static const int 	SPATIAL_CHOICE	= 0;	     // 1: current input is a Gaussian plateau into the centre (fixed size), 0: current input into lower left corner
 
 /*** Switches for various pathways (default 1) ***/
