@@ -42,7 +42,7 @@ Requirements:
 
 How to Run
 ==========
-`mpirun -np <number_of_processors> <directory>/parBrainSim <number_of_levels> <subtree_size> <final_time> <output per second>`
+`mpirun -np <number_of_processors> <directory>/parBrainSim <number_of_levels> <final_time> <output per second>`
 
 Where the program "parBrainSim" is located in the build directory. `<number_of_levels>` is the vascular tree size ,`<final_time>` is the final output time, and `<output per second>` is the number of times per second the data is saved. These are optional arguments. By default these are set in the constants.h file. 
 
