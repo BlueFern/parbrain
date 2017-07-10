@@ -9,7 +9,7 @@ MYLDFLAGS = -L$(SUITESPARSE)/lib -lcxsparse -lm
 
 # If LIBRARY_PATH is set, use it to overwrite RPATH and ignore MYCPPFLAGS and MYLDFLAGS
 ifneq ($(LIBRARY_PATH),)
-	RPATH ?= -Wl,-rpath=$(LIBRARY_PATH)
+	RPATH = -Wl,-rpath=$(LIBRARY_PATH)
 	MYCPPFLAGS =
 	MYLDFLAGS =
 endif
