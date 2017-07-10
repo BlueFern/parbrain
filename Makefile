@@ -4,8 +4,9 @@ MPICC ?= mpicc
 CFLAGS ?= -O2
 RPATH ?= -Wl,-rpath=$(SUITESPARSE)/lib
 
+LIB = -lcxsparse -lm
 MYCPPFLAGS = -I$(SUITESPARSE)/include
-MYLDFLAGS = -L$(SUITESPARSE)/lib -lcxsparse -lm
+MYLDFLAGS = -L$(SUITESPARSE)/lib
 
 # If LIBRARY_PATH is set, use it to overwrite RPATH and ignore MYCPPFLAGS and MYLDFLAGS
 ifneq ($(LIBRARY_PATH),)
@@ -15,7 +16,7 @@ ifneq ($(LIBRARY_PATH),)
 endif
 
 CPPFLAGS += $(MYCPPFLAGS)
-LDFLAGS += $(MYLDFLAGS)
+LDFLAGS += $(MYLDFLAGS) $(LIB)
 
 OBJ = run_parbrain.o matops.o brain.o nvu.o adjacency.o solver.o diffusion.o
 EXE = parBrainSim
