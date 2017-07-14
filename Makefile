@@ -1,30 +1,33 @@
-UNAME_M = $(shell uname -m)
-UNAME_S = $(shell uname -s)
+# Optimised for use on brats01 machine
 
-CFALL = $(CFLAGS) $(TARGET_ARCH)  
-# by default leave those empty. We don't need an entry on power7
-# on mac /usr/local is in the standard path by default
-INC=
-LIB=
-RPATH=
-ifeq ($(UNAME_M), ppc64)
-	CFARCHDEP = -m64 -mtune=power7 -mcpu=power7 -pthread -std=c99 -O2
-	# using poe on ppc64
-	MPCC = mpcc -compiler gcc 
-        RPATH = -Wl,-rpath=$(LD_RUN_PATH)
-else
-	CFARCHDEP = -Wall -std=c99 -g  
-	# regular wrapper everywhere else
-	MPCC = mpicc
-	# Need to adjust INC on ubuntu
-	ifeq ($(UNAME_S), Linux)
-		INC= -I/usr/include/suitesparse
-	endif
+## Do this in terminal if it can't find libcxsparse
+## LD_LIBRARY_PATH=/opt/pgi/linux86-64/2017/SuiteSparse/4.5.5
+## export LD_LIBRARY_PATH
+
+## Do this every log in
+# module load pgi-openmpi and suitesparse
+
+# Default values if they are not set, optimised for use on brats01 (change for local computer)
+SUITESPARSE ?= /opt/pgi/linux86-64/2017/SuiteSparse/4.5.5
+MPICC ?= mpicc
+CFLAGS ?= -O2
+RPATH ?= -Wl,-rpath=$(SUITESPARSE)/lib
+
+LIB = -lcxsparse -lm
+MYCPPFLAGS = -I$(SUITESPARSE)/include
+MYLDFLAGS = -L$(SUITESPARSE)/lib
+
+# If LIBRARY_PATH is set, use it to overwrite RPATH and ignore MYCPPFLAGS and MYLDFLAGS
+ifneq ($(LIBRARY_PATH),)
+	RPATH = -Wl,-rpath=$(LIBRARY_PATH)
+	MYCPPFLAGS =
+	MYLDFLAGS =
 endif
 
-CF = $(CFALL) $(CFARCHDEP)
-CS = -lcxsparse
-OBJ = matops.o brain.o nvu.o adjacency.o solver.o diffusion.o
+CPPFLAGS += $(MYCPPFLAGS)
+LDFLAGS += $(MYLDFLAGS) $(LIB)
+
+OBJ = run_parbrain.o matops.o brain.o nvu.o adjacency.o solver.o diffusion.o
 EXE = parBrainSim
 SRC = src
 
@@ -33,35 +36,29 @@ all: tags $(OBJ) $(EXE)
 tags: $(SRC)/*.h $(SRC)/*.c
 	ctags $(SRC)/*.h $(SRC)/*.c
 
-brain.o: $(SRC)/brain.c $(SRC)/brain.h $(SRC)/diffusion.h Makefile
-	$(MPCC) $(CF) $(INC) $(LIB) -c $(SRC)/brain.c 
+brain.o: $(SRC)/brain.c $(SRC)/brain.h $(SRC)/diffusion.h
+	$(MPICC) $(CFLAGS) $(CPPFLAGS) -c $(SRC)/brain.c 
 
-adjacency.o: $(SRC)/adjacency.c $(SRC)/brain.h Makefile
-	$(MPCC) $(CF) $(INC) $(LIB) -c $(SRC)/adjacency.c 
+adjacency.o: $(SRC)/adjacency.c $(SRC)/brain.h
+	$(MPICC) $(CFLAGS) $(CPPFLAGS) -c $(SRC)/adjacency.c 
 
-nvu.o: $(SRC)/nvu.h $(SRC)/nvu.c Makefile
-	$(MPCC) $(CF) $(INC) $(LIB) -c $(SRC)/nvu.c
+nvu.o: $(SRC)/nvu.h $(SRC)/nvu.c
+	$(MPICC) $(CFLAGS) $(CPPFLAGS) -c $(SRC)/nvu.c
 
-matops.o: $(SRC)/matops.c $(SRC)/matops.h Makefile
-	$(MPCC) $(CF) $(INC) $(LIB) -c $(SRC)/matops.c
+matops.o: $(SRC)/matops.c $(SRC)/matops.h
+	$(MPICC) $(CFLAGS) $(CPPFLAGS) -c $(SRC)/matops.c
 	
-solver.o: $(SRC)/solver.c $(SRC)/solver.h Makefile
-	$(MPCC) $(CF) $(INC) $(LIB) -c $(SRC)/solver.c	
+solver.o: $(SRC)/solver.c $(SRC)/solver.h
+	$(MPICC) $(CFLAGS) $(CPPFLAGS) -c $(SRC)/solver.c	
 	
-diffusion.o: $(SRC)/diffusion.c $(SRC)/diffusion.h Makefile
-	$(MPCC) $(CF) $(INC) $(LIB) -c $(SRC)/diffusion.c		
+diffusion.o: $(SRC)/diffusion.c $(SRC)/diffusion.h
+	$(MPICC) $(CFLAGS) $(CPPFLAGS) -c $(SRC)/diffusion.c
 
-#testmatops: testmatops.c matops.o Makefile
-#	$(MPCC) $(CF) $(INC) $(LIB) -o testmatops testmatops.c matops.o $(CS) -lm 
+run_parbrain.o: $(SRC)/run_parbrain.c $(SRC)/solver.h
+	$(MPICC) $(CFLAGS) $(CPPFLAGS) -c $(SRC)/run_parbrain.c	
 
-#testmat2: testmat2.c matops.o Makefile
-#	$(MPCC) $(CF) $(INC) $(LIB) -o testmat2 testmat2.c matops.o $(CS) -lm
-
-#testbrain: testbrain.c matops.o brain.o adjacency.o nvu.o Makefile
-#	$(MPCC) $(CF) $(INC) $(LIB) -o testbrain testbrain.c $(OBJ) $(CS) -lm
-
-parBrainSim: $(SRC)/run_parbrain.c matops.o brain.o nvu.o adjacency.o solver.o diffusion.o Makefile
-	$(MPCC) $(CF) $(INC) $(LIB) -o parBrainSim $(SRC)/run_parbrain.c $(OBJ) $(RPATH) $(CS) -lm
+parBrainSim: run_parbrain.o matops.o brain.o nvu.o adjacency.o solver.o diffusion.o
+	$(MPICC) $(CFLAGS) $(CPPFLAGS) $(RPATH) -o parBrainSim $(OBJ) $(LDFLAGS) 
 
 clean:
-	rm -r tags $(OBJ) $(EXE)
+	rm -rf tags $(OBJ) $(EXE)

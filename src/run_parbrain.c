@@ -26,7 +26,6 @@ int main(int argc, char **argv)
     odews->maxits = 100;   			// Maximum number of Newton iterations 100
     odews->dtwrite = (double) 1/DT_PSEC; 		// Time step for writing to file (and screen)
 
-
     // If optional command line arguments are passed change the default final time and output timestep.
     if (argc > 2)
     {

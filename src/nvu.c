@@ -599,8 +599,8 @@ double current_input(double t, double x, double y)
     double t_up   		= T_STIM_0;
     double t_down 		= T_STIM_END;
 
-    double ampl = 3;
-    double ramp = 0.003;
+    double ampl = 2;
+    double ramp = 0.0035;
     double x_centre = 0;
     double y_centre = 0;
     double current_space;
