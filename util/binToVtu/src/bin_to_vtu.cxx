@@ -26,13 +26,18 @@ Converts the data from the simulate script into vtu files for Paraview
 #include <vtkAppendPolyData.h>
 #include <vtkLineSource.h>
 
+#include "omp.h"
+#include "timer.h"
+
 #define POW_OF_2(x) (1 << (x)) // macro for 2^x using bitwise shift
 
 int main(int argc, char *argv[]) {
 
 	// General parameters:
-	#define BLOCK_LENGTH 4e-4	// Length of one tissue block [m].
+	#define BLOCK_LENGTH 4e-4	// Length of one tissue block so it matches with output size of tree (don't change).
 	char Prefix[] = "";
+
+	std::cerr << "Reminder that usage: " << argv[0] << " <Data directory> <Final time> <Output per sec>\n";
 
 //*****************************************************************************************
 // run with no arguments for debugging
@@ -40,15 +45,17 @@ int main(int argc, char *argv[]) {
 	char *dirName="np01_nlev03_sbtr01";
 	int tf = 10;
 #else
-	if (argc != 3)
+	if (argc != 4)
 	{
 		printf("Uh oh, spaghettio. You have not entered the correct number of arguments.\n");
-		std::cerr << "Usage: " << argv[0] << " <Data directory> <Final time>\n";
+		std::cerr << "Usage: " << argv[0] << " <Data directory> <Final time> <Output per sec>\n";
 		exit(EXIT_FAILURE);
 	}
 
 	char *dirName=argv[1];       	// First argument: Folder name.
 	int tf = atoi(argv[2]); 		// Second argument: Final time (atoi: str -> int).
+	int dt_psec = atoi(argv[3]);	// Third argument: Output per second
+
 #endif
 //******************************************************************************************
 
@@ -65,10 +72,12 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 
+	StartTimer();
+
 	std::string header;
 	std::getline(conf_file, header); // Skip header line.
 
-	int conf_array[7];  // Create temporary array that stores parameters from configuration file (info.dat).
+	int conf_array[8];  // Create temporary array that stores parameters from configuration file (info.dat).
 	int b;
 	int i = 0;
 
@@ -85,6 +94,7 @@ int main(int argc, char *argv[]) {
 	int n_local = conf_array[4];
 	int m_global = conf_array[5];
 	int n_global = conf_array[6];
+	int N_tree = conf_array[7];
 	int n_blocks = n_procs * n_blocks_per_rank;
 	int n_cols = n_local * n_global;  				// Number of columns of tissue blocks (j).
 	int n_rows = m_local * m_global;  				// Number of rows of tissue blocks (i).
@@ -177,7 +187,7 @@ int main(int argc, char *argv[]) {
     int n_rows_h = n_rows;                 		// Row variable - gets updated.
     int n_cols_h = n_cols;                 		// Column variable - gets updated.
 	int n_levels = log2(n_blocks) + 1;       	// Number of bifurcations.
-	int n_branches = POW_OF_2(n_levels) - 1;    	// Number of branches. 							*** 1 << n_bifr = 2^n_bifr ***
+	int n_branches = POW_OF_2(n_levels) - 1;    	// Number of branches.
 	int n_nodes = POW_OF_2(n_levels - 1) - 1; 	// Number of nodes. (?) - Leaf nodes excluded!
 
     double xpoints_tree[n_branches];    // x coordinates for points for tree - branches & pressure.
@@ -192,6 +202,7 @@ int main(int argc, char *argv[]) {
 
 	int nx[n_branches], ny[n_branches], nz1[n_nodes], nz2[n_nodes], h1[n_nodes], h2[n_nodes];
 
+#pragma omp parallel for
 	for (int i = 0; i < col; i++)
 	{
 		ny[i] = i;
@@ -204,6 +215,7 @@ int main(int argc, char *argv[]) {
 
 		if (xbranch)
 		{
+
 			for (int j = 0; j < n_cols_h; j+=2)
 			{
 				for (int i = 0; i < n_rows_h; i++)
@@ -254,6 +266,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Insert points for all other nodes (not leaf nodes):
+#pragma omp parallel for
 	for (int i = 0; i < n_nodes; i++)
 	{
 		nz1[i] = ny[h1[i]];
@@ -271,48 +284,54 @@ int main(int argc, char *argv[]) {
 	points_tree->InsertNextPoint(0, 0, n_cols*BLOCK_LENGTH);
 
 // 2. Create cell array:
-
-    // 2.1 Tissue blocks:
 	vtkSmartPointer<vtkCellArray> cellArray_tb = vtkSmartPointer<vtkCellArray>::New();  // Create a cell array to store hexahedrons in.
-	vtkSmartPointer<vtkHexahedron> hexahedron = vtkSmartPointer<vtkHexahedron>::New(); 	// Create hexahedrons (3D blocks).
-
-	double npoints_offset = (n_rows + 1) * (n_cols + 1); // number of points - offset for 2nd "layer"
-
-	for (int block_id = 0; block_id < n_blocks; block_id++)
-	{
-		int col = block_id / n_rows;     						// which column are we in?
-		int i = block_id + col;
-		int j = i + n_rows + 1;
-		int k = j + 1;
-		int l = k - (n_rows + 1);
-
-		hexahedron->GetPointIds()->SetId(0, i);					// lower SW corner of hexahedron
-		hexahedron->GetPointIds()->SetId(1, j); 				// lower SE corner of hexahedron
-		hexahedron->GetPointIds()->SetId(2, k);					// lower NE corner of hexahedron
-		hexahedron->GetPointIds()->SetId(3, l); 				// lower NW corner of hexahedron
-		hexahedron->GetPointIds()->SetId(4, i+npoints_offset); 	// upper SW corner of hexahedron
-		hexahedron->GetPointIds()->SetId(5, j+npoints_offset); 	// upper SE corner of hexahedron
-		hexahedron->GetPointIds()->SetId(6, k+npoints_offset);  // upper NE corner of hexahedron
-		hexahedron->GetPointIds()->SetId(7, l+npoints_offset); 	// upper NW corner of hexahedron
-
-		cellArray_tb->InsertNextCell(hexahedron); // Add hexahedrons to cellArray
-	}
-
-    // 2.2 H-Tree:
+	vtkSmartPointer<vtkHexahedron> hexahedron = vtkSmartPointer<vtkHexahedron>::New(); 	// Create hexahedrons (3D blocks)
 	vtkSmartPointer<vtkLine> lines = vtkSmartPointer<vtkLine>::New();
 	vtkSmartPointer<vtkCellArray> cellArray_tree = vtkSmartPointer<vtkCellArray>::New();
-
-	for (int line_id = 0; line_id < n_branches-1; line_id++)  // -1, because of root branch
+// 2.1 and 2.1 are completely independent. Process them using multiple threads
+#pragma omp parallel
+#pragma omp sections
 	{
-		lines->GetPointIds()->SetId(0, nx[line_id]); \
-		lines->GetPointIds()->SetId(1, ny[line_id]);
-		cellArray_tree->InsertNextCell(lines);
+#pragma omp section
+		{
+			// 2.1 Tissue blocks:
+			double npoints_offset = (n_rows + 1) * (n_cols + 1); // number of points - offset for 2nd "layer"
+
+			for (int block_id = 0; block_id < n_blocks; block_id++)
+			{
+				int col = block_id / n_rows;     						// which column are we in?
+				int i = block_id + col;
+				int j = i + n_rows + 1;
+				int k = j + 1;
+				int l = k - (n_rows + 1);
+
+				hexahedron->GetPointIds()->SetId(0, i);					// lower SW corner of hexahedron
+				hexahedron->GetPointIds()->SetId(1, j); 				// lower SE corner of hexahedron
+				hexahedron->GetPointIds()->SetId(2, k);					// lower NE corner of hexahedron
+				hexahedron->GetPointIds()->SetId(3, l); 				// lower NW corner of hexahedron
+				hexahedron->GetPointIds()->SetId(4, i+npoints_offset); 	// upper SW corner of hexahedron
+				hexahedron->GetPointIds()->SetId(5, j+npoints_offset); 	// upper SE corner of hexahedron
+				hexahedron->GetPointIds()->SetId(6, k+npoints_offset);  // upper NE corner of hexahedron
+				hexahedron->GetPointIds()->SetId(7, l+npoints_offset); 	// upper NW corner of hexahedron
+
+				cellArray_tb->InsertNextCell(hexahedron); // Add hexahedrons to cellArray
+			}
+		}
+#pragma omp section
+		{
+			// 2.2 H-Tree:
+			for (int line_id = 0; line_id < n_branches-1; line_id++)  // -1, because of root branch
+			{
+				lines->GetPointIds()->SetId(0, nx[line_id]); \
+				lines->GetPointIds()->SetId(1, ny[line_id]);
+				cellArray_tree->InsertNextCell(lines);
+			}
+
+			lines->GetPointIds()->SetId(0, ny[n_branches-1]); // root branch
+			lines->GetPointIds()->SetId(1, ny[n_branches-1]+1);
+			cellArray_tree->InsertNextCell(lines); // Create a cell array to store hexahedrons in and add them to it
+		}
 	}
-
-	lines->GetPointIds()->SetId(0, ny[n_branches-1]); // root branch
-	lines->GetPointIds()->SetId(1, ny[n_branches-1]+1);
-	cellArray_tree->InsertNextCell(lines); // Create a cell array to store hexahedrons in and add them to it
-
 // 3. Create unstructured grid
 
 	// 3.1 Tissue blocks:
@@ -327,12 +346,17 @@ int main(int argc, char *argv[]) {
 
 // 4. Add binary data as attributes to cells:
 
-	char const *var_names[] = {"R","R_k","Na_k","K_k","HCO3_k","Cl_k","Na_s","K_s","HCO3_s","K_p","w_k","Ca_i","s_i","v_i","w_i","IP3_i","K_i","Ca_j","s_j","v_j","IP3_j","Mp","AMp","AM","K_e","PLC_input","K_input","flux_ft","NO_n","NO_k","NO_i","NO_j","cGMP","eNOS","nNOS","Ca_n","E_b","E_6c","Ca_k","s_k","h_k","IP3_k","eet_k","m_k","Ca_p"};
+	char const *var_names[] = {"R","R_k","Na_k","K_k","HCO3_k","Cl_k","Na_s","K_s","HCO3_s","K_p","w_k","Ca_i","s_i","v_i","w_i","IP3_i","K_i","Ca_j","s_j","v_j","IP3_j","Mp","AMp","AM","NO_n","NO_k","NO_i","NO_j","cGMP","eNOS","nNOS","Ca_n","E_b","E_6c","Ca_k","s_k","h_k","IP3_k","eet_k","m_k","Ca_p","v_sa","v_d","K_sa","Na_sa","K_d","Na_d","K_e","Na_e","Buff_e","O2","CBV","DHG","m1","m2","m3","m4","m5","m6","m7","m8","h1","h2","h3","h4","h5","h6","D_CBF","BOLD","HBT","HBO","CRMO2"};
+
+	int extra_output = 5; // numbee of extra output variables (BOLD,CBF,HBT,HBO), see below
+	int n_output = n_state_vars + extra_output;
+	int num_output_files = tf*dt_psec; // Number of files to output = final time * output per sec
 
 	// 4.1 Time step loop:
 	double time_tb, time_tree;
 
-	for (int i = 0; i <= tf; i++)
+
+	for (int i = 0; i <= num_output_files; i++)
 	{
 		is_tissue.read((char *) &time_tb, sizeof(time_tb)); // Read time from both binary files (is not used for anything at the moment...)
 		is_flow.read((char *) &time_tree, sizeof(time_tree));
@@ -343,7 +367,7 @@ int main(int argc, char *argv[]) {
 		std::vector<vtkSmartPointer<vtkDoubleArray> > stateVars; //Create vector of arrays for each state variable.
 
 		// Set state variable names.
-		for (int v = 0; v < n_state_vars; v++)
+		for (int v = 0; v < n_output; v++)
 		{
 			vtkSmartPointer<vtkDoubleArray> array_tb = vtkSmartPointer<vtkDoubleArray>::New(); 	// Create array.
 			array_tb->SetName(var_names[v]);
@@ -351,73 +375,116 @@ int main(int argc, char *argv[]) {
 		}
 
 		// 4.1.2 H-Tree:
-		std::vector<vtkSmartPointer<vtkDoubleArray> > flowVar; 
+		std::vector<vtkSmartPointer<vtkDoubleArray> > flowVar;
 		vtkSmartPointer<vtkDoubleArray> array_tree = vtkSmartPointer<vtkDoubleArray>::New(); // Create array.
 		array_tree->SetName("blood_flow"); // Only one array for flow variables.
 		flowVar.push_back(array_tree);
 
 		// 4.1.3 H-Tree - unscaled
-		std::vector<vtkSmartPointer<vtkDoubleArray> > flowVar_unscaled; 	
+		std::vector<vtkSmartPointer<vtkDoubleArray> > flowVar_unscaled;
 		vtkSmartPointer<vtkDoubleArray> array_tree_unscaled = vtkSmartPointer<vtkDoubleArray>::New(); // Create array.
 		array_tree_unscaled->SetName("blood_flow_unscaled"); // Only one array for flow variables.
 		flowVar_unscaled.push_back(array_tree_unscaled);
 
 
 	// 4.2 Read state variables and add as attributes to uGrid.
-
-		// 4.2.1 Tissue blocks:
-		for (int k = 0; k < n_blocks; k++)
+	// 4.2.1 and 4.2.2 are completely independent. Use multiple threads to process them.
+#pragma omp parallel
+#pragma omp sections
 		{
-			double temp_array_tb[n_state_vars];
-			is_tissue.read((char *) temp_array_tb, sizeof(temp_array_tb));  // Read state variables from binary file.
-
-			// Convert variables into a nicer form!
-
-			temp_array_tb[0] = 20 * temp_array_tb[0]; // Convert radius to um
-			temp_array_tb[9] = 0.001 * temp_array_tb[9]; // Convert Kp to mM
-			temp_array_tb[24] = 0.001 * temp_array_tb[24]; // Convert Ke to mM
-
-			temp_array_tb[2] = temp_array_tb[2] / temp_array_tb[1]; // Convert N_Na_k to Na_k;
-			temp_array_tb[3] = temp_array_tb[3] / temp_array_tb[1]; // Convert N_k_k to K_k;
-			temp_array_tb[4] = temp_array_tb[4] / temp_array_tb[1]; // Convert N_HCO3_k to HCO3_k;
-			temp_array_tb[5] = temp_array_tb[5] / temp_array_tb[1]; // Convert N_Cl_k to Cl_k;
-
-			temp_array_tb[6] = temp_array_tb[6] / (8.79e-8 - temp_array_tb[1]); // Convert N_Na_s to Na_s;
-			temp_array_tb[7] = 0.001 * temp_array_tb[7] / (8.79e-8 - temp_array_tb[1]); // Convert N_K_s to K_s in mM;
-			temp_array_tb[8] = temp_array_tb[8] / (8.79e-8 - temp_array_tb[1]); // Convert N_HCO3_s to HCO3_s;
-
-
-
-			for (int v = 0; v < n_state_vars; v++)
+#pragma omp section
 			{
-				stateVars[v]->InsertNextValue(temp_array_tb[v]);
-			}
-		}
+				// 4.2.1 Tissue blocks:
+				for (int k = 0; k < n_blocks; k++)
+				{
+					double temp_array_tb[n_state_vars];
 
-		for (int v = 0; v < n_state_vars; v++)
-		{
-			uGrid->GetCellData()->AddArray(stateVars[v]);
-		}
+					is_tissue.read((char *) temp_array_tb, sizeof(temp_array_tb));  // Read state variables from binary file.
 
-		// 4.2.2 H-Tree:
-		for (int level = 0; level < n_levels; level++)
-		{
-			// Scale flow variables: Each level times by 2^(nlevels-level-1)
-			double n_lines = pow(2,(n_levels-level-1));
-			for(int i = 0; i < n_lines; i++)
+						// Initial values for normalisation (will change if e.g. JPLC changes)
+					double CBV_0 = 1.31557;
+					double DHG_0 = 0.667547;
+					double CMRO2_0 = 0.0379408;
+					double CBF_0 = 0.063508;
+
+					temp_array_tb[51] = temp_array_tb[51]/CBV_0;	// Convert CBV to normalised
+					temp_array_tb[52] = temp_array_tb[52]/DHG_0;	// Convert DHG to normalised
+					double CBV_N = temp_array_tb[51];
+					double DHG_N = temp_array_tb[52];
+
+					// Make extra things for output - BOLD, CBF_change, HBT, HBO, CRMO2. Many things hardcoded in, see nvu.c for formulas ***************************
+					double J_pump2 			= 2 * pow((1 + 0.02 / (((1 - 0.05) * temp_array_tb[50]) + 0.05 * 0.02)),-1);
+					double P_02				= (J_pump2 - 0.0952 ) / ( 1 - 0.0952);
+					double J_pump1_sa 		= pow((1 + (2.9 / temp_array_tb[47])),-2) * pow((1 + (10 / temp_array_tb[44])),-3);
+					double J_pump1_d 		= pow((1 + (2.9 / temp_array_tb[47])),-2) * pow((1 + (10 / temp_array_tb[46])),-3);
+					double J_O2_background 	= 0.032 * P_02 * (1 - 0.1);
+					double J_O2_pump		= 0.032 * P_02 * 0.1 * ((J_pump1_sa + J_pump1_d) / (0.0312 + 0.0312));
+
+					double	CMRO2_N			= (J_O2_background + J_O2_pump)/CMRO2_0;
+
+					double	CBF_N 		= (0.032 * (pow((temp_array_tb[0]*20e-6),4) / pow(1.9341e-5,4)))/CBF_0;
+					double 	CBF_change 	= CBF_N - 1;
+					double	BOLD 		= 100 * 0.03 * ( 3.4 * (1 - DHG_N) - 1 * (1 - CBV_N) );
+					double	HBT_N		= CBF_N * DHG_N / CMRO2_N;
+					double	HBO_N		= (HBT_N - 1) - (DHG_N - 1) + 1;
+
+					// Convert other variables into a nicer form! **************************************************************************************************
+
+					temp_array_tb[0] = 20 * temp_array_tb[0]; // Convert radius to um from nondimensional
+					temp_array_tb[9] = 0.001 * temp_array_tb[9]; // Convert Kp to mM
+
+					temp_array_tb[2] = temp_array_tb[2] / temp_array_tb[1]; // Convert N_Na_k to Na_k;
+					temp_array_tb[3] = temp_array_tb[3] / temp_array_tb[1]; // Convert N_k_k to K_k;
+					temp_array_tb[4] = temp_array_tb[4] / temp_array_tb[1]; // Convert N_HCO3_k to HCO3_k;
+					temp_array_tb[5] = temp_array_tb[5] / temp_array_tb[1]; // Convert N_Cl_k to Cl_k;
+
+					temp_array_tb[6] = temp_array_tb[6] / (8.79e-8 - temp_array_tb[1]); // Convert N_Na_s to Na_s;
+					temp_array_tb[7] = 0.001 * temp_array_tb[7] / (8.79e-8 - temp_array_tb[1]); // Convert N_K_s to K_s in mM;
+					temp_array_tb[8] = temp_array_tb[8] / (8.79e-8 - temp_array_tb[1]); // Convert N_HCO3_s to HCO3_s;
+					
+
+					// Add state variables into array
+					for (int v = 0; v < n_state_vars; v++)
+					{
+						stateVars[v] -> InsertNextValue(temp_array_tb[v]);
+					}
+					// Add extra variables into array
+					stateVars[n_state_vars]   -> InsertNextValue(CBF_change);
+					stateVars[n_state_vars+1] -> InsertNextValue(BOLD);
+					stateVars[n_state_vars+2] -> InsertNextValue(HBT_N);
+					stateVars[n_state_vars+3] -> InsertNextValue(HBO_N);
+					stateVars[n_state_vars+4] -> InsertNextValue(CMRO2_N);
+
+				}
+
+				for (int v = 0; v < n_output; v++)
+				{
+					uGrid->GetCellData()->AddArray(stateVars[v]);
+				}
+			} // end of omp section 4.2.1
+#pragma omp section
 			{
-				double temp_array_tree[1];
-				is_flow.read((char *) temp_array_tree, sizeof(temp_array_tree));  // Read flow variables from binary file.
-				flowVar[0]->InsertNextValue( temp_array_tree[0] * pow(2, ((n_levels - level - 1) )) );
-				flowVar_unscaled[0]->InsertNextValue( temp_array_tree[0] );
-			}
-		}
+					// 4.2.2 H-Tree:
+					for (int level = 0; level < n_levels; level++)
+					{
+						// Scale flow variables: Each level times by 2^(nlevels-level-1)
+						double n_lines = pow(2,(n_levels-level-1));
+						for(int i = 0; i < n_lines; i++)
+						{
+							double temp_array_tree[1];
+							is_flow.read((char *) temp_array_tree, sizeof(temp_array_tree));  // Read flow variables from binary file.
+							flowVar[0]->InsertNextValue( temp_array_tree[0] * pow(2, ((n_levels - level - 1) )) );
+							flowVar_unscaled[0]->InsertNextValue( temp_array_tree[0] );
+						}
+					}
 
-		vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
-	    polyData->SetPoints(points_tree);
-	    polyData->SetLines(cellArray_tree);
-	    polyData->GetCellData()->AddArray(flowVar[0]);
-	    polyData->GetCellData()->AddArray(flowVar_unscaled[0]);
+					vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+					polyData->SetPoints(points_tree);
+					polyData->SetLines(cellArray_tree);
+					polyData->GetCellData()->AddArray(flowVar[0]);
+					polyData->GetCellData()->AddArray(flowVar_unscaled[0]);
+			} // end of omp section 4.2.2
+		} // end of omp sections
 
 		// 4.2.3 H-Tree_lines:
 		uGrid2->GetCellData()->AddArray(flowVar[0]);
@@ -425,9 +492,8 @@ int main(int argc, char *argv[]) {
 
 
 	    // H-Tree (tubeFilter):
-	    // a) Leaf branches:
 		vtkSmartPointer<vtkAppendPolyData> appendFilter = vtkSmartPointer<vtkAppendPolyData>::New();
-
+ 
 		for (int line_id = 0; line_id < n_blocks; line_id++)
 		{
 			vtkSmartPointer<vtkLineSource> lineSource = vtkSmartPointer<vtkLineSource>::New();
@@ -444,10 +510,10 @@ int main(int argc, char *argv[]) {
 
 			branchPolyData->GetCellData()->AddArray(flowArray);
 
-	        tubeFilter->SetInputData(branchPolyData);
+			tubeFilter->SetInputData(branchPolyData);
 			tubeFilter->SetRadius(0.00014*(0.05*stateVars[0]->GetValue(line_id))-0.0001);  	// varying radii - different depending on NVU version TODO: make this dependent on max and min values of radius.
 			tubeFilter->SetNumberOfSides(20);
-			tubeFilter->CappingOn();  												  	// Cap tubes.
+			tubeFilter->CappingOn();												  	// Cap tubes.
 			appendFilter->AddInputConnection(tubeFilter->GetOutputPort());
 		}
 
@@ -468,7 +534,7 @@ int main(int argc, char *argv[]) {
 
 			branchPolyData->GetCellData()->AddArray(flowArray);
 
-	        tubeFilter->SetInputData(branchPolyData);
+			tubeFilter->SetInputData(branchPolyData);
 			tubeFilter->SetRadius(5e-5);  //TODO: each level include different radius! (5e-5*pow(2,0.5*level))
 //			tubeFilter->SetRadius(5e-6*(stateVars[0]->GetValue(line_id))+3e-5);
 			tubeFilter->SetNumberOfSides(20);
@@ -512,35 +578,47 @@ int main(int argc, char *argv[]) {
 		writer_tb->SetInputData(uGrid);
 		writer_tb->Write();
 
-		// 5.2 H-Tree (tubeFilter):
-		std::ostringstream filename_buffer_tree;
-		char fVtuSuffix[] = "/paraView_Htree_tubes";
-		char fVtuOutfile[128];
 
-		sprintf(fVtuOutfile, "%s%s%s",Prefix,dirName,fVtuSuffix);
+#pragma omp parallel
+#pragma omp sections nowait
+		{
+#pragma omp section
+			{
+				// 5.2 H-Tree (tubeFilter):
+				std::ostringstream filename_buffer_tree;
+				char fVtuSuffix[] = "/paraView_Htree_tubes";
+				char fVtuOutfile[128];
 
-		filename_buffer_tree << fVtuOutfile << i << ".vtp";
+				sprintf(fVtuOutfile, "%s%s%s",Prefix,dirName,fVtuSuffix);
 
-		vtkSmartPointer<vtkXMLPolyDataWriter> writer_tree = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
-		writer_tree->SetFileName(filename_buffer_tree.str().c_str());
-		writer_tree->SetInputConnection(appendFilter->GetOutputPort());
-		writer_tree->Write();
+				filename_buffer_tree << fVtuOutfile << i << ".vtp";
 
-		// 5.3 H-Tree_lines:
-		std::ostringstream filename_buffer_tree2;
-		char fVtuSuffix2[] = "/paraView_Htree_lines";
-		char fVtuOutfile2[128];
+				vtkSmartPointer<vtkXMLPolyDataWriter> writer_tree = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
+				writer_tree->SetFileName(filename_buffer_tree.str().c_str());
+				writer_tree->SetInputConnection(appendFilter->GetOutputPort());
+				writer_tree->Write();
+			}
+#pragma omp section
+			{
+				// 5.3 H-Tree_lines:
+				std::ostringstream filename_buffer_tree2;
+				char fVtuSuffix2[] = "/paraView_Htree_lines";
+				char fVtuOutfile2[128];
 
-		sprintf(fVtuOutfile2, "%s%s%s",Prefix,dirName,fVtuSuffix2);
+				sprintf(fVtuOutfile2, "%s%s%s",Prefix,dirName,fVtuSuffix2);
 
-		filename_buffer_tree2 << fVtuOutfile2 << i << ".vtu";
+				filename_buffer_tree2 << fVtuOutfile2 << i << ".vtu";
 
-		vtkSmartPointer<vtkXMLUnstructuredGridWriter> writer2 = vtkSmartPointer<vtkXMLUnstructuredGridWriter>::New(); // save uGrid2 to file
-		writer2->SetFileName(filename_buffer_tree2.str().c_str());
-		writer2->SetInputData(uGrid2);
-		writer2->Write();
-
+				vtkSmartPointer<vtkXMLUnstructuredGridWriter> writer2 = vtkSmartPointer<vtkXMLUnstructuredGridWriter>::New(); // save uGrid2 to file
+				writer2->SetFileName(filename_buffer_tree2.str().c_str());
+				writer2->SetInputData(uGrid2);
+				writer2->Write();
+			}
+		}
 	}
+
+	double runtime = GetTimer();
+	std::cout << "Total runtime: " << runtime/1000.f << std::endl;
 
 	return EXIT_SUCCESS;
 }
