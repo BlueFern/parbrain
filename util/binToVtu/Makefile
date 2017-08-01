@@ -1,8 +1,8 @@
 # Default values if they are not set
 VTKINCLUDE ?= /usr/include/vtk-6.2
 VTKLIBPATH ?=
-MYCXX ?= pgc++
-MYCFLAGS ?= -fast -mp
+MYCXX ?= g++
+MYCFLAGS ?= -O2 -fopenmp -DOMP
 EXENAME ?= ConvertBinToVtu
 
 LIB = -lm -lvtkIOMPIParallel-6.2 -lvtkIOXML-6.2 -lvtkFiltersSources-6.2 -lvtkFiltersCore-6.2 \
