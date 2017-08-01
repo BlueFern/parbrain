@@ -35,19 +35,6 @@ int main(int argc, char *argv[])
 {
 	int num_threads = 1;
 
-#ifdef OMP
-#pragma omp parallel
-	{
-		int thread_id = omp_get_thread_num();
-		num_threads = omp_get_num_threads();
-
-		if (thread_id == 0)
-		{
-			std::cout << "Using " << num_threads << " OpenMP threads" << std::endl;
-		}
-	}
-#endif
-
 // General parameters:
 #define BLOCK_LENGTH 4e-4 // Length of one tissue block so it matches with output size of tree (don't change).
 	char Prefix[] = "";
@@ -360,8 +347,20 @@ int main(int argc, char *argv[])
 		flow_seg_size += pow(2, (n_levels - level - 1));
 	}
 
-	// 4.1 Time step loop:
+#ifdef OMP
+#pragma omp parallel
+	{
+		int thread_id = omp_get_thread_num();
+		num_threads = omp_get_num_threads();
 
+		if (thread_id == 0)
+		{
+			std::cout << "Using " << num_threads << " OpenMP threads to process all time steps." << std::endl;
+		}
+	}
+#endif
+
+	// 4.1 Time step loop:
 	for (int i = 0; i <= num_time_steps;)
 	{
 		int ts_in_buffer;
