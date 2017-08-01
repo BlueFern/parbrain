@@ -367,11 +367,17 @@ int main(int argc, char *argv[])
 		
 		if (i == 0) ts_in_buffer = 1; else ts_in_buffer = ((num_threads + i) <= num_time_steps) ? num_threads : (num_time_steps - i + 1);
 
-		double tissue_buffer[tissue_seg_size * ts_in_buffer];
-		double flow_buffer[flow_seg_size * ts_in_buffer];
+		double *tissue_buffer = (double *) malloc(tissue_seg_size * ts_in_buffer * sizeof(double));
+		double *flow_buffer = (double *) malloc(flow_seg_size * ts_in_buffer * sizeof(double));
 
-		is_tissue.read((char *)&tissue_buffer, sizeof(tissue_buffer));
-		is_flow.read((char *)&flow_buffer, sizeof(flow_buffer));
+		if (tissue_buffer == NULL or flow_buffer == NULL)
+		{
+			std::cout << "Unable to allocate memoery to read tissue or flow binary data" << std::endl;
+			return EXIT_FAILURE;
+		}
+
+		is_tissue.read((char *)tissue_buffer, tissue_seg_size * ts_in_buffer * sizeof(double));
+		is_flow.read((char *)flow_buffer, flow_seg_size * ts_in_buffer * sizeof(double));
 
 #pragma omp parallel for firstprivate(i)
 		for (int t = 0; t < ts_in_buffer; t++)
@@ -656,6 +662,10 @@ int main(int argc, char *argv[])
 			i = i + 1;
 #endif
 		}
+
+		free(tissue_buffer);
+		free(flow_buffer);
+		
 #ifdef OMP
 		i = i + ts_in_buffer;
 #endif
