@@ -330,6 +330,9 @@ int main(int argc, char *argv[])
 
 	char const *var_names[] = {"R","R_k","Na_k","K_k","HCO3_k","Cl_k","Na_s","K_s","HCO3_s","K_p","w_k","Ca_i","s_i","v_i","w_i","IP3_i","K_i","Ca_j","s_j","v_j","IP3_j","Mp","AMp","AM","K_e","PLC_input","K_input","flux_ft","NO_n","NO_k","NO_i","NO_j","cGMP","eNOS","nNOS","Ca_n","E_b","E_6c","Ca_k","s_k","h_k","IP3_k","eet_k","m_k","Ca_p"};
 
+	int num_time_steps = tf; 
+	int n_output = n_state_vars;
+
 	// Compute the each time step's segment size in both binary file
 	int tissue_seg_size = n_blocks * n_state_vars + 1;
 	int flow_seg_size = 1;
