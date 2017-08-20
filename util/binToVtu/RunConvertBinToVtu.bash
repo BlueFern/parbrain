@@ -6,7 +6,7 @@
 
 
 if [ $# -eq 0 ]; then
-	echo "$0 <num of threads> [-c <CPU affinity mask> (optional)] <Data directory> <Final time> <Output per sec>"
+	echo "$0 <num of threads> [-c <CPU affinity mask> (optional)] <Data directory> <Final time>"
 	exit 0
 fi;
 
