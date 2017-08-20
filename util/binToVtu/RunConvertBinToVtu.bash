@@ -4,6 +4,10 @@
 # The second and third arguments are optional and specify the CPU affinitiy to run the program.
 # The rest of arguments are arguments required by the program itself.
 
+#**Important**
+# Run the following to make the script exectuable:
+# chmod u+x RunConvertBinToVtu.bash
+
 #**Example**
 #To use 14 OpenMP threads and the first 14 CPU cores on the server's first CPU socket to run ConvertBinToVtu:
 #./RunConvertBinToVtu.bash 14 -c 0-13 np32_nlev13_sbtr01/ 10 20
