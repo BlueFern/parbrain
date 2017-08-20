@@ -4,6 +4,11 @@
 # The second and third arguments are optional and specify the CPU affinitiy to run the program.
 # The rest of arguments are arguments required by the program itself.
 
+#**Example**
+#To use 14 OpenMP threads and the first 14 CPU cores on the server's first CPU socket to run ConvertBinToVtu:
+#./RunConvertBinToVtu.bash 14 -c 0-13 ./np32_nlev13_sbtr01/ 3 20
+
+
 
 if [ $# -eq 0 ]; then
 	echo "$0 <num of threads> [-c <CPU affinity mask> (optional)] <Data directory> <Final time>"
