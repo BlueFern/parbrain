@@ -3,6 +3,7 @@
 # The first argument specifies number of OpenMP threads to run the proram.
 # The second and third arguments are optional and specify the CPU affinitiy to run the program.
 # The rest of arguments are arguments required by the program itself.
+# Also note that the script assumes that it is run from the main parbrain folder; if not then adjust the locations below. 
 
 #**Important**
 # Run the following to make the script exectuable:
@@ -10,7 +11,7 @@
 
 #**Example**
 #To use 14 OpenMP threads and the first 14 CPU cores on the server's first CPU socket to run ConvertBinToVtu:
-#./RunConvertBinToVtu.bash 14 -c 0-13 np32_nlev13_sbtr01/ 10 20
+#./util/binToVtu/RunConvertBinToVtu.bash 14 -c 0-13 np32_nlev13_sbtr01/ 10 20
 
 
 
@@ -26,7 +27,7 @@ if [ $1 = "-c" ]; then
 	MASK=$2
 	shift
 	shift
-	taskset -c $MASK ./ConvertBinToVtu $@
+	taskset -c $MASK ./util/binToVtu/ConvertBinToVtu $@
 else
-	./ConvertBinToVtu $@
+	./util/binToVtu/ConvertBinToVtu $@
 fi;
