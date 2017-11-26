@@ -7,8 +7,8 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
     // of the neighbours for the current tissue block.
     int neigh_offset = block_number * NUM_NEIGHBOURS;
 
-    double state_K_e = u[K_e];	// Extra-cellular potassium in our block.
-    double state_Na_e = u[Na_e];	// Extra-cellular sodium in our block.
+    double state_K_e = u[i_K_e];	// Extra-cellular potassium in our block.
+    double state_Na_e = u[i_Na_e];	// Extra-cellular sodium in our block.
 
     // Iterate over all neighbours.
     for(int neigh_idx = 0; neigh_idx < NUM_NEIGHBOURS; neigh_idx++)
@@ -29,8 +29,8 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
     	else
     	{
     		// Otherwise it is a real tissue block.
-    		neighbour_K_e = u[(neigh_idx_val - block_number) * w->neq + K_e];
-    		neighbour_Na_e = u[(neigh_idx_val - block_number) * w->neq + Na_e];
+    		neighbour_K_e = u[(neigh_idx_val - block_number) * w->neq + i_K_e];
+    		neighbour_Na_e = u[(neigh_idx_val - block_number) * w->neq + i_Na_e];
     	}
 
     	// Calculate the flux.
@@ -40,12 +40,11 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
     	// Update the derivatives.
     	if (DIFFUSION_SWITCH > 0)
 		{
-			du[K_e] += flu_diff_K;
-			du[Na_e] += flu_diff_Na;
-	//    	// As these two variables contain the term "SC_coup * du[K_e] * 1000 * R_s", they must also be updated!
-			double R_s = 8.79e-8 - u[R_k];
-			du[N_K_s] += SC_coup * flu_diff_K * 1000 * R_s;
-			du[N_Na_s] += -SC_coup * flu_diff_K * 1000 * R_s;
+			du[i_K_e] += flu_diff_K;
+			du[i_Na_e] += flu_diff_Na;
+	//    	// As these two variables contain the term "SC_coup * du[K_e] * 1e3", they must also be updated!
+			du[i_K_s] += SC_coup * flu_diff_K * 1e3;
+			du[i_Na_s] += -SC_coup * flu_diff_K * 1e3;
 		}
     }
 }
@@ -234,8 +233,8 @@ void update_ghost_blocks(workspace *W, double *y)
 			for(int i = 0; i < side_length; i++)
 			{
 				// Get the state variables based on the indices of the edge block for this side (and all other sides).
-				send_array_Ke[i] = y[W->neq * W->nvu_w->edge_indices[idx_offset + i] + K_e];
-				send_array_Nae[i] = y[W->neq * W->nvu_w->edge_indices[idx_offset + i] + Na_e];
+				send_array_Ke[i] = y[W->neq * W->nvu_w->edge_indices[idx_offset + i] + i_K_e];
+				send_array_Nae[i] = y[W->neq * W->nvu_w->edge_indices[idx_offset + i] + i_Na_e];
 			}
 
 			// Simultaneously send and receive the values for the ghost blocks.
@@ -265,8 +264,8 @@ void update_ghost_blocks(workspace *W, double *y)
 		{
 			for(int i = 0; i < side_length; i++)
 			{
-				W->nvu_w->ghost_blocks[idx_offset + i].vars[DIFF_K] = y[W->neq * W->nvu_w->edge_indices[idx_offset + i] + K_e];
-				W->nvu_w->ghost_blocks[idx_offset + i].vars[DIFF_NA] = y[W->neq * W->nvu_w->edge_indices[idx_offset + i] + Na_e];
+				W->nvu_w->ghost_blocks[idx_offset + i].vars[DIFF_K] = y[W->neq * W->nvu_w->edge_indices[idx_offset + i] + i_K_e];
+				W->nvu_w->ghost_blocks[idx_offset + i].vars[DIFF_NA] = y[W->neq * W->nvu_w->edge_indices[idx_offset + i] + i_Na_e];
 			}
 		}
 		idx_offset += side_length;

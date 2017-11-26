@@ -1,21 +1,21 @@
 #ifndef SRC_CONSTANTS_H_
 #define SRC_CONSTANTS_H_
 
-// Optional command line arguments for parBrainSim: N, T_FINAL, DT_WRITE, DIR_WRITE (in that order). If none specified then the following are used.
+// Optional command line arguments for parBrainSim: N, T_FINAL, DT_PSEC (in that order). If none specified then the following are used.
 
 /*** Run parameters ***/
-    static const double T_FINAL        	= 50;        // Final run time
+    static const double T_FINAL        	= 30;        // Final run time
 	static const double T_STIM_0       	= 20;        // Start time for stimulation
-	static const double T_STIM_END     	= 24;        // End time for stimulation
-    static const int    DT_PSEC       	= 20;       // Time step for writing to file (and screen)
-    static const int 	NTREE          	= 13;         // Number of levels in the H-tree (where the tissue slice has 2^(N-1) tissue blocks)
+	static const double T_STIM_END     	= 21;        // End time for stimulation
+    static const int    DT_PSEC       	= 10;       // Time step for writing to file (and screen)
+    static const int 	NTREE          	= 3;         // Number of levels in the H-tree (where the tissue slice has 2^(N-1) tissue blocks)
     static const int 	NSUB           	= 1;         // Subtree size (easiest to just keep as 1)
-	static const double P_TOP			= 4175;	     // Pressure at the top of the tree, chosen so that the drop over the terminating arterioles is around 18.2 Pa to match with the single NVU model.
+	static const double P_TOP			= 4100;	     // Pressure at the top of the tree, chosen so that the drop over the terminating arterioles is around 18.2 Pa to match with the single NVU model.
 									  	  	  	  	 // For NTREE=3, P_TOP=4100 Pa. For NTREE=7, P_TOP=4160 Pa. For NTREE=13, P_TOP=4175
-	static const int 	SPATIAL_CHOICE	= 1;	     // 1: current input is a Gaussian plateau into the centre (fixed size), 0: current input into lower left corner
+	static const int 	SPATIAL_CHOICE	= 1;	     // 0: current input is a Gaussian plateau into the centre (fixed size), 0: current input into lower left corner
 
 /*** Switches for various pathways (default 1) ***/
-	static const double DIFFUSION_SWITCH 	= 1;		// 1: extracellular diffusion between blocks, 0: none
+	static const double DIFFUSION_SWITCH 	= 0;		// 1: extracellular diffusion between blocks, 0: none
 	static const double GluSwitch			= 1;		// 1: glutamate is released with current stimulation, 0: no glutamate
 	static const double NOswitch			= 1;		// 1: NO is produced in the NVU, 0: no NO production at all
     static const double trpv_switch	    	= 1;		// 1: TRPV4 channel is active, 0: completely closed (no flux)
@@ -23,8 +23,8 @@
 
 /*** Commonly changed model parameters ***/
 
-	static const double I_STRENGTH		= 0.025;	  	// [A] strength of current input
-    static const double wallMech	    = 1.1;          // rate of wall mechanics, 1 for normal (default 1.1)
+	static const double I_STRENGTH		= 0.022;	  	// [A] strength of current input
+    static const double wallMech	    = 1.7;          // rate of wall mechanics, 1 for normal (default 1.7)
     static const double SC_coup	        = 11.5;         // scaling factor for the change in SC K+ concentration based on extracellular K+ concentration (default 11.5)
     static const double J_PLC 		    = 0.11; 	    // 0.11 for steady state or 0.3 for oscillations
     static const double R_decay         = 0.15;  	    // [s^-1] rate of decay of K+ in the PVS (default 0.15)
@@ -39,59 +39,62 @@
 
     // Steady state values used for normalisation of BOLD signal and change in CBF
     //if J_PLC = 0.11
-        static const double DHG_0		  = 0.6662;
+        static const double HbR_0		  = 0.6662;
         static const double CBV_0		  = 1.317;
         static const double CBF_0		  = 0.0637;
     //if J_PLC = 0.3
-        //static const double DHG_0		  = 1.0753
+        //static const double HbR_0		  = 1.0753
         //static const double CBV_0		  = 0.9703
         //static const double CBF_0		  = 0.0295
 
 /*** Model parameters ***/
 
-// general constants:
+// General constants:
     static const double F             	= 96500;          // [C mol-1] Faradays constant
-    static const double Farad 		  	= 96.485;         // Faradays constant in different unit
+    static const double Farad 		  	= 96.485;         // Faradays constant in different units
     static const double R_gas         	= 8.315;          // [J mol-1K-1]
     static const double Temp          	= 300;            // [K]
-    static const double unitcon       	= 1e3;            // [-] Factor to convert equations to another unit.
-
-// NE & AC constants:
-    static const double L_p           	= 2.1e-9;         // [m uM-1s-1]
-    static const double R_tot         	= 8.79e-8;        // [m]   total volume surface area ratio AC+SC  **see nvu.h
-    static const double X_k           	= 12.41e-3;       // [uMm]
+    static const double gam		      	= 1970;  		  // mV/uM The change in membrane potential by a scaling factor
+    static const double ph			    = 26.6995;		  // RT/Farad where Farad is in [C/mmol]
     static const double z_Na          	= 1;              // [-]
-    static const double z_K           	= 1;             // [-]
+    static const double z_K           	= 1;              // [-]
     static const double z_Cl         	= -1;             // [-]
     static const double z_NBC         	= -1;             // [-]
-    static const double g_K_k         	= 40;             // [ohm-1m-2]
-    static const double g_KCC1_k      	= 1e-2;           // [ohm-1m-2]
-    static const double g_NBC_k       	= 7.57e-1;        // [ohm-1m-2]
-    static const double g_Cl_k        	= 8.797e-1;       // [ohm-1m-2]
-    static const double g_NKCC1_k     	= 5.54e-2;        // [ohm-1m-2]
-    static const double g_Na_k        	= 1.314;          // [ohm-1m-2]
-    static const double J_NaK_max     	= 1.42e-3;        // [uMm s-1]
+    static const double z_Ca			= 2;			  // [-]
+
+// NE & AC constants:
+    static const double VR_sa 			= 0.465;			// [-] volume ratio between SC and AC = R_s/R_k = 2.79e-8 / 8e-8
+
     static const double K_Na_k        	= 10e3;           // [uM]
     static const double K_K_s         	= 1.5e3;          // [uM]
+
+    static const double G_BK_k        	= 10.25;  		  // [uM mV^-1 s^-1]
+    static const double G_K_k         	= 6907.77;
+    static const double G_KCC1_k      	= 1.728;
+    static const double G_NBC_k       	= 130.74;
+    static const double G_Cl_k        	= 151.93;
+    static const double G_NKCC1_k     	= 9.568;
+    static const double G_Na_k        	= 226.94;
+    static const double J_NaK_max     	= 2.3667e4;        // [uM s-1]
 
 // Perivascular Space constants:
     static const double K_p_min 	  	= 3e3;  	// uM
 
 // BK channel constants:
     static const double A_ef_k        	= 3.7e-9;  				// m2       Area of an endfoot of an astrocyte, equal to Area astrocyte at synaptic cleft
-    static const double v_4           	= 8e-3; 				// V        A measure of the spread of the distribution
+    static const double v_4           	= 8; 					// mV        A measure of the spread of the distribution
+    static const double v_5			    = 15;					// mV
+    static const double v_6			    = -55;					// mV
     static const double psi_w         	= 2.664;  				// s-1      A characteristic time
-    static const double G_BK_k        	= 225;  				// !!!
-    static const double g_BK_k        	= 225 * 1e-12 /  3.7e-9;  	// ohm-1m-2  Specific capacitance of the BK-Channel in units of Ostby
     static const double VR_pa         	= 0.001; 				// [-]       The estimated volume ratio of perivascular space to astrocyte: Model estimation
     static const double VR_ps         	= 0.001;  				// [-]       The estimated volume ratio of perivascular space to SMC: Model Estimation
 
 // SMC constants:
     static const double F_il 		  	= 7.5e2; 		//[-] scaling factor to fit the experimental data of Filosa
-    static const double z_1 		  	= 4.5; 			//[-] parameter fitted on experimental data of Filosa
-    static const double z_2 		  	= -1.12e2; 		//[-] parameter fitted on experimental data of Filosa
-    static const double z_3 		  	= 4.2e-1; 		//[-] parameter fitted on experimental data of Filosa
-    static const double z_4 		  	= -1.26e1; 		//[-] parameter fitted on experimental data of Filosa
+    static const double z_1 		  	= 4.5e-3; 			//[-] parameter fitted on experimental data of Filosa
+    static const double z_2 		  	= 112; 		//[-] parameter fitted on experimental data of Filosa
+    static const double z_3 		  	= 4.2e-4; 		//[-] parameter fitted on experimental data of Filosa
+    static const double z_4 		  	= 12.6; 		//[-] parameter fitted on experimental data of Filosa
     static const double z_5 		  	= -7.4e-2;  		//[-] parameter fitted on experimental data of Filosa
     static const double Fmax_i		  	= 0.23; 			// (microM/s)
     static const double Kr_i 		  	= 1;  			// (microM) Half saturation constant for agonist-dependent Ca entry
@@ -111,7 +114,6 @@
     static const double vd_i		  	= -100;
     static const double Rd_i		  	= 250;
     static const double L_i		      	= 0.025;
-    static const double gam		      	= 1970;  		// mVmicroM-1 The change in membrane potential by a scaling factor
     static const double F_NaK		  	= 0.0432;
     static const double G_Cl		  	= 0.00134;
     static const double v_Cl		  	= -25;
@@ -195,7 +197,6 @@
     static const double M_mono        = 1.3e5;
     static const double betA          = 650;
     static const double betB          = 2800;
-    static const double Oj            = 200;
     static const double K_dis         = 9e-2;
     static const double K_eNOS        = 4.5e-1;
     static const double mu2           = 0.0167;
@@ -233,7 +234,6 @@
     static const double k_pump			= 0.24;
     static const double V_max			= 20;
     static const double C_astr_k		= 40;
-    static const double gamma_k		    = 834.3;
     static const double B_ex 			= 11.35;
     static const double BK_end			= 40;
     static const double K_ex			= 0.26;
@@ -241,16 +241,14 @@
     static const double K_G			    = 8.82;
     static const double Ca_3			= 0.4;
     static const double Ca_4			= 0.35;
-    static const double v_5			    = 15e-3;
-    static const double v_7			    = -55e-3;
-    static const double eet_shift		= 2e-3;
+    static const double eet_shift		= 2;
     static const double gam_cae_k		= 200;
     static const double gam_cai_k		= 0.01;
     static const double R_0_passive_k	= 20e-6;
     static const double epshalf_k		= 0.1;
     static const double kappa_k		    = 0.1;
-    static const double v1_TRPV_k		= 0.12;
-    static const double v2_TRPV_k		= 0.013;
+    static const double v1_TRPV_k		= 120;
+    static const double v2_TRPV_k		= 13;
     static const double t_TRPV_k		= 0.9;
     static const double VR_ER_cyt		= 0.185;
     static const double K_inh			= 0.1;
@@ -262,9 +260,6 @@
     static const double V_eet			= 72;
     static const double Ca_decay_k		= 0.5;
     static const double Capmin_k		= 2000;
-    static const double reverseBK		= 0;
-    static const double switchBK		= 1;
-    static const double z_Ca			= 2;
     static const double m_c			    = 4;
 
 // Glutamate constants
@@ -285,7 +280,6 @@
     static const double Vd			    = 5.614e-9;
     static const double fe			    = 0.15;
     static const double Cm			    = 7.5e-7;
-    static const double ph			    = 26.6995;
     static const double Mu			    = 8e-4;
     static const double Buff0	        = 500;
     static const double gNaP_GHk	    = 2e-6;
@@ -349,92 +343,92 @@
 	static const int i_radius  = 0; // radius has to be 0, this is assumed elsewhere
 
 	// AC
-	static const int R_k       = 1;
-	static const int N_Na_k    = 2;
-	static const int N_K_k     = 3;
-	static const int N_HCO3_k  = 4;
-	static const int N_Cl_k    = 5;
-	static const int w_k       = 10;
+	static const int i_v_k       = 1;
+	static const int i_Na_k    = 2;
+	static const int i_K_k     = 3;
+	static const int i_HCO3_k  = 4;
+	static const int i_Cl_k    = 5;
+	static const int i_w_k       = 10;
 
 	// SC
-	static const int N_Na_s    = 6;
-	static const int N_K_s     = 7;
-	static const int N_HCO3_s  = 8;
+	static const int i_Na_s    = 6;
+	static const int i_K_s     = 7;
+	static const int i_HCO3_s  = 8;
 
 	// PVS
-	static const int K_p       = 9;
+	static const int i_K_p       = 9;
 
 	// SMC
-	static const int ca_i      = 11;
-	static const int ca_sr_i   = 12;
-	static const int v_i       = 13;
-	static const int w_i       = 14;
-	static const int ip3_i     = 15;
-	static const int K_i       = 16;
+	static const int i_ca_i      = 11;
+	static const int i_ca_sr_i   = 12;
+	static const int i_v_i       = 13;
+	static const int i_w_i       = 14;
+	static const int i_ip3_i     = 15;
+	static const int i_K_i       = 16;
 
 	// EC
-	static const int ca_j      = 17;
-	static const int ca_er_j   = 18;
-	static const int v_j       = 19;
-	static const int ip3_j     = 20;
+	static const int i_ca_j      = 17;
+	static const int i_ca_er_j   = 18;
+	static const int i_v_j       = 19;
+	static const int i_ip3_j     = 20;
 
 	// Mech
-	static const int Mp        = 21;
-	static const int AMp       = 22;
-	static const int AM        = 23;
+	static const int i_Mp        = 21;
+	static const int i_AMp       = 22;
+	static const int i_AM        = 23;
 
 	// NO pathway
-	static const int NOn        = 24;
-	static const int NOk        = 25;
-	static const int NOi        = 26;
-	static const int NOj        = 27;
-	static const int cGMP       = 28;
-	static const int eNOS       = 29;
-	static const int nNOS       = 30;
-	static const int ca_n       = 31;
-	static const int E_b        = 32;
-	static const int E_6c       = 33;
+	static const int i_NOn        = 24;
+	static const int i_NOk        = 25;
+	static const int i_NOi        = 26;
+	static const int i_NOj        = 27;
+	static const int i_cGMP       = 28;
+	static const int i_eNOS       = 29;
+	static const int i_nNOS       = 30;
+	static const int i_ca_n       = 31;
+	static const int i_E_b        = 32;
+	static const int i_E_6c       = 33;
 
 	// AC Ca2+
-	static const int ca_k       = 34;
-	static const int s_k        = 35;
-	static const int h_k        = 36;
-	static const int ip3_k      = 37;
-	static const int eet_k      = 38;
-	static const int m_k        = 39;
-	static const int ca_p       = 40;
+	static const int i_ca_k       = 34;
+	static const int i_s_k        = 35;
+	static const int i_h_k        = 36;
+	static const int i_ip3_k      = 37;
+	static const int i_eet_k      = 38;
+	static const int i_m_k        = 39;
+	static const int i_ca_p       = 40;
 
 	// Neuron - ions
-	static const int v_sa	   = 41;
-	static const int v_d	   = 42;
-	static const int K_sa	   = 43;
-	static const int Na_sa	   = 44;
-	static const int K_d	   = 45;
-	static const int Na_d	   = 46;
-	static const int K_e	   = 47;
-	static const int Na_e	   = 48;
+	static const int i_v_sa	   = 41;
+	static const int i_v_d	   = 42;
+	static const int i_K_sa	   = 43;
+	static const int i_Na_sa   = 44;
+	static const int i_K_d	   = 45;
+	static const int i_Na_d	   = 46;
+	static const int i_K_e	   = 47;
+	static const int i_Na_e	   = 48;
 
 	// Neuron - other
-	static const int Buff_e	   = 49;
-	static const int O2		   = 50;
-	static const int CBV	   = 51;
-	static const int DHG	   = 52;
+	static const int i_Buff_e	   = 49;
+	static const int i_O2		   = 50;
+	static const int i_CBV	   = 51;
+	static const int i_HbR	   = 52;
 
 	// Neuron Gating Variables
-	static const int m1	   	   = 53;
-	static const int m2	   	   = 54;
-	static const int m3	   	   = 55;
-	static const int m4	   	   = 56;
-	static const int m5	   	   = 57;
-	static const int m6	   	   = 58;
-	static const int m7	   	   = 59;
-	static const int m8	   	   = 60;
-	static const int h1	   	   = 61;
-	static const int h2	   	   = 62;
-	static const int h3	   	   = 63;
-	static const int h4	   	   = 64;
-	static const int h5	   	   = 65;
-	static const int h6	   	   = 66;
+	static const int i_m1	   	   = 53;
+	static const int i_m2	   	   = 54;
+	static const int i_m3	   	   = 55;
+	static const int i_m4	   	   = 56;
+	static const int i_m5	   	   = 57;
+	static const int i_m6	   	   = 58;
+	static const int i_m7	   	   = 59;
+	static const int i_m8	   	   = 60;
+	static const int i_h1	   	   = 61;
+	static const int i_h2	   	   = 62;
+	static const int i_h3	   	   = 63;
+	static const int i_h4	   	   = 64;
+	static const int i_h5	   	   = 65;
+	static const int i_h6	   	   = 66;
 
 // Number of ODEs
     static const int NEQ       = 67;

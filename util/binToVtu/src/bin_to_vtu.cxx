@@ -331,9 +331,9 @@ int main(int argc, char *argv[])
 
 	// 4. Add binary data as attributes to cells:
 
-	char const *var_names[] = {"R", "R_k", "Na_k", "K_k", "HCO3_k", "Cl_k", "Na_s", "K_s", "HCO3_s", "K_p", "w_k", "Ca_i", "s_i", "v_i", "w_i", "IP3_i", "K_i", "Ca_j", "s_j", "v_j", "IP3_j", "Mp", "AMp", "AM", "NO_n", "NO_k", "NO_i", "NO_j", "cGMP", "eNOS", "nNOS", "Ca_n", "E_b", "E_6c", "Ca_k", "s_k", "h_k", "IP3_k", "eet_k", "m_k", "Ca_p", "v_sa", "v_d", "K_sa", "Na_sa", "K_d", "Na_d", "K_e", "Na_e", "Buff_e", "O2", "CBV", "DHG", "m1", "m2", "m3", "m4", "m5", "m6", "m7", "m8", "h1", "h2", "h3", "h4", "h5", "h6", "D_CBF", "BOLD", "HBT", "HBO", "CRMO2"};
+	char const *var_names[] = {"R", "v_k", "Na_k", "K_k", "HCO3_k", "Cl_k", "Na_s", "K_s", "HCO3_s", "K_p", "w_k", "Ca_i", "s_i", "v_i", "w_i", "IP3_i", "K_i", "Ca_j", "s_j", "v_j", "IP3_j", "Mp", "AMp", "AM", "NO_n", "NO_k", "NO_i", "NO_j", "cGMP", "eNOS", "nNOS", "Ca_n", "E_b", "E_6c", "Ca_k", "s_k", "h_k", "IP3_k", "eet_k", "m_k", "Ca_p", "v_sa", "v_d", "K_sa", "Na_sa", "K_d", "Na_d", "K_e", "Na_e", "Buff_e", "O2", "CBV", "HbR", "m1", "m2", "m3", "m4", "m5", "m6", "m7", "m8", "h1", "h2", "h3", "h4", "h5", "h6", "D_CBF", "BOLD", "HBT", "HBO", "CRMO2"};
 
-	int extra_output = 5; // numbee of extra output variables (BOLD,CBF,HBT,HBO), see below
+	int extra_output = 5; // number of extra output variables (BOLD,CBF,HBT,HBO,CMRO2), see below
 	int n_output = n_state_vars + extra_output;
 	int num_time_steps = tf * dt_psec; // Number of files to output = final time * output per sec
 
@@ -372,7 +372,7 @@ int main(int argc, char *argv[])
 
 		if (tissue_buffer == NULL or flow_buffer == NULL)
 		{
-			std::cout << "Unable to allocate memoery to read tissue or flow binary data" << std::endl;
+			std::cout << "Unable to allocate memory to read tissue or flow binary data" << std::endl;
 			return EXIT_FAILURE;
 		}
 
@@ -442,15 +442,15 @@ int main(int argc, char *argv[])
 				double *temp_array_tb = cur_ts_tissue + k * n_state_vars;
 
 				// Initial values for normalisation (will change if e.g. JPLC changes)
-				double CBV_0 = 1.31557;
-				double DHG_0 = 0.667547;
+				double CBV_0 = 1.3123;
+				double HbR_0 = 0.667547;
 				double CMRO2_0 = 0.0379408;
 				double CBF_0 = 0.063508;
 
 				temp_array_tb[51] = temp_array_tb[51] / CBV_0; // Convert CBV to normalised
-				temp_array_tb[52] = temp_array_tb[52] / DHG_0; // Convert DHG to normalised
+				temp_array_tb[52] = temp_array_tb[52] / HbR_0; // Convert HbR to normalised
 				double CBV_N = temp_array_tb[51];
-				double DHG_N = temp_array_tb[52];
+				double HbR_N = temp_array_tb[52];
 
 				// Make extra things for output - BOLD, CBF_change, HBT, HBO, CRMO2. Many things hardcoded in, see nvu.c for formulas ***************************
 				double J_pump2 = 2 * pow((1 + 0.02 / (((1 - 0.05) * temp_array_tb[50]) + 0.05 * 0.02)), -1);
@@ -464,23 +464,18 @@ int main(int argc, char *argv[])
 
 				double CBF_N = (0.032 * (pow((temp_array_tb[0] * 20e-6), 4) / pow(1.9341e-5, 4))) / CBF_0;
 				double CBF_change = CBF_N - 1;
-				double BOLD = 100 * 0.03 * (3.4 * (1 - DHG_N) - 1 * (1 - CBV_N));
-				double HBT_N = CBF_N * DHG_N / CMRO2_N;
-				double HBO_N = (HBT_N - 1) - (DHG_N - 1) + 1;
+				double BOLD = 100 * 0.03 * (3.4 * (1 - HbR_N) - 1 * (1 - CBV_N));
+				double HBT_N = CBF_N * HbR_N / CMRO2_N;
+				double HBO_N = (HBT_N - 1) - (HbR_N - 1) + 1;
 
 				// Convert other variables into a nicer form! **************************************************************************************************
+				// dependent on the indexes used in constants.h, if they change then need to update here too
 
 				temp_array_tb[0] = 20 * temp_array_tb[0];	// Convert radius to um from nondimensional
 				temp_array_tb[9] = 0.001 * temp_array_tb[9]; // Convert Kp to mM
 
-				temp_array_tb[2] = temp_array_tb[2] / temp_array_tb[1]; // Convert N_Na_k to Na_k;
-				temp_array_tb[3] = temp_array_tb[3] / temp_array_tb[1]; // Convert N_k_k to K_k;
-				temp_array_tb[4] = temp_array_tb[4] / temp_array_tb[1]; // Convert N_HCO3_k to HCO3_k;
-				temp_array_tb[5] = temp_array_tb[5] / temp_array_tb[1]; // Convert N_Cl_k to Cl_k;
-
-				temp_array_tb[6] = temp_array_tb[6] / (8.79e-8 - temp_array_tb[1]);			// Convert N_Na_s to Na_s;
-				temp_array_tb[7] = 0.001 * temp_array_tb[7] / (8.79e-8 - temp_array_tb[1]); // Convert N_K_s to K_s in mM;
-				temp_array_tb[8] = temp_array_tb[8] / (8.79e-8 - temp_array_tb[1]);			// Convert N_HCO3_s to HCO3_s;
+				temp_array_tb[3] = 0.001 * temp_array_tb[3]; // Convert K_k to mM;
+				temp_array_tb[7] = 0.001 * temp_array_tb[7]; // Convert K_s to mM;
 
 				// Add state variables into array
 				for (int v = 0; v < n_state_vars; v++)
