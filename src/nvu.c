@@ -496,7 +496,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     du[i_w_k]		= flu_phi_w * (flu_w_inf - state_w_k);
 
     //SC:
-    du[i_Na_s] 		= 1/VR_sa * ( - du[ i_Na_k] ) - SC_coup * du[i_K_e] * 1e3;
+    du[i_Na_s] 		= 1/VR_sa * ( - du[ i_Na_k] ) + SC_coup * du[i_Na_e] * 1e3;
     du[i_K_s] 		= 1/VR_sa * ( flu_J_K_k - 2 * flu_J_NaK_k - flu_J_NKCC1_k - flu_J_KCC1_k ) + SC_coup * du[i_K_e] * 1e3;
     du[i_HCO3_s] 	= 1/VR_sa * ( - du[ i_HCO3_k] );
 

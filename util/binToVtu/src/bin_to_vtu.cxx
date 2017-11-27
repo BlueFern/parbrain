@@ -473,8 +473,8 @@ int main(int argc, char *argv[])
 
 				temp_array_tb[0] = 20 * temp_array_tb[0];	// Convert radius to um from nondimensional
 				temp_array_tb[9] = 0.001 * temp_array_tb[9]; // Convert Kp to mM
-				temp_array_tb[3] = 0.001 * temp_array_tb[3]; // Convert K_k to mM;
-				temp_array_tb[7] = 0.001 * temp_array_tb[7]; // Convert K_s to mM;
+				temp_array_tb[3] = 0.001 * temp_array_tb[3]; // Convert K_k to mM
+				temp_array_tb[7] = 0.001 * temp_array_tb[7]; // Convert K_s to mM
 
 				// Add state variables into array
 				for (int v = 0; v < n_state_vars; v++)
