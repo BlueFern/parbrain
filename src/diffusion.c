@@ -7,46 +7,80 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
     // of the neighbours for the current tissue block.
     int neigh_offset = block_number * NUM_NEIGHBOURS;
 
-    double state_K_e = u[i_K_e];	// Extra-cellular potassium in our block.
-    double state_Na_e = u[i_Na_e];	// Extra-cellular sodium in our block.
+    double state_K_e = u[i_K_e];	// Extracellular potassium in our block.
+    double state_Na_e = u[i_Na_e];	// Extracellular sodium in our block.
+    double state_K_k = u[i_K_k];	// Astrocytic potassium in our block.
+    double state_v_k = u[i_v_k];	// Astrocytic membrane potential in our block.
+
+	// Neighbour's values to be retrieved.
+	double *neighbour_K_e  = malloc(NUM_NEIGHBOURS * sizeof(double));
+	double *neighbour_Na_e = malloc(NUM_NEIGHBOURS * sizeof(double));
+	double *neighbour_K_k  = malloc(NUM_NEIGHBOURS * sizeof(double));
+	double *neighbour_v_k  = malloc(NUM_NEIGHBOURS * sizeof(double));
 
     // Iterate over all neighbours.
-    for(int neigh_idx = 0; neigh_idx < NUM_NEIGHBOURS; neigh_idx++)
+    for (int neigh_idx = 0; neigh_idx < NUM_NEIGHBOURS; neigh_idx++)
     {
     	// Get the index of the neighbour.
     	int neigh_idx_val = w->neighbours[neigh_offset + neigh_idx];
 
-    	// Neighbour's potassium value to be retrieved.
-    	double neighbour_K_e = 0;
-    	double neighbour_Na_e = 0;
-
-    	if(neigh_idx_val < 0)
+    	if (neigh_idx_val < 0)
     	{
     		// If the neighbour is a ghost block, get the value from it.
-    		neighbour_K_e = w->ghost_blocks[-neigh_idx_val - 1].vars[DIFF_K];
-    		neighbour_Na_e = w->ghost_blocks[-neigh_idx_val - 1].vars[DIFF_NA];
+    		neighbour_K_e[neigh_idx] = w->ghost_blocks[-neigh_idx_val - 1].vars[DIFF_Ke];
+    		neighbour_Na_e[neigh_idx] = w->ghost_blocks[-neigh_idx_val - 1].vars[DIFF_NAe];
+    		neighbour_K_k[neigh_idx] = w->ghost_blocks[-neigh_idx_val - 1].vars[DIFF_Kk];
+    		neighbour_v_k[neigh_idx] = w->ghost_blocks[-neigh_idx_val - 1].vars[DIFF_Vk];
     	}
     	else
     	{
     		// Otherwise it is a real tissue block.
-    		neighbour_K_e = u[(neigh_idx_val - block_number) * w->neq + i_K_e];
-    		neighbour_Na_e = u[(neigh_idx_val - block_number) * w->neq + i_Na_e];
+    		neighbour_K_e[neigh_idx] = u[(neigh_idx_val - block_number) * w->neq + i_K_e];
+    		neighbour_Na_e[neigh_idx] = u[(neigh_idx_val - block_number) * w->neq + i_Na_e];
+    		neighbour_K_k[neigh_idx] = u[(neigh_idx_val - block_number) * w->neq + i_K_k];
+    		neighbour_v_k[neigh_idx] = u[(neigh_idx_val - block_number) * w->neq + i_v_k];
     	}
-
-    	// Calculate the flux.
-    	double flu_diff_K = (neighbour_K_e - state_K_e) / tau_Ke;
-    	double flu_diff_Na = (neighbour_Na_e - state_Na_e) / tau_Nae;
-
-    	// Update the derivatives.
-    	if (DIFFUSION_SWITCH > 0)
-		{
-			du[i_K_e] += flu_diff_K;
-			du[i_Na_e] += flu_diff_Na;
-	//    	// As these two variables contain the term "SC_coup * du[K_e] * 1e3", they must also be updated!
-			du[i_K_s] += SC_coup * flu_diff_K * 1e3;
-			du[i_Na_s] += -SC_coup * flu_diff_Na * 1e3;
-		}
     }
+
+	// Calculate the extracellular diffusion fluxes.
+    	double flu_diff_K = (neighbour_K_e[0] + neighbour_K_e[1] + neighbour_K_e[2] + neighbour_K_e[3] - 4*state_K_e) / tau_Ke;
+    	double flu_diff_Na = (neighbour_Na_e[0] + neighbour_Na_e[1] + neighbour_Na_e[2] + neighbour_Na_e[3] - 4*state_Na_e) / tau_Nae;
+
+   // Calculate the gap junctional flux.
+    	// Figure out which neighbour is which for ease of use! O-3: west, north, east, south
+    	double K_iminus1 = neighbour_K_k[0];
+    	double K_jplus1 = neighbour_K_k[1];
+    	double K_iplus1 = neighbour_K_k[2];
+    	double K_jminus1 = neighbour_K_k[3];
+
+    	double v_iminus1 = neighbour_v_k[0];
+    	double v_jplus1 = neighbour_v_k[1];
+    	double v_iplus1 = neighbour_v_k[2];
+    	double v_jminus1 = neighbour_v_k[3];
+
+    	double flu_gap_K = D_Kgap / pow(delta_x,2) * ( K_iplus1 + K_iminus1 + K_jplus1 + K_jminus1 - 4*state_K_k + Farad * z_K / R_gas * Temp * ( state_K_k * ( v_iplus1 + v_iminus1 + v_jplus1 + v_iminus1 - 4*state_v_k ) + 1/4 * ( (K_iplus1 - K_iminus1)*(v_iplus1 - v_iminus1) + (K_jplus1 - K_jminus1)*(v_jplus1 - v_jminus1) ) ) );
+
+	// Update the derivatives.
+	if (DIFFUSION_SWITCH > 0)
+	{
+		du[i_K_e] += flu_diff_K;
+		du[i_Na_e] += flu_diff_Na;
+//    	// As these two variables contain the term "SC_coup * du[K_e] * 1e3", they must also be updated!
+		du[i_K_s] += SC_coup * flu_diff_K * 1e3;
+		du[i_Na_s] += -SC_coup * flu_diff_Na * 1e3;
+	}
+
+	if (GAPJUNCTION_SWITCH > 0)
+	{
+		du[i_K_k] += flu_gap_K;
+		du[i_v_k] += - gam * flu_gap_K;
+	}
+
+	free(neighbour_K_e);
+	free(neighbour_Na_e);
+	free(neighbour_K_k);
+	free(neighbour_v_k);
+
 }
 
 /*
@@ -203,8 +237,10 @@ void init_ghost_blocks(int nlocal, int mlocal, nvu_workspace *w)
     {
     	w->ghost_blocks[i].vars = malloc(NUM_DIFF_VARS * sizeof(double));
 
-    	w->ghost_blocks[i].vars[DIFF_K] = 3.493;
-    	w->ghost_blocks[i].vars[DIFF_NA] = 150;
+    	w->ghost_blocks[i].vars[DIFF_Ke] = 3.493;
+    	w->ghost_blocks[i].vars[DIFF_NAe] = 150;
+    	w->ghost_blocks[i].vars[DIFF_Kk] = 92708;
+    	w->ghost_blocks[i].vars[DIFF_Vk] = -88.9;
     }
 }
 
@@ -223,11 +259,15 @@ void update_ghost_blocks(workspace *W, double *y)
 		// If neighbour exists.
 		if(W->domain_neighbours[side_idx] >= 0)
 		{
-			// Allocate arrays for sending and receiving different variables (currently 2, change manually)
+			// Allocate arrays for sending and receiving different variables (currently 4, change manually)
 			double *send_array_Ke = malloc(sizeof(double) * side_length);
 			double *send_array_Nae = malloc(sizeof(double) * side_length);
+			double *send_array_Kk = malloc(sizeof(double) * side_length);
+			double *send_array_vk = malloc(sizeof(double) * side_length);
 			double *receive_array_Ke = malloc(sizeof(double) * side_length);
 			double *receive_array_Nae = malloc(sizeof(double) * side_length);
+			double *receive_array_Kk = malloc(sizeof(double) * side_length);
+			double *receive_array_vk = malloc(sizeof(double) * side_length);
 
 			// Populate send arrays with values from the state variables array.
 			for(int i = 0; i < side_length; i++)
@@ -235,6 +275,8 @@ void update_ghost_blocks(workspace *W, double *y)
 				// Get the state variables based on the indices of the edge block for this side (and all other sides).
 				send_array_Ke[i] = y[W->neq * W->nvu_w->edge_indices[idx_offset + i] + i_K_e];
 				send_array_Nae[i] = y[W->neq * W->nvu_w->edge_indices[idx_offset + i] + i_Na_e];
+				send_array_Kk[i] = y[W->neq * W->nvu_w->edge_indices[idx_offset + i] + i_K_k];
+				send_array_vk[i] = y[W->neq * W->nvu_w->edge_indices[idx_offset + i] + i_v_k];
 			}
 
 			// Simultaneously send and receive the values for the ghost blocks.
@@ -246,26 +288,42 @@ void update_ghost_blocks(workspace *W, double *y)
 					send_array_Nae, side_length, MPI_DOUBLE, W->domain_neighbours[side_idx], 0,
 					receive_array_Nae, side_length, MPI_DOUBLE, W->domain_neighbours[side_idx], 0,
 					MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			MPI_Sendrecv(
+					send_array_Kk, side_length, MPI_DOUBLE, W->domain_neighbours[side_idx], 0,
+					receive_array_Kk, side_length, MPI_DOUBLE, W->domain_neighbours[side_idx], 0,
+					MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			MPI_Sendrecv(
+					send_array_vk, side_length, MPI_DOUBLE, W->domain_neighbours[side_idx], 0,
+					receive_array_vk, side_length, MPI_DOUBLE, W->domain_neighbours[side_idx], 0,
+					MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
 			// Copy received data into the ghost blocks.
 			for(int i = 0; i < side_length; i++)
 			{
-				W->nvu_w->ghost_blocks[idx_offset + i].vars[DIFF_K] = receive_array_Ke[i];
-				W->nvu_w->ghost_blocks[idx_offset + i].vars[DIFF_NA] = receive_array_Nae[i];
+				W->nvu_w->ghost_blocks[idx_offset + i].vars[DIFF_Ke] = receive_array_Ke[i];
+				W->nvu_w->ghost_blocks[idx_offset + i].vars[DIFF_NAe] = receive_array_Nae[i];
+				W->nvu_w->ghost_blocks[idx_offset + i].vars[DIFF_Kk] = receive_array_Kk[i];
+				W->nvu_w->ghost_blocks[idx_offset + i].vars[DIFF_Vk] = receive_array_vk[i];
 			}
 
 			free(send_array_Ke);
 			free(receive_array_Ke);
 			free(send_array_Nae);
 			free(receive_array_Nae);
+			free(send_array_Kk);
+			free(receive_array_Kk);
+			free(send_array_vk);
+			free(receive_array_vk);
 		}
 		// If there is no neighbour, copy the current block's value into the ghost block.
 		else
 		{
 			for(int i = 0; i < side_length; i++)
 			{
-				W->nvu_w->ghost_blocks[idx_offset + i].vars[DIFF_K] = y[W->neq * W->nvu_w->edge_indices[idx_offset + i] + i_K_e];
-				W->nvu_w->ghost_blocks[idx_offset + i].vars[DIFF_NA] = y[W->neq * W->nvu_w->edge_indices[idx_offset + i] + i_Na_e];
+				W->nvu_w->ghost_blocks[idx_offset + i].vars[DIFF_Ke] = y[W->neq * W->nvu_w->edge_indices[idx_offset + i] + i_K_e];
+				W->nvu_w->ghost_blocks[idx_offset + i].vars[DIFF_NAe] = y[W->neq * W->nvu_w->edge_indices[idx_offset + i] + i_Na_e];
+				W->nvu_w->ghost_blocks[idx_offset + i].vars[DIFF_Kk] = y[W->neq * W->nvu_w->edge_indices[idx_offset + i] + i_K_k];
+				W->nvu_w->ghost_blocks[idx_offset + i].vars[DIFF_Vk] = y[W->neq * W->nvu_w->edge_indices[idx_offset + i] + i_v_k];
 			}
 		}
 		idx_offset += side_length;

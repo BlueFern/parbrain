@@ -13,7 +13,7 @@ static const int NUM_NEIGHBOURS = 4;
 // Enumerator to keep track of the diffusion variables positions.
 enum diff_idx
 {
-	DIFF_K , DIFF_NA
+	DIFF_Ke , DIFF_NAe, DIFF_Kk, DIFF_Vk
 };
 
 // Ghost block to store diffusion variables. Ghost blocks are placed around

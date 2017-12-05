@@ -4,18 +4,19 @@
 // Optional command line arguments for parBrainSim: N, T_FINAL, DT_PSEC (in that order). If none specified then the following are used.
 
 /*** Run parameters ***/
-    static const double T_FINAL        	= 30;        // Final run time
+    static const double T_FINAL        	= 3;        // Final run time
 	static const double T_STIM_0       	= 20;        // Start time for stimulation
 	static const double T_STIM_END     	= 21;        // End time for stimulation
     static const int    DT_PSEC       	= 10;       // Time step for writing to file (and screen)
-    static const int 	NTREE          	= 3;         // Number of levels in the H-tree (where the tissue slice has 2^(N-1) tissue blocks)
+    static const int 	NTREE          	= 7;         // Number of levels in the H-tree (where the tissue slice has 2^(N-1) tissue blocks)
     static const int 	NSUB           	= 1;         // Subtree size (easiest to just keep as 1)
-	static const double P_TOP			= 4100;	     // Pressure at the top of the tree, chosen so that the drop over the terminating arterioles is around 18.2 Pa to match with the single NVU model.
+	static const double P_TOP			= 4160;	     // Pressure at the top of the tree, chosen so that the drop over the terminating arterioles is around 18.2 Pa to match with the single NVU model.
 									  	  	  	  	 // For NTREE=3, P_TOP=4100 Pa. For NTREE=7, P_TOP=4160 Pa. For NTREE=13, P_TOP=4175
-	static const int 	SPATIAL_CHOICE	= 1;	     // 0: current input is a Gaussian plateau into the centre (fixed size), 0: current input into lower left corner
+	static const int 	SPATIAL_CHOICE	= 0;	     // 1: current input is a Gaussian plateau into the centre (fixed size), 0: current input into lower left corner
 
 /*** Switches for various pathways (default 1) ***/
-	static const double DIFFUSION_SWITCH 	= 0;		// 1: extracellular diffusion between blocks, 0: none
+	static const double GAPJUNCTION_SWITCH 	= 1;		// 1: astrocytic K+ gap junction communication between blocks, 0: none
+	static const double DIFFUSION_SWITCH 	= 1;		// 1: extracellular diffusion between blocks, 0: none
 	static const double GluSwitch			= 1;		// 1: glutamate is released with current stimulation, 0: no glutamate
 	static const double NOswitch			= 1;		// 1: NO is produced in the NVU, 0: no NO production at all
     static const double trpv_switch	    	= 1;		// 1: TRPV4 channel is active, 0: completely closed (no flux)
@@ -51,7 +52,7 @@
 
 // General constants:
     static const double F             	= 96500;          // [C mol-1] Faradays constant
-    static const double Farad 		  	= 96.485;         // Faradays constant in different units
+    static const double Farad 		  	= 96.485;         // [C mmol-1] Faradays constant in different units
     static const double R_gas         	= 8.315;          // [J mol-1K-1]
     static const double Temp          	= 300;            // [K]
     static const double gam		      	= 1970;  		  // mV/uM The change in membrane potential by a scaling factor
@@ -320,12 +321,16 @@
     static const double PA2MMHG     = 0.00750061683;   // convert from Pa to mmHg
 
 /*** Diffusion constants ***/
-// Number of variables stored in diffusion structs, currently K_e and Na_e.
-    static const int NUM_DIFF_VARS = 2; //2;
+// Number of variables used in diffusion between blocks - K_e, Na_e, v_k, K_k
+    static const int NUM_DIFF_VARS = 4;
 
 // Rates of diffusion (characteristic times) for diffusion between tissue blocks
     static const double tau_Ke      = 4.3;  // (sec) The diffusion rate - characteristic time scale for K+ to travel one NVU block
     static const double tau_Nae     = 6.4;  // (sec) The diffusion rate - characteristic time scale for Na+ to travel one NVU block
+
+// Gap junction constants
+    static const double D_Kgap		= 6.17e-7; // [m^2/s] effective diffusion rate for K+ via gap junctions, D_Kgap = A_ef * N_g * P_K / R_k = 3.7e-9 * 200 * 5e-8 / 6e-8
+    static const double delta_x 	= 1.24e-4; // [m] length/width of one NVU block
 
 /*** H-tree constants ***/
 // Constants for the H-tree, don't change
@@ -348,7 +353,6 @@
 	static const int i_K_k     = 3;
 	static const int i_HCO3_k  = 4;
 	static const int i_Cl_k    = 5;
-	static const int i_w_k       = 10;
 
 	// SC
 	static const int i_Na_s    = 6;
@@ -357,6 +361,7 @@
 
 	// PVS
 	static const int i_K_p       = 9;
+	static const int i_w_k       = 10;
 
 	// SMC
 	static const int i_ca_i      = 11;
@@ -409,10 +414,10 @@
 	static const int i_Na_e	   = 48;
 
 	// Neuron - other
-	static const int i_Buff_e	   = 49;
-	static const int i_O2		   = 50;
-	static const int i_CBV	   = 51;
-	static const int i_HbR	   = 52;
+	static const int i_Buff_e	   	= 49;
+	static const int i_O2		   	= 50;
+	static const int i_CBV	   		= 51;
+	static const int i_HbR	   		= 52;
 
 	// Neuron Gating Variables
 	static const int i_m1	   	   = 53;

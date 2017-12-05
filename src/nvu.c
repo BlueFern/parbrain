@@ -602,14 +602,14 @@ double current_input(double t, double x, double y)
     else
     {
     // only in corner
-    if (x <= 0 && y <= 0)
-    {
-        current_space = 1;
-    }
-    else
-    {
-        current_space = 0;
-    }
+		if (x <= 0 && y <= 0)
+		{
+			current_space = 1;
+		}
+		else
+		{
+			current_space = 0;
+		}
     }
 
     double current_time;
@@ -692,7 +692,7 @@ void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w)
 		// Current ICs optimised for J_PLC = 0.11!!
 		u0[i_radius]  = 1.1485;
 
-	    u0[i_v_k]       = -60;
+	    u0[i_v_k]     = -88.9;
 	    u0[i_Na_k]    = 18268;
 	    u0[i_K_k]     = 92708;
 	    u0[i_HCO3_k]  = 9131;
