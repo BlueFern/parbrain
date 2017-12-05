@@ -67,7 +67,7 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
 		du[i_Na_e] += flu_diff_Na;
 //    	// As these two variables contain the term "SC_coup * du[K_e] * 1e3", they must also be updated!
 		du[i_K_s] += SC_coup * flu_diff_K * 1e3;
-		du[i_Na_s] += -SC_coup * flu_diff_Na * 1e3;
+		du[i_Na_s] += SC_coup * flu_diff_Na * 1e3;
 	}
 
 	if (GAPJUNCTION_SWITCH > 0)
