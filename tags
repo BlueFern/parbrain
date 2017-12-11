@@ -8,8 +8,6 @@ A	src/brain.h	/^    cs      *A;     \/\/ Local (per node) adjacency matrix$/;"	m
 A	src/matops.h	/^    cs *A;  \/* numerical Jacobian stored in here *\/$/;"	m	struct:numjac
 A0	src/brain.h	/^    cs      *A0;    \/\/ Root adjacency matrix$/;"	m	struct:workspace
 A0t	src/brain.h	/^    cs      *A0t;    $/;"	m	struct:workspace
-AM	src/constants.h	/^	static const int AM        = 23;$/;"	v
-AMp	src/constants.h	/^	static const int AMp       = 22;$/;"	v
 A_A	src/brain.h	/^    cs     *A_A;$/;"	m	struct:workspace
 A_At	src/brain.h	/^    cs     *A_At;$/;"	m	struct:workspace
 A_ef_k	src/constants.h	/^    static const double A_ef_k        	= 3.7e-9;  				\/\/ m2       Area of an endfoot of an astrocyte, equal to Area astrocyte at synaptic cleft$/;"	v
@@ -23,10 +21,8 @@ B_ex	src/constants.h	/^    static const double B_ex 			= 11.35;$/;"	v
 B_i	src/constants.h	/^    static const double B_i		      	= 2.025;$/;"	v
 B_j	src/constants.h	/^    static const double B_j 		  	= 0.5;$/;"	v
 Buff0	src/constants.h	/^    static const double Buff0	        = 500;$/;"	v
-Buff_e	src/constants.h	/^	static const int Buff_e	   = 49;$/;"	v
 CBF_0	src/constants.h	/^        static const double CBF_0		  = 0.0637;$/;"	v
 CBF_init	src/constants.h	/^    static const double CBF_init 	    = 0.032;$/;"	v
-CBV	src/constants.h	/^	static const int CBV	   = 51;$/;"	v
 CBV_0	src/constants.h	/^        static const double CBV_0		  = 1.317;$/;"	v
 C_4	src/constants.h	/^    static const double C_4           = 0.011;  \/\/ [s{-1} microM{-2}] (note: the changing units are correct!) (for m   2)$/;"	v
 C_Hillmann	src/constants.h	/^    static const double C_Hillmann    	= 1;$/;"	v
@@ -42,16 +38,19 @@ Ca_k_min	src/constants.h	/^    static const double Ca_k_min		= 0.1;$/;"	v
 Ca_rest	src/constants.h	/^    static const double Ca_rest       = 0.1;$/;"	v
 Capmin_k	src/constants.h	/^    static const double Capmin_k		= 2000;$/;"	v
 Cm	src/constants.h	/^    static const double Cm			    = 7.5e-7;$/;"	v
-DHG	src/constants.h	/^	static const int DHG	   = 52;$/;"	v
-DHG_0	src/constants.h	/^        static const double DHG_0		  = 0.6662;$/;"	v
 DIFFUSION_H_	src/diffusion.h	2;"	d
 DIFFUSION_SWITCH	src/constants.h	/^	static const double DIFFUSION_SWITCH 	= 1;		\/\/ 1: extracellular diffusion between blocks, 0: none$/;"	v
-DIFF_K	src/diffusion.h	/^	DIFF_K , DIFF_NA$/;"	e	enum:diff_idx
-DIFF_NA	src/diffusion.h	/^	DIFF_K , DIFF_NA$/;"	e	enum:diff_idx
-DT_PSEC	src/constants.h	/^    static const int    DT_PSEC       	= 20;       \/\/ Time step for writing to file (and screen)$/;"	v
+DIFF_Ke	src/diffusion.h	/^	DIFF_Ke , DIFF_NAe, DIFF_Kk, DIFF_Vk$/;"	e	enum:diff_idx
+DIFF_Kk	src/diffusion.h	/^	DIFF_Ke , DIFF_NAe, DIFF_Kk, DIFF_Vk$/;"	e	enum:diff_idx
+DIFF_NAe	src/diffusion.h	/^	DIFF_Ke , DIFF_NAe, DIFF_Kk, DIFF_Vk$/;"	e	enum:diff_idx
+DIFF_Vk	src/diffusion.h	/^	DIFF_Ke , DIFF_NAe, DIFF_Kk, DIFF_Vk$/;"	e	enum:diff_idx
+DT_PSEC	src/constants.h	/^    static const int    DT_PSEC       	= 1;       \/\/ Time step for writing to file (and screen)$/;"	v
 D_K	src/constants.h	/^    static const double D_K 		    = 1.96e-5;$/;"	v
+D_Ke	src/constants.h	/^    static const double D_Ke      = 3.6e-9;  \/\/ [m^2\/s] The diffusion rate of ECS K+$/;"	v
+D_Kgap	src/constants.h	/^	static const double D_Kgap	  = 3.1e-9; \/\/ [m^2\/s] effective diffusion rate for K+ via gap junctions, D_Kgap = A_ef * P_K \/ R_k = 3.7e-9 * 5e-8 \/ 6e-8 = 3.1e-9$/;"	v
 D_NO	src/constants.h	/^    static const double D_NO 	      = 3300;$/;"	v
 D_Na	src/constants.h	/^    static const double D_Na 		    = 1.33e-5;$/;"	v
+D_Nae	src/constants.h	/^    static const double D_Nae     = 2.4e-9;  \/\/ [m^2\/s] The diffusion rate of ECS Na+$/;"	v
 D_i	src/constants.h	/^    static const double D_i		      	= 0.24;$/;"	v
 D_j	src/constants.h	/^    static const double D_j		      	= 0.24;$/;"	v
 E0	src/constants.h	/^    static const double E0          = 66e3;            \/\/ Pa$/;"	v
@@ -60,27 +59,32 @@ ECS_input	src/nvu.c	/^double ECS_input(double t, double x, double y)$/;"	f
 EPASSIVE	src/constants.h	/^    static const double EPASSIVE    = 66e3;           \/\/ Pa$/;"	v
 ETA	src/constants.h	/^    static const double ETA         = 2.8e2;          \/\/ Pa s$/;"	v
 E_0	src/constants.h	/^    static const double E_0		        = 0.4;$/;"	v
-E_6c	src/constants.h	/^	static const int E_6c       = 33;$/;"	v
 E_Ca	src/constants.h	/^    static const double E_Ca		  	= 50;$/;"	v
 E_Cl_d	src/constants.h	/^    static const double E_Cl_d		    = -70;$/;"	v
 E_Cl_sa	src/constants.h	/^    static const double E_Cl_sa	        = -70;$/;"	v
-E_b	src/constants.h	/^	static const int E_b        = 32;$/;"	v
 Esac	src/constants.h	/^    static const double Esac          	= -18;           \/\/ mV$/;"	v
 F	src/constants.h	/^    static const double F             	= 96500;          \/\/ [C mol-1] Faradays constant$/;"	v
 FILENAMESIZE	src/brain.h	15;"	d
 F_NaK	src/constants.h	/^    static const double F_NaK		  	= 0.0432;$/;"	v
 F_il	src/constants.h	/^    static const double F_il 		  	= 7.5e2; 		\/\/[-] scaling factor to fit the experimental data of Filosa$/;"	v
-Farad	src/constants.h	/^    static const double Farad 		  	= 96.485;         \/\/ Faradays constant in different unit$/;"	v
+Farad	src/constants.h	/^    static const double Farad 		  	= 96.485;         \/\/ [C mmol-1] Faradays constant in different units$/;"	v
 Fmax_i	src/constants.h	/^    static const double Fmax_i		  	= 0.23; 			\/\/ (microM\/s)$/;"	v
 Fmax_j	src/constants.h	/^    static const double Fmax_j		  	= 0.23; 			\/\/ [microM\/s]$/;"	v
 G	src/brain.h	/^    cs      *G;     \/\/ Conductance matrix $/;"	m	struct:workspace
 G0	src/brain.h	/^    cs      *G0;    \/\/ Root conductance matrix$/;"	m	struct:workspace
-G_BK_k	src/constants.h	/^    static const double G_BK_k        	= 225;  				\/\/ !!!$/;"	v
+GAPJUNCTION_SWITCH	src/constants.h	/^	static const double GAPJUNCTION_SWITCH 	= 1;		\/\/ 1: astrocytic K+ gap junction communication between blocks, 0: none$/;"	v
+G_BK_k	src/constants.h	/^    static const double G_BK_k        	= 10.25;  		  \/\/ [uM mV^-1 s^-1]$/;"	v
 G_Ca	src/constants.h	/^    static const double G_Ca		  	= 0.00129; 		\/\/ (microM\/mV\/s)$/;"	v
 G_Cl	src/constants.h	/^    static const double G_Cl		  	= 0.00134;$/;"	v
+G_Cl_k	src/constants.h	/^    static const double G_Cl_k        	= 151.93;$/;"	v
 G_K	src/constants.h	/^    static const double G_K		      	= 0.00446;$/;"	v
+G_KCC1_k	src/constants.h	/^    static const double G_KCC1_k      	= 1.728;$/;"	v
+G_K_k	src/constants.h	/^    static const double G_K_k         	= 6907.77;$/;"	v
 G_M	src/constants.h	/^    static const double G_M           = 46000;$/;"	v
+G_NBC_k	src/constants.h	/^    static const double G_NBC_k       	= 130.74;$/;"	v
+G_NKCC1_k	src/constants.h	/^    static const double G_NKCC1_k     	= 9.568;$/;"	v
 G_NaCa	src/constants.h	/^    static const double G_NaCa		  	= 0.00316; 		\/\/ (microM\/mV\/s)$/;"	v
+G_Na_k	src/constants.h	/^    static const double G_Na_k        	= 226.94;$/;"	v
 G_R	src/constants.h	/^    static const double G_R		      	= 955;$/;"	v
 G_TRPV_k	src/constants.h	/^    static const double G_TRPV_k		= 50;$/;"	v
 G_cat	src/constants.h	/^    static const double G_cat 		  	= 0.66e-3;$/;"	v
@@ -90,11 +94,12 @@ GluSwitch	src/constants.h	/^	static const double GluSwitch			= 1;		\/\/ 1: gluta
 Glu_max	src/constants.h	/^    static const double Glu_max		    = 1846;$/;"	v
 Glu_slope	src/constants.h	/^    static const double Glu_slope 		= 0.1;$/;"	v
 HRR	src/constants.h	/^    static const double HRR         = 0.1;             \/\/ Nondimensional (thickness to radius ratio)$/;"	v
-I_STRENGTH	src/constants.h	/^	static const double I_STRENGTH		= 0.025;	  	\/\/ [A] strength of current input$/;"	v
+HbR_0	src/constants.h	/^        static const double HbR_0		  = 0.6662;$/;"	v
+I_STRENGTH	src/constants.h	/^	static const double I_STRENGTH		= 0.022;	  	\/\/ [A] strength of current input$/;"	v
 Imax	src/constants.h	/^    static const double Imax		    = 0.013*6;         \/\/ rate of the ATP pump (default 0.013*6)$/;"	v
 J	src/brain.h	/^    cs     *J;$/;"	m	struct:workspace
 JO_j	src/constants.h	/^    static const double JO_j 		  	= 0.029;  		\/\/constant Ca influx (EC)$/;"	v
-J_NaK_max	src/constants.h	/^    static const double J_NaK_max     	= 1.42e-3;        \/\/ [uMm s-1]$/;"	v
+J_NaK_max	src/constants.h	/^    static const double J_NaK_max     	= 2.3667e4;        \/\/ [uM s-1]$/;"	v
 J_PLC	src/constants.h	/^    static const double J_PLC 		    = 0.11; 	    \/\/ 0.11 for steady state or 0.3 for oscillations$/;"	v
 J_max	src/constants.h	/^    static const double J_max			= 2880;$/;"	v
 K3_c	src/constants.h	/^    static const double K3_c          	= 0.4;$/;"	v
@@ -106,12 +111,9 @@ K_K_s	src/constants.h	/^    static const double K_K_s         	= 1.5e3;         
 K_Na_k	src/constants.h	/^    static const double K_Na_k        	= 10e3;           \/\/ [uM]$/;"	v
 K_act	src/constants.h	/^    static const double K_act			= 0.17;$/;"	v
 K_actNOS	src/constants.h	/^    static const double K_actNOS      = 9.27e-2;$/;"	v
-K_d	src/constants.h	/^	static const int K_d	   = 45;$/;"	v
 K_dis	src/constants.h	/^    static const double K_dis         = 9e-2;$/;"	v
-K_e	src/constants.h	/^	static const int K_e	   = 47;$/;"	v
 K_eNOS	src/constants.h	/^    static const double K_eNOS        = 4.5e-1;$/;"	v
 K_ex	src/constants.h	/^    static const double K_ex			= 0.26;$/;"	v
-K_i	src/constants.h	/^	static const int K_i       = 16;$/;"	v
 K_inh	src/constants.h	/^    static const double K_inh			= 0.1;$/;"	v
 K_init_e	src/constants.h	/^    static const double K_init_e 	    = 2.9;$/;"	v
 K_mArg_j	src/constants.h	/^    static const double K_mArg_j      = 1.5;$/;"	v
@@ -120,9 +122,7 @@ K_mO2_j	src/constants.h	/^    static const double K_mO2_j       = 7.7;$/;"	v
 K_mO2_n	src/constants.h	/^    static const double K_mO2_n 	  = 243;$/;"	v
 K_m_mlcp	src/constants.h	/^    static const double K_m_mlcp      = 5.5;         		\/\/ [microM]$/;"	v
 K_m_pde	src/constants.h	/^    static const double K_m_pde       = 2;            		\/\/ [microM]$/;"	v
-K_p	src/constants.h	/^	static const int K_p       = 9;$/;"	v
 K_p_min	src/constants.h	/^    static const double K_p_min 	  	= 3e3;  	\/\/ uM$/;"	v
-K_sa	src/constants.h	/^	static const int K_sa	   = 43;$/;"	v
 Ke_switch	src/constants.h	/^    static const double Ke_switch		= 5.5;$/;"	v
 Kr_i	src/constants.h	/^    static const double Kr_i 		  	= 1;  			\/\/ (microM) Half saturation constant for agonist-dependent Ca entry$/;"	v
 Kr_j	src/constants.h	/^    static const double Kr_j		  	= 1;$/;"	v
@@ -132,49 +132,31 @@ LArg_j	src/constants.h	/^    static const double LArg_j		  	= 100;$/;"	v
 LRR	src/constants.h	/^    static const double LRR                 = 20;   							\/\/ Nondimensional, length to radius ratio$/;"	v
 L_i	src/constants.h	/^    static const double L_i		      	= 0.025;$/;"	v
 L_j	src/constants.h	/^    static const double L_j		      	= 0.025;$/;"	v
-L_p	src/constants.h	/^    static const double L_p           	= 2.1e-9;         \/\/ [m uM-1s-1]$/;"	v
 M	src/brain.h	/^    cs     *M;$/;"	m	struct:workspace
 MU	src/constants.h	/^    static const double MU                  = 3.5e-3;   						\/\/ Pa s, blood viscosity$/;"	v
 M_PI	src/brain.h	18;"	d
 M_PI	src/nvu.h	5;"	d
 M_mono	src/constants.h	/^    static const double M_mono        = 1.3e5;$/;"	v
 Mg	src/constants.h	/^    static const double Mg			    = 1.2;$/;"	v
-Mp	src/constants.h	/^	static const int Mp        = 21;$/;"	v
 Mu	src/constants.h	/^    static const double Mu			    = 8e-4;$/;"	v
 N	src/brain.h	/^    int     N;      \/\/ Total number of levels *\/$/;"	m	struct:workspace
 N	src/solver.h	/^    csn *N; \/\/ Newton matrix numeric factorisation$/;"	m	struct:ode_workspace
 N0	src/brain.h	/^    int     N0;     \/\/ Number of root levels *\/$/;"	m	struct:workspace
 NEQ	src/constants.h	/^    static const int NEQ       = 67;$/;"	v
-NOi	src/constants.h	/^	static const int NOi        = 26;$/;"	v
-NOj	src/constants.h	/^	static const int NOj        = 27;$/;"	v
-NOk	src/constants.h	/^	static const int NOk        = 25;$/;"	v
-NOn	src/constants.h	/^	static const int NOn        = 24;$/;"	v
 NOswitch	src/constants.h	/^	static const double NOswitch			= 1;		\/\/ 1: NO is produced in the NVU, 0: no NO production at all$/;"	v
 NSUB	src/constants.h	/^    static const int 	NSUB           	= 1;         \/\/ Subtree size (easiest to just keep as 1)$/;"	v
 NSYMBOLS	src/brain.c	/^const int NSYMBOLS      = 4;$/;"	v
 NTREE	src/constants.h	/^    static const int 	NTREE          	= 13;         \/\/ Number of levels in the H-tree (where the tissue slice has 2^(N-1) tissue blocks)$/;"	v
-NUM_DIFF_VARS	src/constants.h	/^    static const int NUM_DIFF_VARS = 2; \/\/2;$/;"	v
+NUM_DIFF_VARS	src/constants.h	/^    static const int NUM_DIFF_VARS = 4;$/;"	v
 NUM_NEIGHBOURS	src/diffusion.h	/^static const int NUM_NEIGHBOURS = 4;$/;"	v
 NVU_H	src/nvu.h	2;"	d
-N_Cl_k	src/constants.h	/^	static const int N_Cl_k    = 5;$/;"	v
-N_HCO3_k	src/constants.h	/^	static const int N_HCO3_k  = 4;$/;"	v
-N_HCO3_s	src/constants.h	/^	static const int N_HCO3_s  = 8;$/;"	v
-N_K_k	src/constants.h	/^	static const int N_K_k     = 3;$/;"	v
-N_K_s	src/constants.h	/^	static const int N_K_s     = 7;$/;"	v
-N_Na_k	src/constants.h	/^	static const int N_Na_k    = 2;$/;"	v
-N_Na_s	src/constants.h	/^	static const int N_Na_s    = 6;$/;"	v
-Na_d	src/constants.h	/^	static const int Na_d	   = 46;$/;"	v
-Na_e	src/constants.h	/^	static const int Na_e	   = 48;$/;"	v
 Na_init_d	src/constants.h	/^    static const double Na_init_d 	    = 10;$/;"	v
 Na_init_sa	src/constants.h	/^    static const double Na_init_sa      = 10;$/;"	v
-Na_sa	src/constants.h	/^	static const int Na_sa	   = 44;$/;"	v
 Np	src/brain.h	/^    int     Np;     \/\/ Number of levels for local subtree, e.g. if H-tree has 4 levels and using 4 cores the local subtrees will have 2 levels *\/$/;"	m	struct:workspace
 Nsub	src/brain.h	/^    int     Nsub;   \/\/ Subtree size for blk-diagonal Jacobian *\/$/;"	m	struct:workspace
-O2	src/constants.h	/^	static const int O2		   = 50;$/;"	v
 O2_0	src/constants.h	/^    static const double O2_0		    = 0.02;$/;"	v
 O2_b	src/constants.h	/^    static const double O2_b 		    = 0.04;$/;"	v
 O2switch	src/constants.h	/^    static const double O2switch			= 1;		\/\/ 1: Oxygen is limited, 0: oxygen is plentiful$/;"	v
-Oj	src/constants.h	/^    static const double Oj            = 200;$/;"	v
 Ok	src/constants.h	/^    static const double Ok            = 200;$/;"	v
 On	src/constants.h	/^    static const double On            = 200;$/;"	v
 P0	src/constants.h	/^    static const double P0                  = 8000;                            	\/\/ Pa (scaling factor for nondim)$/;"	v
@@ -201,8 +183,6 @@ R_K	src/constants.h	/^    static const double R_K		      	= 12;$/;"	v
 R_decay	src/constants.h	/^    static const double R_decay         = 0.15;  	    \/\/ [s^-1] rate of decay of K+ in the PVS (default 0.15)$/;"	v
 R_gas	src/constants.h	/^    static const double R_gas         	= 8.315;          \/\/ [J mol-1K-1]$/;"	v
 R_init	src/constants.h	/^    static const double R_init	        = 1.9341e-5;$/;"	v
-R_k	src/constants.h	/^	static const int R_k       = 1;$/;"	v
-R_tot	src/constants.h	/^    static const double R_tot         	= 8.79e-8;        \/\/ [m]   total volume surface area ratio AC+SC  **see nvu.h$/;"	v
 Ra	src/constants.h	/^    static const double Ra			    = 1.83e5;$/;"	v
 Rd_i	src/constants.h	/^    static const double Rd_i		  	= 250;$/;"	v
 S	src/solver.h	/^    css *S; \/\/ Newton matrix sybolic factorisation$/;"	m	struct:ode_workspace
@@ -212,14 +192,15 @@ SPATIAL_CHOICE	src/constants.h	/^	static const int 	SPATIAL_CHOICE	= 1;	     \/\
 SRC_CONSTANTS_H_	src/constants.h	2;"	d
 T0	src/constants.h	/^    static const double T0          = 1;               \/\/ s$/;"	v
 T_FINAL	src/constants.h	/^    static const double T_FINAL        	= 50;        \/\/ Final run time$/;"	v
-T_STIM_0	src/constants.h	/^	static const double T_STIM_0       	= 20;        \/\/ Start time for stimulation$/;"	v
-T_STIM_END	src/constants.h	/^	static const double T_STIM_END     	= 24;        \/\/ End time for stimulation$/;"	v
+T_STIM_0	src/constants.h	/^	static const double T_STIM_0       	= 10;        \/\/ Start time for stimulation$/;"	v
+T_STIM_END	src/constants.h	/^	static const double T_STIM_END     	= 26;        \/\/ End time for stimulation$/;"	v
 Temp	src/constants.h	/^    static const double Temp          	= 300;            \/\/ [K]$/;"	v
 Toutfile	src/brain.h	/^    MPI_File Toutfile;$/;"	m	struct:workspace
 Toutfilename	src/brain.h	/^    char    *Toutfilename;$/;"	m	struct:workspace
 VR_ER_cyt	src/constants.h	/^    static const double VR_ER_cyt		= 0.185;$/;"	v
 VR_pa	src/constants.h	/^    static const double VR_pa         	= 0.001; 				\/\/ [-]       The estimated volume ratio of perivascular space to astrocyte: Model estimation$/;"	v
 VR_ps	src/constants.h	/^    static const double VR_ps         	= 0.001;  				\/\/ [-]       The estimated volume ratio of perivascular space to SMC: Model Estimation$/;"	v
+VR_sa	src/constants.h	/^    static const double VR_sa 			= 0.465;			\/\/ [-] volume ratio between SC and AC = R_s\/R_k = 2.79e-8 \/ 8e-8$/;"	v
 V_0	src/constants.h	/^    static const double V_0		        = 0.03;$/;"	v
 V_NOj_max	src/constants.h	/^    static const double V_NOj_max     = 1.22;$/;"	v
 V_eet	src/constants.h	/^    static const double V_eet			= 72;$/;"	v
@@ -232,7 +213,6 @@ Vd	src/constants.h	/^    static const double Vd			    = 5.614e-9;$/;"	v
 Vs	src/constants.h	/^    static const double Vs			    = 2.16e-9;$/;"	v
 W	src/solver.h	/^    workspace *W;$/;"	m	struct:ode_workspace
 W_0	src/constants.h	/^    static const double W_0           = 1.4;$/;"	v
-X_k	src/constants.h	/^    static const double X_k           	= 12.41e-3;       \/\/ [uMm]$/;"	v
 _MATOPS_H	src/matops.h	2;"	d
 a1	src/nvu.h	/^    double a1, a2, a3, a4, a5;$/;"	m	struct:nvu_workspace
 a1_j	src/constants.h	/^    static const double a1_j		  	= 53.3;$/;"	v
@@ -258,16 +238,8 @@ betB	src/constants.h	/^    static const double betB          = 2800;$/;"	v
 bet_i	src/constants.h	/^    static const double bet_i         = 0.13;  \/\/ translation factor for membrane potential dependence of KCa channel activation sigmoidal [microM2]$/;"	v
 blkdiag	src/matops.c	/^cs * blkdiag(const cs *A, int mb, int nb)$/;"	f
 buf	src/brain.h	/^    double  *buf;    				\/\/ Communication buffer$/;"	m	struct:workspace
-cGMP	src/constants.h	/^	static const int cGMP       = 28;$/;"	v
 c_NaCa	src/constants.h	/^    static const double c_NaCa		  	= 0.5; 			\/\/ (microM)$/;"	v
 c_j	src/constants.h	/^    static const double c_j 		  	= -0.4;  		\/\/-6.4 changed value!$/;"	v
-ca_er_j	src/constants.h	/^	static const int ca_er_j   = 18;$/;"	v
-ca_i	src/constants.h	/^	static const int ca_i      = 11;$/;"	v
-ca_j	src/constants.h	/^	static const int ca_j      = 17;$/;"	v
-ca_k	src/constants.h	/^	static const int ca_k       = 34;$/;"	v
-ca_n	src/constants.h	/^	static const int ca_n       = 31;$/;"	v
-ca_p	src/constants.h	/^	static const int ca_p       = 40;$/;"	v
-ca_sr_i	src/constants.h	/^	static const int ca_sr_i   = 12;$/;"	v
 cb_i	src/constants.h	/^    static const double cb_i		  	= 1;$/;"	v
 cb_j	src/constants.h	/^    static const double cb_j		  	= 1;$/;"	v
 cc_i	src/constants.h	/^    static const double cc_i		  	= 0.9;$/;"	v
@@ -290,6 +262,7 @@ daxpy	src/matops.c	/^void daxpy(int n, double a, const double *x, double *y)$/;"
 dcopy	src/matops.c	/^void dcopy(int n, const double *x, double *y)$/;"	f
 delt_wss	src/constants.h	/^    static const double delt_wss      = 2.86;$/;"	v
 delta	src/constants.h	/^    static const double delta			= 1.235e-2;$/;"	v
+delta_x	src/constants.h	/^     static const double delta_x 	= 1.24e-4; \/\/ [m] length\/width of one NVU block$/;"	v
 dense2sparse	src/matops.c	/^cs *dense2sparse(double **A, int m, int n)$/;"	f
 densefree	src/matops.c	/^void densefree(double **A, int n)$/;"	f
 denseprint	src/matops.c	/^void denseprint(double **A, int m, int n)$/;"	f
@@ -312,10 +285,8 @@ dpdgneg	src/brain.h	/^    cs     *dpdgneg;$/;"	m	struct:workspace
 dt	src/solver.h	/^    double dt;$/;"	m	struct:ode_workspace
 dtwrite	src/solver.h	/^    double dtwrite;$/;"	m	struct:ode_workspace
 dxxy	src/matops.c	/^void dxxy (int n, const double *x, double *y)$/;"	f
-eNOS	src/constants.h	/^	static const int eNOS       = 29;$/;"	v
 edge_indices	src/nvu.h	/^    int *edge_indices;$/;"	m	struct:nvu_workspace
-eet_k	src/constants.h	/^	static const int eet_k      = 38;$/;"	v
-eet_shift	src/constants.h	/^    static const double eet_shift		= 2e-3;$/;"	v
+eet_shift	src/constants.h	/^    static const double eet_shift		= 2;$/;"	v
 epshalf_k	src/constants.h	/^    static const double epshalf_k		= 0.1;$/;"	v
 eval_dfdp	src/brain.c	/^void eval_dfdp(workspace *W, double t, double *y, double *f, double eps)$/;"	f
 eval_dfdx	src/brain.c	/^void eval_dfdx(workspace *W, double t, double *y, double *f, double eps)$/;"	f
@@ -343,23 +314,15 @@ gNaP_GHk	src/constants.h	/^    static const double gNaP_GHk	    = 2e-6;$/;"	v
 gNaT_GHk	src/constants.h	/^    static const double gNaT_GHk        = 10e-5;$/;"	v
 gNaleak_d	src/constants.h	/^    static const double gNaleak_d	    = 6.2961e-5;$/;"	v
 gNaleak_sa	src/constants.h	/^    static const double gNaleak_sa	    = 6.2378e-5;       \/\/ channel conductances, change depending on Imax, see OO-NVU for other values$/;"	v
-g_BK_k	src/constants.h	/^    static const double g_BK_k        	= 225 * 1e-12 \/  3.7e-9;  	\/\/ ohm-1m-2  Specific capacitance of the BK-Channel in units of Ostby$/;"	v
-g_Cl_k	src/constants.h	/^    static const double g_Cl_k        	= 8.797e-1;       \/\/ [ohm-1m-2]$/;"	v
-g_KCC1_k	src/constants.h	/^    static const double g_KCC1_k      	= 1e-2;           \/\/ [ohm-1m-2]$/;"	v
-g_K_k	src/constants.h	/^    static const double g_K_k         	= 40;             \/\/ [ohm-1m-2]$/;"	v
-g_NBC_k	src/constants.h	/^    static const double g_NBC_k       	= 7.57e-1;        \/\/ [ohm-1m-2]$/;"	v
-g_NKCC1_k	src/constants.h	/^    static const double g_NKCC1_k     	= 5.54e-2;        \/\/ [ohm-1m-2]$/;"	v
-g_Na_k	src/constants.h	/^    static const double g_Na_k        	= 1.314;          \/\/ [ohm-1m-2]$/;"	v
 g_TRPV_k	src/constants.h	/^    static const double g_TRPV_k   	    = 50 * 1e-12 \/ 3.7e-9;$/;"	v
 g_hat	src/constants.h	/^    static const double g_hat         	= 0.5;$/;"	v
 g_max	src/constants.h	/^    static const double g_max         = 0.06;$/;"	v
-gam	src/constants.h	/^    static const double gam		      	= 1970;  		\/\/ mVmicroM-1 The change in membrane potential by a scaling factor$/;"	v
+gam	src/constants.h	/^    static const double gam		      	= 1970;  		  \/\/ mV\/uM The change in membrane potential by a scaling factor$/;"	v
 gam_cae_k	src/constants.h	/^    static const double gam_cae_k		= 200;$/;"	v
 gam_cai_k	src/constants.h	/^    static const double gam_cai_k		= 0.01;$/;"	v
 gam_cross	src/constants.h	/^    static const double gam_cross     	= 17;$/;"	v
 gam_eNOS	src/constants.h	/^    static const double gam_eNOS      = 0.1;  \/\/ [-]$/;"	v
 gamma_O2	src/constants.h	/^    static const double gamma_O2        = 0.1;$/;"	v
-gamma_k	src/constants.h	/^    static const double gamma_k		    = 834.3;$/;"	v
 gcomm	src/brain.h	/^    double  *gcomm; \/\/ Communication vector $/;"	m	struct:workspace
 ghost_block	src/diffusion.h	/^typedef struct ghost_block$/;"	s
 ghost_block	src/diffusion.h	/^} ghost_block;$/;"	t	typeref:struct:ghost_block
@@ -367,15 +330,74 @@ ghost_block	src/nvu.h	/^typedef struct ghost_block ghost_block;$/;"	t	typeref:st
 ghost_blocks	src/nvu.h	/^    ghost_block *ghost_blocks;$/;"	m	struct:nvu_workspace
 gleak_d	src/constants.h	/^    static const double gleak_d	        = 10*6.2961e-5;$/;"	v
 gleak_sa	src/constants.h	/^    static const double gleak_sa	    = 10*6.2378e-5;$/;"	v
-h1	src/constants.h	/^	static const int h1	   	   = 61;$/;"	v
-h2	src/constants.h	/^	static const int h2	   	   = 62;$/;"	v
-h3	src/constants.h	/^	static const int h3	   	   = 63;$/;"	v
-h4	src/constants.h	/^	static const int h4	   	   = 64;$/;"	v
-h5	src/constants.h	/^	static const int h5	   	   = 65;$/;"	v
-h6	src/constants.h	/^	static const int h6	   	   = 66;$/;"	v
-h_k	src/constants.h	/^	static const int h_k        = 36;$/;"	v
 horzcat	src/matops.c	/^cs * horzcat(const cs *A, const cs *B)$/;"	f
+i_AM	src/constants.h	/^	static const int i_AM        = 23;$/;"	v
+i_AMp	src/constants.h	/^	static const int i_AMp       = 22;$/;"	v
+i_Buff_e	src/constants.h	/^	static const int i_Buff_e	   	= 49;$/;"	v
+i_CBV	src/constants.h	/^	static const int i_CBV	   		= 51;$/;"	v
+i_Cl_k	src/constants.h	/^	static const int i_Cl_k    = 5;$/;"	v
+i_E_6c	src/constants.h	/^	static const int i_E_6c       = 33;$/;"	v
+i_E_b	src/constants.h	/^	static const int i_E_b        = 32;$/;"	v
+i_HCO3_k	src/constants.h	/^	static const int i_HCO3_k  = 4;$/;"	v
+i_HCO3_s	src/constants.h	/^	static const int i_HCO3_s  = 8;$/;"	v
+i_HbR	src/constants.h	/^	static const int i_HbR	   		= 52;$/;"	v
+i_K_d	src/constants.h	/^	static const int i_K_d	   = 45;$/;"	v
+i_K_e	src/constants.h	/^	static const int i_K_e	   = 47;$/;"	v
+i_K_i	src/constants.h	/^	static const int i_K_i       = 16;$/;"	v
+i_K_k	src/constants.h	/^	static const int i_K_k     = 3;$/;"	v
+i_K_p	src/constants.h	/^	static const int i_K_p       = 9;$/;"	v
+i_K_s	src/constants.h	/^	static const int i_K_s     = 7;$/;"	v
+i_K_sa	src/constants.h	/^	static const int i_K_sa	   = 43;$/;"	v
+i_Mp	src/constants.h	/^	static const int i_Mp        = 21;$/;"	v
+i_NOi	src/constants.h	/^	static const int i_NOi        = 26;$/;"	v
+i_NOj	src/constants.h	/^	static const int i_NOj        = 27;$/;"	v
+i_NOk	src/constants.h	/^	static const int i_NOk        = 25;$/;"	v
+i_NOn	src/constants.h	/^	static const int i_NOn        = 24;$/;"	v
+i_Na_d	src/constants.h	/^	static const int i_Na_d	   = 46;$/;"	v
+i_Na_e	src/constants.h	/^	static const int i_Na_e	   = 48;$/;"	v
+i_Na_k	src/constants.h	/^	static const int i_Na_k    = 2;$/;"	v
+i_Na_s	src/constants.h	/^	static const int i_Na_s    = 6;$/;"	v
+i_Na_sa	src/constants.h	/^	static const int i_Na_sa   = 44;$/;"	v
+i_O2	src/constants.h	/^	static const int i_O2		   	= 50;$/;"	v
+i_cGMP	src/constants.h	/^	static const int i_cGMP       = 28;$/;"	v
+i_ca_er_j	src/constants.h	/^	static const int i_ca_er_j   = 18;$/;"	v
+i_ca_i	src/constants.h	/^	static const int i_ca_i      = 11;$/;"	v
+i_ca_j	src/constants.h	/^	static const int i_ca_j      = 17;$/;"	v
+i_ca_k	src/constants.h	/^	static const int i_ca_k       = 34;$/;"	v
+i_ca_n	src/constants.h	/^	static const int i_ca_n       = 31;$/;"	v
+i_ca_p	src/constants.h	/^	static const int i_ca_p       = 40;$/;"	v
+i_ca_sr_i	src/constants.h	/^	static const int i_ca_sr_i   = 12;$/;"	v
+i_eNOS	src/constants.h	/^	static const int i_eNOS       = 29;$/;"	v
+i_eet_k	src/constants.h	/^	static const int i_eet_k      = 38;$/;"	v
+i_h1	src/constants.h	/^	static const int i_h1	   	   = 61;$/;"	v
+i_h2	src/constants.h	/^	static const int i_h2	   	   = 62;$/;"	v
+i_h3	src/constants.h	/^	static const int i_h3	   	   = 63;$/;"	v
+i_h4	src/constants.h	/^	static const int i_h4	   	   = 64;$/;"	v
+i_h5	src/constants.h	/^	static const int i_h5	   	   = 65;$/;"	v
+i_h6	src/constants.h	/^	static const int i_h6	   	   = 66;$/;"	v
+i_h_k	src/constants.h	/^	static const int i_h_k        = 36;$/;"	v
+i_ip3_i	src/constants.h	/^	static const int i_ip3_i     = 15;$/;"	v
+i_ip3_j	src/constants.h	/^	static const int i_ip3_j     = 20;$/;"	v
+i_ip3_k	src/constants.h	/^	static const int i_ip3_k      = 37;$/;"	v
+i_m1	src/constants.h	/^	static const int i_m1	   	   = 53;$/;"	v
+i_m2	src/constants.h	/^	static const int i_m2	   	   = 54;$/;"	v
+i_m3	src/constants.h	/^	static const int i_m3	   	   = 55;$/;"	v
+i_m4	src/constants.h	/^	static const int i_m4	   	   = 56;$/;"	v
+i_m5	src/constants.h	/^	static const int i_m5	   	   = 57;$/;"	v
+i_m6	src/constants.h	/^	static const int i_m6	   	   = 58;$/;"	v
+i_m7	src/constants.h	/^	static const int i_m7	   	   = 59;$/;"	v
+i_m8	src/constants.h	/^	static const int i_m8	   	   = 60;$/;"	v
+i_m_k	src/constants.h	/^	static const int i_m_k        = 39;$/;"	v
+i_nNOS	src/constants.h	/^	static const int i_nNOS       = 30;$/;"	v
 i_radius	src/constants.h	/^	static const int i_radius  = 0; \/\/ radius has to be 0, this is assumed elsewhere$/;"	v
+i_s_k	src/constants.h	/^	static const int i_s_k        = 35;$/;"	v
+i_v_d	src/constants.h	/^	static const int i_v_d	   = 42;$/;"	v
+i_v_i	src/constants.h	/^	static const int i_v_i       = 13;$/;"	v
+i_v_j	src/constants.h	/^	static const int i_v_j       = 19;$/;"	v
+i_v_k	src/constants.h	/^	static const int i_v_k       = 1;$/;"	v
+i_v_sa	src/constants.h	/^	static const int i_v_sa	   = 41;$/;"	v
+i_w_i	src/constants.h	/^	static const int i_w_i       = 14;$/;"	v
+i_w_k	src/constants.h	/^	static const int i_w_k       = 10;$/;"	v
 imorton_odd	src/matops.c	/^uint32_t imorton_odd(uint32_t x)$/;"	f
 imortonx	src/matops.c	/^uint32_t imortonx(uint32_t x)$/;"	f
 imortony	src/matops.c	/^uint32_t imortony(uint32_t x)$/;"	f
@@ -389,9 +411,6 @@ init_jacobians	src/brain.c	/^void init_jacobians(workspace *W)$/;"	f
 init_parallel	src/brain.c	/^void init_parallel(workspace *W, int argc, char **argv)$/;"	f
 init_roottree	src/brain.c	/^void init_roottree(workspace *W)$/;"	f
 init_subtree	src/brain.c	/^void init_subtree(workspace *W)$/;"	f
-ip3_i	src/constants.h	/^	static const int ip3_i     = 15;$/;"	v
-ip3_j	src/constants.h	/^	static const int ip3_j     = 20;$/;"	v
-ip3_k	src/constants.h	/^	static const int ip3_k      = 37;$/;"	v
 is_power_of_two	src/brain.c	/^int is_power_of_two (unsigned int x)$/;"	f
 isjac	src/brain.h	/^    int    isjac;$/;"	m	struct:workspace
 jacupdate	src/brain.c	/^void jacupdate(workspace *W, double t, double *u)$/;"	f
@@ -420,23 +439,14 @@ lambda	src/constants.h	/^    static const double lambda        = 20;$/;"	v
 level	src/brain.h	/^    int     *level; \/\/ Level of each vessel in A$/;"	m	struct:workspace
 level0	src/brain.h	/^    int     *level0;\/\/ Level of each vessel in A0$/;"	m	struct:workspace
 lusoln	src/solver.c	/^int lusoln(ode_workspace *odews, double *b)$/;"	f
-m1	src/constants.h	/^	static const int m1	   	   = 53;$/;"	v
-m2	src/constants.h	/^	static const int m2	   	   = 54;$/;"	v
-m3	src/constants.h	/^	static const int m3	   	   = 55;$/;"	v
 m3b	src/constants.h	/^    static const double m3b		      	= 1.32e-3;$/;"	v
 m3cat	src/constants.h	/^    static const double m3cat		  	= -0.18;  		\/\/-6.18 changed value!$/;"	v
 m3s	src/constants.h	/^    static const double m3s		      	= -0.28;$/;"	v
-m4	src/constants.h	/^	static const int m4	   	   = 56;$/;"	v
 m4b	src/constants.h	/^    static const double m4b		      	= 0.3;$/;"	v
 m4cat	src/constants.h	/^    static const double m4cat 		  	= 0.37;$/;"	v
 m4s	src/constants.h	/^    static const double m4s		      	= 0.389;$/;"	v
-m5	src/constants.h	/^	static const int m5	   	   = 57;$/;"	v
-m6	src/constants.h	/^	static const int m6	   	   = 58;$/;"	v
-m7	src/constants.h	/^	static const int m7	   	   = 59;$/;"	v
-m8	src/constants.h	/^	static const int m8	   	   = 60;$/;"	v
 m_4	src/constants.h	/^    static const double m_4			  = 2;$/;"	v
 m_c	src/constants.h	/^    static const double m_c			    = 4;$/;"	v
-m_k	src/constants.h	/^	static const int m_k        = 39;$/;"	v
 main	src/run_parbrain.c	/^int main(int argc, char **argv)$/;"	f
 matcopy	src/matops.c	/^cs * matcopy(const cs *A)$/;"	f
 maxits	src/solver.h	/^    int    maxits;$/;"	m	struct:ode_workspace
@@ -446,7 +456,6 @@ mglobal	src/brain.h	/^    int     mglobal;\/\/ Processor grid, number of rows$/;
 mldivide_chol	src/matops.c	/^cs * mldivide_chol(cs *A, css *S, cs *B)$/;"	f
 mlocal	src/brain.h	/^    int     mlocal; \/\/ Size of subtree$/;"	m	struct:workspace
 mu2	src/constants.h	/^    static const double mu2           = 0.0167;$/;"	v
-nNOS	src/constants.h	/^	static const int nNOS       = 30;$/;"	v
 n_procs	src/brain.h	/^    int     n_procs;$/;"	m	struct:workspace
 n_writes	src/brain.h	/^    int     n_writes;$/;"	m	struct:workspace
 nblocks	src/brain.h	/^    int     nblocks;\/\/ Number of nvu blocks$/;"	m	struct:workspace
@@ -482,7 +491,7 @@ p0	src/brain.h	/^    double  *p0;    \/\/ Pressures at root $/;"	m	struct:worksp
 p_hat	src/constants.h	/^    static const double p_hat         	= 0.05;$/;"	v
 p_hatIP3	src/constants.h	/^    static const double p_hatIP3      	= 0.05;$/;"	v
 pcap	src/nvu.h	/^    double pcap;		\/\/ pressure at capillaries (min)$/;"	m	struct:nvu_workspace
-ph	src/constants.h	/^    static const double ph			    = 26.6995;$/;"	v
+ph	src/constants.h	/^    static const double ph			    = 26.6995;		  \/\/ RT\/Farad where Farad is in [C\/mmol]$/;"	v
 psi_w	src/constants.h	/^    static const double psi_w         	= 2.664;  				\/\/ s-1      A characteristic time$/;"	v
 q	src/brain.h	/^    double  *q;     \/\/ Flow through each vessel $/;"	m	struct:workspace
 q	src/solver.h	/^    double *q; \/\/$/;"	m	struct:ode_workspace
@@ -492,11 +501,9 @@ r_buff	src/constants.h	/^    static const double r_buff	        = 0.05;$/;"	v
 r_h	src/constants.h	/^    static const double r_h			    = 4.8;$/;"	v
 rank	src/brain.h	/^    int     rank;$/;"	m	struct:workspace
 repmatv	src/matops.c	/^double * repmatv(double a, int n)$/;"	f
-reverseBK	src/constants.h	/^    static const double reverseBK		= 0;$/;"	v
 rho_max	src/constants.h	/^    static const double rho_max		    = 0.7;$/;"	v
 rho_min	src/constants.h	/^    static const double rho_min		    = 0.1;$/;"	v
 rhs	src/brain.c	/^void rhs(workspace *W, double t, double *u, double *p, double *du)$/;"	f
-s_k	src/constants.h	/^	static const int s_k        = 35;$/;"	v
 sc_i	src/constants.h	/^    static const double sc_i		  	= 2;$/;"	v
 sc_j	src/constants.h	/^    static const double sc_j		  	= 2;$/;"	v
 set_block_neighbours	src/diffusion.c	/^void set_block_neighbours(int nlocal, int mlocal, nvu_workspace* w)$/;"	f
@@ -519,15 +526,12 @@ spzeros	src/matops.c	/^cs * spzeros(int m, int n)$/;"	f
 subarray	src/brain.h	/^    MPI_Datatype subarray;$/;"	m	struct:workspace
 subarray_single	src/brain.h	/^    MPI_Datatype subarray_single;$/;"	m	struct:workspace
 subsref	src/matops.c	/^cs * subsref(const cs *A, int *Ii, int *Jj, int ni, int nj)$/;"	f
-switchBK	src/constants.h	/^    static const double switchBK		= 1;$/;"	v
 symbchol	src/brain.h	/^    css     *symbchol;  \/\/ symbolic Cholesky factorisation $/;"	m	struct:workspace
 symbchol0	src/brain.h	/^    css     *symbchol0; \/\/ factorisation of root$/;"	m	struct:workspace
 symbchol_reduced	src/brain.h	/^    css    *symbchol_reduced;$/;"	m	struct:workspace
 t0	src/solver.h	/^    double t0;$/;"	m	struct:ode_workspace
 t_TRPV_k	src/constants.h	/^    static const double t_TRPV_k		= 0.9;$/;"	v
-tau_Ke	src/constants.h	/^    static const double tau_Ke      = 4.3;  \/\/ (sec) The diffusion rate - characteristic time scale for K+ to travel one NVU block$/;"	v
 tau_MTT	src/constants.h	/^    static const double tau_MTT	        = 3;$/;"	v
-tau_Nae	src/constants.h	/^    static const double tau_Nae     = 6.4;  \/\/ (sec) The diffusion rate - characteristic time scale for Na+ to travel one NVU block$/;"	v
 tau_TAT	src/constants.h	/^    static const double tau_TAT	        = 20;$/;"	v
 tau_ij	src/constants.h	/^    static const double tau_ij        = 0.00213068; \/\/pow(3.75,2)\/(2*3300);$/;"	v
 tau_ki	src/constants.h	/^    static const double tau_ki        = 0.09469697; \/\/pow(25,2)\/(2*3300);$/;"	v
@@ -539,27 +543,22 @@ tjacupdate	src/brain.h	/^    double tjacupdate;$/;"	m	struct:workspace
 trpv_switch	src/constants.h	/^    static const double trpv_switch	    	= 1;		\/\/ 1: TRPV4 channel is active, 0: completely closed (no flux)$/;"	v
 u	src/brain.h	/^    double  *u;     \/\/ Intermediate variable for parallel flow computation$/;"	m	struct:workspace
 ucomm	src/brain.h	/^    double  *ucomm; \/\/ Communication vector $/;"	m	struct:workspace
-unitcon	src/constants.h	/^    static const double unitcon       	= 1e3;            \/\/ [-] Factor to convert equations to another unit.$/;"	v
 update_ghost_blocks	src/diffusion.c	/^void update_ghost_blocks(workspace *W, double *y)$/;"	f
 v	src/brain.h	/^    double  *v;     \/\/ Intermediate variable for parallel flow computation $/;"	m	struct:workspace
-v1_TRPV_k	src/constants.h	/^    static const double v1_TRPV_k		= 0.12;$/;"	v
-v2_TRPV_k	src/constants.h	/^    static const double v2_TRPV_k		= 0.013;$/;"	v
+v1_TRPV_k	src/constants.h	/^    static const double v1_TRPV_k		= 120;$/;"	v
+v2_TRPV_k	src/constants.h	/^    static const double v2_TRPV_k		= 13;$/;"	v
 vK_i	src/constants.h	/^    static const double vK_i		  	= -94;$/;"	v
 vK_j	src/constants.h	/^    static const double vK_j 		  	= -80;$/;"	v
-v_4	src/constants.h	/^    static const double v_4           	= 8e-3; 				\/\/ V        A measure of the spread of the distribution$/;"	v
-v_5	src/constants.h	/^    static const double v_5			    = 15e-3;$/;"	v
-v_7	src/constants.h	/^    static const double v_7			    = -55e-3;$/;"	v
+v_4	src/constants.h	/^    static const double v_4           	= 8; 					\/\/ mV        A measure of the spread of the distribution$/;"	v
+v_5	src/constants.h	/^    static const double v_5			    = 15;					\/\/ mV$/;"	v
+v_6	src/constants.h	/^    static const double v_6			    = -55;					\/\/ mV$/;"	v
 v_Ca1	src/constants.h	/^    static const double v_Ca1		  	= 100; 			\/\/ (mV)$/;"	v
 v_Ca2	src/constants.h	/^    static const double v_Ca2		  	= -24; 			\/\/ (mV)$/;"	v
 v_Ca3	src/constants.h	/^    static const double v_Ca3		  	= -27;  			\/\/ correct$/;"	v
 v_Cl	src/constants.h	/^    static const double v_Cl		  	= -25;$/;"	v
 v_NaCa	src/constants.h	/^    static const double v_NaCa		  	= -30;$/;"	v
-v_d	src/constants.h	/^	static const int v_d	   = 42;$/;"	v
-v_i	src/constants.h	/^	static const int v_i       = 13;$/;"	v
-v_j	src/constants.h	/^	static const int v_j       = 19;$/;"	v
 v_n	src/constants.h	/^    static const double v_n           = -0.04;$/;"	v
 v_rest	src/constants.h	/^    static const double v_rest		  	= -31.1;$/;"	v
-v_sa	src/constants.h	/^	static const int v_sa	   = 41;$/;"	v
 vars	src/diffusion.h	/^	double *vars;$/;"	m	struct:ghost_block
 vcomm	src/brain.h	/^    double  *vcomm; \/\/ Communication vector $/;"	m	struct:workspace
 vd_i	src/constants.h	/^    static const double vd_i		  	= -100;$/;"	v
@@ -567,9 +566,7 @@ vecprint	src/matops.c	/^void vecprint(double *v, int n)$/;"	f
 vertcat	src/matops.c	/^cs * vertcat(const cs *A, const cs *B)$/;"	f
 vtkfilename	src/brain.h	/^    char    *vtkfilename;$/;"	m	struct:workspace
 w	src/brain.h	/^    double  *w;     \/\/ Pressure drop over each vessel$/;"	m	struct:workspace
-w_i	src/constants.h	/^	static const int w_i       = 14;$/;"	v
-w_k	src/constants.h	/^	static const int w_k       = 10;$/;"	v
-wallMech	src/constants.h	/^    static const double wallMech	    = 1.1;          \/\/ rate of wall mechanics, 1 for normal (default 1.1)$/;"	v
+wallMech	src/constants.h	/^    static const double wallMech	    = 1.7;          \/\/ rate of wall mechanics, 1 for normal (default 1.7)$/;"	v
 workspace	src/brain.h	/^typedef struct workspace {$/;"	s
 workspace	src/brain.h	/^} workspace;$/;"	t	typeref:struct:workspace
 workspace	src/diffusion.h	/^typedef struct workspace workspace;$/;"	t	typeref:struct:workspace
@@ -585,14 +582,14 @@ xn0	src/brain.h	/^    double  *xn0;   \/\/ extra n0-sized workspace$/;"	m	struct
 y	src/brain.h	/^    double  *y;     \/\/ y coordinates$/;"	m	struct:workspace
 y	src/solver.h	/^    double *y; \/\/ Workspace variable$/;"	m	struct:ode_workspace
 ytol	src/solver.h	/^    double ytol;$/;"	m	struct:ode_workspace
-z_1	src/constants.h	/^    static const double z_1 		  	= 4.5; 			\/\/[-] parameter fitted on experimental data of Filosa$/;"	v
-z_2	src/constants.h	/^    static const double z_2 		  	= -1.12e2; 		\/\/[-] parameter fitted on experimental data of Filosa$/;"	v
-z_3	src/constants.h	/^    static const double z_3 		  	= 4.2e-1; 		\/\/[-] parameter fitted on experimental data of Filosa$/;"	v
-z_4	src/constants.h	/^    static const double z_4 		  	= -1.26e1; 		\/\/[-] parameter fitted on experimental data of Filosa$/;"	v
+z_1	src/constants.h	/^    static const double z_1 		  	= 4.5e-3; 			\/\/[-] parameter fitted on experimental data of Filosa$/;"	v
+z_2	src/constants.h	/^    static const double z_2 		  	= 112; 		\/\/[-] parameter fitted on experimental data of Filosa$/;"	v
+z_3	src/constants.h	/^    static const double z_3 		  	= 4.2e-4; 		\/\/[-] parameter fitted on experimental data of Filosa$/;"	v
+z_4	src/constants.h	/^    static const double z_4 		  	= 12.6; 		\/\/[-] parameter fitted on experimental data of Filosa$/;"	v
 z_5	src/constants.h	/^    static const double z_5 		  	= -7.4e-2;  		\/\/[-] parameter fitted on experimental data of Filosa$/;"	v
-z_Ca	src/constants.h	/^    static const double z_Ca			= 2;$/;"	v
+z_Ca	src/constants.h	/^    static const double z_Ca			= 2;			  \/\/ [-]$/;"	v
 z_Cl	src/constants.h	/^    static const double z_Cl         	= -1;             \/\/ [-]$/;"	v
-z_K	src/constants.h	/^    static const double z_K           	= 1;             \/\/ [-]$/;"	v
+z_K	src/constants.h	/^    static const double z_K           	= 1;              \/\/ [-]$/;"	v
 z_NBC	src/constants.h	/^    static const double z_NBC         	= -1;             \/\/ [-]$/;"	v
 z_Na	src/constants.h	/^    static const double z_Na          	= 1;              \/\/ [-]$/;"	v
 zerosv	src/matops.c	/^double * zerosv(int n)$/;"	f

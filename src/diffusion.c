@@ -43,8 +43,9 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
     }
 
 	// Calculate the extracellular diffusion fluxes.
-    	double flu_diff_K = (neighbour_K_e[0] + neighbour_K_e[1] + neighbour_K_e[2] + neighbour_K_e[3] - 4*state_K_e) / tau_Ke;
-    	double flu_diff_Na = (neighbour_Na_e[0] + neighbour_Na_e[1] + neighbour_Na_e[2] + neighbour_Na_e[3] - 4*state_Na_e) / tau_Nae;
+//    	double flu_diff_K = D_Kgap / pow(delta_x,2) *  (neighbour_K_e[0] + neighbour_K_e[1] + neighbour_K_e[2] + neighbour_K_e[3] - 4*state_K_e);
+    	double flu_diff_K = (D_Ke / pow(delta_x,2)) *(neighbour_K_e[0] + neighbour_K_e[1] + neighbour_K_e[2] + neighbour_K_e[3] - 4*state_K_e);
+    	double flu_diff_Na = (D_Nae / pow(delta_x,2)) *(neighbour_Na_e[0] + neighbour_Na_e[1] + neighbour_Na_e[2] + neighbour_Na_e[3] - 4*state_Na_e);
 
    // Calculate the gap junctional flux.
     	// Figure out which neighbour is which for ease of use! O-3: west, north, east, south
@@ -58,22 +59,33 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
     	double v_iplus1 = neighbour_v_k[2];
     	double v_jminus1 = neighbour_v_k[3];
 
-    	double flu_gap_K = D_Kgap / pow(delta_x,2) * ( K_iplus1 + K_iminus1 + K_jplus1 + K_jminus1 - 4*state_K_k + Farad * z_K / R_gas * Temp * ( state_K_k * ( v_iplus1 + v_iminus1 + v_jplus1 + v_iminus1 - 4*state_v_k ) + 1/4 * ( (K_iplus1 - K_iminus1)*(v_iplus1 - v_iminus1) + (K_jplus1 - K_jminus1)*(v_jplus1 - v_jminus1) ) ) );
+    	// Split into three components for bug testing
+    	double flu_gap_diff = (D_Kgap / pow(delta_x,2)) * ( K_iplus1 + K_iminus1 + K_jplus1 + K_jminus1 - 4*state_K_k);
+    	double flu_gap_electro2 = ((D_Kgap * Farad * z_K) / (pow(delta_x,2) * R_gas * Temp * 4)) * ( (K_iplus1 - K_iminus1) * (v_iplus1 - v_iminus1) + (K_jplus1 - K_jminus1) * (v_jplus1 - v_jminus1) );
+
+    	double flu_gap_electro1 = ((D_Kgap * Farad * z_K) / (pow(delta_x,2) * R_gas * Temp)) * ( state_K_k * ( v_iplus1 + v_iminus1 + v_jplus1 + v_jminus1 - 4*state_v_k ) ); //**
+
+    	double flu_gap_K = (flu_gap_diff + flu_gap_electro1 + flu_gap_electro2);
+
+//	if(block_number == 0 && (fmod(t,1)<1e-5))
+//	{
+//		printf("%6.f %6.f %6.f %6.f %6.f %6.f %6.f %6.f %6.f %6.f\n", K_iplus1, K_iminus1, K_jplus1, K_jminus1, state_K_k, v_iplus1, v_iminus1, v_jplus1, v_jminus1, state_v_k);
+//	}
 
 	// Update the derivatives.
 	if (DIFFUSION_SWITCH > 0)
 	{
 		du[i_K_e] += flu_diff_K;
 		du[i_Na_e] += flu_diff_Na;
-//    	// As these two variables contain the term "SC_coup * du[K_e] * 1e3", they must also be updated!
+//    	// As these two variables contain the term "SC_coup * du[] * 1e3", they must also be updated!
 		du[i_K_s] += SC_coup * flu_diff_K * 1e3;
-		du[i_Na_s] += SC_coup * flu_diff_Na * 1e3;
+		du[i_Na_s] += -SC_coup * flu_diff_K * 1e3;
 	}
 
 	if (GAPJUNCTION_SWITCH > 0)
 	{
 		du[i_K_k] += flu_gap_K;
-		du[i_v_k] += - gam * flu_gap_K;
+		du[i_v_k] += gam * flu_gap_K;
 	}
 
 	free(neighbour_K_e);

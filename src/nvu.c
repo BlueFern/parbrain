@@ -488,15 +488,15 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     du[i_radius] 	= 1 / ETA * (state_r * trans_p / flu_h_r - E * (state_R_dim - R_0)/R_0); // Radius - nondimensional (state_R_dim: dimensional)
 
     //AC:
-    du[i_v_k] 		= gam * ( -flu_J_BK_k - flu_J_K_k - flu_J_Cl_k - flu_J_NBC_k - flu_J_Na_k - flu_J_NaK_k - 2*flu_J_TRPV_k);
+    du[i_v_k] 		= gam * ( -flu_J_BK_k - flu_J_K_k - flu_J_Cl_k - flu_J_NBC_k - flu_J_Na_k - flu_J_NaK_k + 2*flu_J_TRPV_k);
     du[i_Na_k] 		= -flu_J_Na_k - 3 * flu_J_NaK_k + flu_J_NKCC1_k + flu_J_NBC_k;
     du[i_K_k] 		= -flu_J_K_k + 2 * flu_J_NaK_k + flu_J_NKCC1_k + flu_J_KCC1_k - flu_J_BK_k;
     du[i_HCO3_k] 	= 2 * flu_J_NBC_k;
-    du[i_Cl_k] 		= du[ i_Na_k] + du[ i_K_k] - du[ i_HCO3_k];
+    du[i_Cl_k] 		= du[ i_Na_k] + du[ i_K_k] - du[ i_HCO3_k] + 2*du[ i_ca_k];
     du[i_w_k]		= flu_phi_w * (flu_w_inf - state_w_k);
 
     //SC:
-    du[i_Na_s] 		= 1/VR_sa * ( - du[ i_Na_k] ) + SC_coup * du[i_Na_e] * 1e3;
+    du[i_Na_s] 		= 1/VR_sa * ( - du[ i_Na_k] ) - SC_coup * du[i_K_e] * 1e3;
     du[i_K_s] 		= 1/VR_sa * ( flu_J_K_k - 2 * flu_J_NaK_k - flu_J_NKCC1_k - flu_J_KCC1_k ) + SC_coup * du[i_K_e] * 1e3;
     du[i_HCO3_s] 	= 1/VR_sa * ( - du[ i_HCO3_k] );
 
@@ -616,6 +616,7 @@ double current_input(double t, double x, double y)
     if (t >= t_up && t <= t_down)
     {
          current_time = 1;
+//         current_time = 0.5 * tanh((t - t_up) / 1) - 0.5 * tanh((t - t_down) / 1);
     }
     else
     {
@@ -776,3 +777,4 @@ void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w)
 
 
 }
+
