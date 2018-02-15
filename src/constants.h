@@ -3,20 +3,22 @@
 
 // Optional command line arguments for parBrainSim: N, T_FINAL, DT_PSEC (in that order). If none specified then the following are used.
 
+
+
 /*** Run parameters ***/
-    static const double T_FINAL        	= 50;        // Final run time
-	static const double T_STIM_0       	= 10;        // Start time for stimulation
-	static const double T_STIM_END     	= 26;        // End time for stimulation
-    static const int    DT_PSEC       	= 1;       // Time step for writing to file (and screen)
-    static const int 	NTREE          	= 13;         // Number of levels in the H-tree (where the tissue slice has 2^(N-1) tissue blocks)
+    static const double T_FINAL        	= 35;        // Final run time
+	static const double T_STIM_0       	= 5;        // Start time for stimulation
+	static const double T_STIM_END     	= 25;        // End time for stimulation
+    static const int    DT_PSEC       	= 10;       // Time step for writing to file (and screen)
+    static const int 	NTREE          	= 11;         // Number of levels in the H-tree (where the tissue slice has 2^(N-1) tissue blocks)
     static const int 	NSUB           	= 1;         // Subtree size (easiest to just keep as 1)
-	static const double P_TOP			= 4175;	     // Pressure at the top of the tree, chosen so that the drop over the terminating arterioles is around 18.2 Pa to match with the single NVU model.
+	static const double P_TOP			= 4170;	     // Pressure at the top of the tree, chosen so that the drop over the terminating arterioles is around 18.2 Pa to match with the single NVU model.
 									  	  	  	  	 // For NTREE=3, P_TOP=4100 Pa. For NTREE=7, P_TOP=4160 Pa. For NTREE=13, P_TOP=4175
-	static const int 	SPATIAL_CHOICE	= 1;	     // 1: current input is a Gaussian plateau into the centre (fixed size), 0: current input into lower left corner
+	static const int 	SPATIAL_CHOICE	= 0;	     // 1: current input is a Gaussian plateau into the centre (fixed size), 0: square input
 
 /*** Switches for various pathways (default 1) ***/
-	static const double GAPJUNCTION_SWITCH 	= 1;		// 1: astrocytic K+ gap junction communication between blocks, 0: none
-	static const double DIFFUSION_SWITCH 	= 1;		// 1: extracellular diffusion between blocks, 0: none
+	static const double DIFFUSION_SWITCH 	= 2;		// 2: ECS electrodiffusion, 1: extracellular diffusion between blocks, 0: none
+	static const double GJ_SWITCH 			= 2;		// 2: multiple ion astrocytic gap junctions, 1: just K+ astrocytic gap junctions, 0: none
 	static const double GluSwitch			= 1;		// 1: glutamate is released with current stimulation, 0: no glutamate
 	static const double NOswitch			= 1;		// 1: NO is produced in the NVU, 0: no NO production at all
     static const double trpv_switch	    	= 1;		// 1: TRPV4 channel is active, 0: completely closed (no flux)
@@ -24,12 +26,20 @@
 
 /*** Commonly changed model parameters ***/
 
-	static const double I_STRENGTH		= 0.022;	  	// [A] strength of current input
+	static const double I_STRENGTH		= 0.022;	  	// [A] strength of current input (default 0.022)
     static const double wallMech	    = 1.7;          // rate of wall mechanics, 1 for normal (default 1.7)
     static const double SC_coup	        = 11.5;         // scaling factor for the change in SC K+ concentration based on extracellular K+ concentration (default 11.5)
     static const double J_PLC 		    = 0.11; 	    // 0.11 for steady state or 0.3 for oscillations
     static const double R_decay         = 0.15;  	    // [s^-1] rate of decay of K+ in the PVS (default 0.15)
 
+//    static const double Imax		    = 0.013;         // rate of the ATP pump (default 0.013*6)
+//    static const double gNaleak_sa	    = 9.5999e-6;       // channel conductances, change depending on Imax, see OO-NVU for other values
+//    static const double gKleak_sa	    = 3.4564e-5;
+//    static const double gleak_sa	    = 10*9.5999e-6;
+//    static const double gNaleak_d	    = 1.0187e-5;
+//    static const double gKleak_d	    = 3.4564e-5;
+//    static const double gleak_d	        = 10*1.0187e-5;
+    
     static const double Imax		    = 0.013*6;         // rate of the ATP pump (default 0.013*6)
     static const double gNaleak_sa	    = 6.2378e-5;       // channel conductances, change depending on Imax, see OO-NVU for other values
     static const double gKleak_sa	    = 2.1989e-4;
@@ -38,6 +48,10 @@
     static const double gKleak_d	    = 2.1987e-4;
     static const double gleak_d	        = 10*6.2961e-5;
 
+    static const double D_Ke      = 1.05*3.6e-9;  // [m^2/s] The diffusion rate of ECS K+
+    static const double D_Nae     = 1.05*2.4e-9;  // [m^2/s] The diffusion rate of ECS Na+
+	static const double D_gap	  = 3.1e-9; // [m^2/s] effective diffusion rate for K+ via gap junctions, D_Kgap = A_ef * P_K / R_k = 3.7e-9 * 5e-8 / 6e-8 = 3.1e-9 
+    
     // Steady state values used for normalisation of BOLD signal and change in CBF
     //if J_PLC = 0.11
         static const double HbR_0		  = 0.6662;
@@ -52,7 +66,7 @@
 
 // General constants:
     static const double F             	= 96500;          // [C mol-1] Faradays constant
-    static const double Farad 		  	= 96.485;         // [C mmol-1] Faradays constant in different units
+    static const double Farad 		  	= 96.485;         // Faradays constant in different units
     static const double R_gas         	= 8.315;          // [J mol-1K-1]
     static const double Temp          	= 300;            // [K]
     static const double gam		      	= 1970;  		  // mV/uM The change in membrane potential by a scaling factor
@@ -62,6 +76,7 @@
     static const double z_Cl         	= -1;             // [-]
     static const double z_NBC         	= -1;             // [-]
     static const double z_Ca			= 2;			  // [-]
+    static const double z_HCO3			= -1;
 
 // NE & AC constants:
     static const double VR_sa 			= 0.465;			// [-] volume ratio between SC and AC = R_s/R_k = 2.79e-8 / 8e-8
@@ -321,19 +336,16 @@
     static const double PA2MMHG     = 0.00750061683;   // convert from Pa to mmHg
 
 /*** Diffusion constants ***/
-// Number of variables used in diffusion between blocks - K_e, Na_e, v_k, K_k
-    static const int NUM_DIFF_VARS = 4;
+// Number of variables stored in diffusion structs.
+    static const int NUM_DIFF_VARS = 8; //2;
 
 // Rates of diffusion (characteristic times) for diffusion between tissue blocks
 //    static const double tau_Ke      = 4.3;  // (sec) The diffusion rate - characteristic time scale for K+ to travel one NVU block
 //    static const double tau_Nae     = 6.4;  // (sec) The diffusion rate - characteristic time scale for Na+ to travel one NVU block
-
-    static const double D_Ke      = 3.6e-9;  // [m^2/s] The diffusion rate of ECS K+
-    static const double D_Nae     = 2.4e-9;  // [m^2/s] The diffusion rate of ECS Na+
-	static const double D_Kgap	  = 3.1e-9; // [m^2/s] effective diffusion rate for K+ via gap junctions, D_Kgap = A_ef * P_K / R_k = 3.7e-9 * 5e-8 / 6e-8 = 3.1e-9
+    
 
 // Gap junction constants
-     static const double delta_x 	= 1.24e-4; // [m] length/width of one NVU block
+    static const double delta_x 	= 1.24e-4; // [m] length/width of one NVU block
 
 /*** H-tree constants ***/
 // Constants for the H-tree, don't change
@@ -356,6 +368,7 @@
 	static const int i_K_k     = 3;
 	static const int i_HCO3_k  = 4;
 	static const int i_Cl_k    = 5;
+	static const int i_w_k       = 10;
 
 	// SC
 	static const int i_Na_s    = 6;
@@ -364,7 +377,6 @@
 
 	// PVS
 	static const int i_K_p       = 9;
-	static const int i_w_k       = 10;
 
 	// SMC
 	static const int i_ca_i      = 11;
@@ -417,10 +429,10 @@
 	static const int i_Na_e	   = 48;
 
 	// Neuron - other
-	static const int i_Buff_e	   	= 49;
-	static const int i_O2		   	= 50;
-	static const int i_CBV	   		= 51;
-	static const int i_HbR	   		= 52;
+	static const int i_Buff_e	   = 49;
+	static const int i_O2		   = 50;
+	static const int i_CBV	   = 51;
+	static const int i_HbR	   = 52;
 
 	// Neuron Gating Variables
 	static const int i_m1	   	   = 53;

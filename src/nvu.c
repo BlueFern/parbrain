@@ -319,7 +319,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 	flu_er_leak 	= P_L * ( 1.0 - state_ca_k / state_s_k );
 	flu_pump_k  	= V_max * pow(state_ca_k, 2) / ( pow(state_ca_k, 2) + pow(k_pump, 2) );
 	flu_I_TRPV_k	= G_TRPV_k * state_m_k * (state_v_k - flu_E_TRPV_k);
-	flu_J_TRPV_k	= flu_I_TRPV_k / ( z_Ca * C_astr_k * gam );
+	flu_J_TRPV_k	= - flu_I_TRPV_k / ( z_Ca * C_astr_k * gam );
 	B_cyt 			= 1.0 / (1.0 + BK_end + K_ex * B_ex / pow((K_ex + state_ca_k), 2) );
 	G				= ( rho + delta ) / ( K_G + rho + delta );
 	v_3				= -v_5 / 2.0 * tanh((state_ca_k - Ca_3) / Ca_4) + v_6;
@@ -492,7 +492,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
     du[i_Na_k] 		= -flu_J_Na_k - 3 * flu_J_NaK_k + flu_J_NKCC1_k + flu_J_NBC_k;
     du[i_K_k] 		= -flu_J_K_k + 2 * flu_J_NaK_k + flu_J_NKCC1_k + flu_J_KCC1_k - flu_J_BK_k;
     du[i_HCO3_k] 	= 2 * flu_J_NBC_k;
-    du[i_Cl_k] 		= du[ i_Na_k] + du[ i_K_k] - du[ i_HCO3_k] + 2*du[ i_ca_k];
+    du[i_Cl_k] 		= du[ i_Na_k] + du[ i_K_k] - du[ i_HCO3_k];
     du[i_w_k]		= flu_phi_w * (flu_w_inf - state_w_k);
 
     //SC:
@@ -590,7 +590,7 @@ double current_input(double t, double x, double y)
     double t_down 		= T_STIM_END;
 
     double ampl = 2;
-    double ramp = 0.0035;
+    double ramp = 0.00075; //0.0035 for N=13;
     double x_centre = 0;
     double y_centre = 0;
     double current_space;
@@ -601,22 +601,22 @@ double current_input(double t, double x, double y)
 	}
     else
     {
-    // only in corner
-		if (x <= 0 && y <= 0)
-		{
-			current_space = 1;
-		}
-		else
-		{
-			current_space = 0;
-		}
+    // in centre square with 'radius'=6 blocks
+    if ( fmax(fabs(x),fabs(y)) <= (6*0.0004 - 0.0002))
+//    if (x <= 0 && y <= 0)
+    {
+        current_space = 1;
+    }
+    else
+    {
+        current_space = 0;
+    }
     }
 
     double current_time;
     if (t >= t_up && t <= t_down)
     {
          current_time = 1;
-//         current_time = 0.5 * tanh((t - t_up) / 1) - 0.5 * tanh((t - t_down) / 1);
     }
     else
     {
@@ -698,7 +698,7 @@ void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w)
 	    u0[i_K_k]     = 92708;
 	    u0[i_HCO3_k]  = 9131;
 	    u0[i_Cl_k]    = 7733;
-	    u0[i_w_k]       = 1.703e-4;
+	    u0[i_w_k]     = 1.703e-4;
 
 	    u0[i_Na_s]    = 150255;
 	    u0[i_K_s]     = 2837;
@@ -777,4 +777,3 @@ void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w)
 
 
 }
-
