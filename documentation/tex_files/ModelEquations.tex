@@ -1,0 +1,1610 @@
+\documentclass[11pt]{elsarticle}
+
+\usepackage[toc,nonumberlist,nopostdot,acronym,nogroupskip]{glossaries}
+\usepackage{xspace} 
+\usepackage{longtable}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{layout}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{colorlinks = true, citecolor = gray, urlcolor = gray, linkcolor = gray}
+\usepackage{amsfonts}
+\usepackage[justification=centering]{caption}
+\usepackage[numbers]{natbib}
+\usepackage{subcaption}
+\usepackage{todonotes}
+\usepackage{amsmath}
+\usepackage{enumitem}
+\usepackage[parfill]{parskip}
+\usepackage{times}
+\usepackage{siunitx}
+\sisetup{output-exponent-marker=\ensuremath{\mathrm{e}}}
+\usepackage{wrapfig}
+\usepackage{adjustbox}
+\usepackage{titlesec}
+\usepackage{tikz}
+
+\setlength\voffset{-1in}
+\setlength\hoffset{-1in}
+\setlength\topmargin{2.5cm}
+\setlength\oddsidemargin{2.5cm}
+\setlength\textheight{23.5cm}
+\setlength\textwidth{16.7cm}
+\setlength\footskip{1cm}
+\setlength\headheight{0cm}
+\setlength\headsep{0cm}
+
+\newcommand{\myparagraph}[1]{\paragraph{#1}\mbox{}\\}
+\renewcommand*{\glsnamefont}[1]{\textmd{#1}}
+%\setglossarystyle{long4col}
+
+\usepackage[parfill]{parskip}
+
+\setcounter{tocdepth}{3}
+\setcounter{secnumdepth}{3}
+
+% \Add{} and \Del{} Corrections and \Mark{}
+%\usepackage[active,new,noold,marker]{xrcs}
+%%%%%%%%%%%%
+\newcommand{\sodpot}{Na$^+$/K$^+$\xspace}
+\newcommand{\jplc}{J$_{\text{\scriptsize PLC}}$\xspace}
+\newcommand{\hco}{HCO$_3^-$\xspace}
+\newcommand{\tim}[1]{\textcolor{red}{\textbf{#1}}}
+\newcommand{\ums}{$\mu$m s$^{-1}$\xspace}
+\newcommand{\mus}{$\mu$M s$^{-1}$\xspace}
+\newcommand{\ox}{O$_2$\xspace}
+\newcommand{\Cmol}{C mol$^{-1}$\xspace}
+\newcommand{\JmolK}{J mol$^{-1}$ K$^{-1}$\xspace}
+\newcommand{\perOhmm}{$\Omega^{-1}$\xspace}
+\newcommand{\uM}{$\mu$M\xspace}
+\newcommand{\um}{$\mu$m\xspace}
+\newcommand{\mAcm}{mA cm$^{-2}$\xspace}
+\newcommand{\n}{$^{-1}$\xspace}
+\newcommand{\e}[1]{\times 10^{#1}}
+\newcommand{\psec}{s$^{-1}$\xspace}
+\newcommand\ddfrac[2]{\frac{\displaystyle #1}{\displaystyle #2}}
+
+%\newcommand{\na}{Na$^{\text{\scriptsize +}}$\xspace}
+%\newcommand{\pot}{K$^{\text{\scriptsize +}}$\xspace}
+%\newcommand{\cl}{Cl$^{\text{\scriptsize -}}$\xspace}
+%\newcommand{\ca}{Ca$^{\text{\scriptsize 2+}}$\xspace}
+%\newcommand{\ip}{IP$_{\text{\scriptsize 3}}$\xspace}
+\newcommand{\na}{\gls{na}\xspace}
+\newcommand{\pot}{\gls{pot}\xspace}
+\newcommand{\cl}{\gls{cl}\xspace}
+\newcommand{\ca}{\gls{ca}\xspace}
+\newcommand{\ip}{\gls{ip3}\xspace}
+
+\linespread{1.2}
+
+\setcounter{tocdepth}{1}
+
+\newcommand{\td}[1]{\todo[inline, color=GreenYellow, bordercolor=White, size=\normalsize]{\color{Black}#1}}
+\newcommand{\vv}{\overline{v_1}} 
+\makeatletter
+\newcommand*{\rom}[1]{\expandafter\@slowromancap\romannumeral #1@}
+\makeatother
+\newlength{\drop} % Command for generating a specific amount of whitespace
+\drop=0.1\textheight % Define the command as 10% of the total text height
+
+\include{./glossary}
+
+\begin{document}
+
+
+\begin{frontmatter}
+	
+	\title{\vspace{-2cm}Supplementary material: Model equations and parameters}
+	
+	
+	\author[1]{Allanah Kenny\corref{3}}
+	\cortext[3]{Corresponding author, \textit{allanah.kenny@pg.canterbury.ac.nz} }
+	\author[2]{Michael J. Plank}
+	\author[1]{Tim David}
+	
+	\address[1]{High Performance Computing Centre, University of Canterbury, New Zealand}
+	\address[2]{Department of Mathematics and Statistics, University of Canterbury, New Zealand}
+	
+\end{frontmatter}
+
+The single \gls{nvu} model originally developed by \citet{Farr2011} and later extended by \citet{Dormanns2015}, \citet{Dormanns2016}, \citet{Mathias2017}, \citet{Kenny2018}, and (Elshin ref) contains 67 \glspl{ode} plus a large number of algebraic variables and parameters. The equations and parameters are divided into sections corresponding to different compartments and pathways of the model.
+The following parameters are given for ordinary \gls{nvc} conditions.
+
+\section{Global Constants}
+\begin{longtable}[h!]{ p{0.12\linewidth}   p{0.6\linewidth}   p{0.28\linewidth} }
+	\hline
+	Parameter & Description & Value \\
+	\hline
+
+$F$			& Faraday's constant 	& 96.485 C mmol\n				\\
+$R_g$ 			& Gas constant 				& 8.315 \JmolK	 \\
+$T$ 	    	& Temperature constant								& 300 K	\\
+$\phi$ 		& $R_g T / F$				& 26.7 mV \\		
+$z_K$			& Ionic valence for \pot 										& 1   \\ 
+$z_{Na}$			& Ionic valence for \na 											& 1   \\ 
+$z_{Cl}$			& Ionic valence for \cl 											& $-1$  \\ 
+$z_{NBC}$ 		& Effective valence of the NBC cotransporter complex 				& $-1$ \\
+$z_{Ca}$  & Ionic valence for \ca & 2 \\
+	\hline
+\end{longtable}
+
+
+\section{Neuron and Extracellular Space}
+
+\subsection{Input to the model}
+The input current to the soma (mA cm$^{-2}$):
+	\begin{equation}
+%	I_{stim} = I_{strength} \cdot \text{rectpuls}(t - t_0, lengthpulse)
+	I_{stim} = 
+	\begin{cases} 
+	      0 & t\leq t_0 \\
+	      I_{strength} & t_0\leq t\leq t_f \\
+	      0 & t_f\leq t 
+	\end{cases}
+	\end{equation}
+%
+\subsection{\Glspl{ode}}
+The membrane potential of the soma/axon ($v_{sa}$) and dendrite ($v_d$) (mV):
+	\begin{align}
+	C_{m}\frac{d v_{sa}}{d t} 	&= -I_{tot_{sa}}+\frac{1}{2R_a\delta_d^{2}}(v_d-v_{sa})+I_{stim} \\
+	C_{m}\frac{d v_d}{d t} 		&= -I_{tot_d}+\frac{1}{2R_a\delta_d^{2}}(v_{sa}-v_d)
+	\end{align}
+%	
+The ion concentrations (\pot and \na) in the soma/axon (mM):
+	\begin{align} 
+	\frac{d K_{sa}}{dt} &= -\frac{A_s}{F V_s} I_{K,tot_{sa}} + \frac{D_{K,n}(V_d + V_s)} {2 \delta_d^2 V_s} (K_d - K_{sa}) \\
+	\frac{d Na_{sa}}{dt} &= -\frac{A_s}{F V_s} I_{Na,tot_{sa}} + \frac{D_{Na,n}(V_d + V_s)} {2 \delta_d^2 V_s} (Na_d - Na_{sa})
+	\end{align}
+%
+The ion concentrations (\pot and \na) in the dendrite (mM):
+	\begin{align} 
+	\frac{d K_{d}}{dt} &= -\frac{A_d}{F V_d} I_{K,tot_{d}} + \frac{D_{K,n}(V_d + V_s)} {2 \delta_d^2 V_d} (K_d - K_{d}) \\
+	\frac{d Na_{d}}{dt} &= -\frac{A_d}{F V_d} I_{Na,tot_{d}} + \frac{D_{Na, n}(V_d + V_s)} {2 \delta_d^2 V_d} (Na_d - Na_{d})
+	\end{align}
+%
+The \pot and \na ion concentrations in the \gls{ecs} (mM):	
+	\begin{align}
+	\frac{d Na_e}{dt} &= \frac{1}{F f_e} \left( \frac{A_s I_{Na,tot_{sa}}}{V_s} + \frac{A_d I_{Na,tot_d}}{V_d} \right) \\
+	\frac{d K_e}{dt} &= \frac{1}{F f_e} \left( \frac{A_s I_{K,tot_{sa}}}{V_s} + \frac{A_d I_{K,tot_d}}{V_d} \right) - \frac{d \text{Buff}_e}{dt}
+	\end{align}	
+%
+The buffer concentration in the \gls{ecs} ($\text{Buff}_e$) (mM):
+	\begin{align}
+	\frac{d\text{Buff}_e}{dt} &= \mu (B_0 - \text{Buff}_e) \frac{K_e}{1 + \exp\left( \frac{-(K_e - 5.5)}{1.09} \right)} - \mu \text{Buff}_e
+	\end{align}
+%
+Activation gating variable $m_*$ (for $m_1$ to $m_8$) (-):
+	\begin{align}
+	\frac{d m_*}{dt} = \left( \alpha_{m_*} (1-m_*) - \beta_{m_*} m_*  \right)
+	\end{align}
+%	
+Deactivation gating variable $h_*$ (for $h_1$ to $h_6$) (-):
+	\begin{align}
+	\frac{d h_*}{dt} =  \left( \alpha_{h_*} (1-h_*) - \beta_{h_*} h_*  \right)
+	\end{align}
+	%
+The tissue oxygen concentration (mM):	
+	\begin{align}
+	\frac{d O_2}{dt} = J_{O_2 \: vascular} - J_{O_2 \: background} - J_{O_2 \: pump}
+	\end{align}
+%
+\subsection{Algebraic Variables}
+%
+Total current of ions in soma/axon or dendrite (*) (\mAcm):
+\begin{align}
+I_{tot_{*}} =I_{K,tot_{*}} +  I_{Na,tot_{*}} + I_{leak_{*}}
+\end{align}
+%
+Total current of \pot in soma/axon (\mAcm):
+\begin{align}
+I_{K,tot_{sa}} = I_{KDR_{sa}} + I_{KA_{sa}} + I_{K,leak_{sa}} + I_{pump,K_{sa}}
+\end{align}
+%
+Total current of \pot in dendrite (\mAcm):
+\begin{align}
+I_{K,tot_{d}} = I_{KDR_{d}} + I_{KA_{d}} + I_{K,leak_{d}} + I_{pump,K_{d}} + I_{NMDA,K_d}
+\end{align}
+%
+Total current of \na in soma/axon (\mAcm):
+\begin{align}
+I_{Na,tot_{sa}} = I_{NaP_{sa}} + I_{NaT_{sa}} + I_{Na,leak_{sa}} + I_{pump,Na_{sa}}
+\end{align}
+%
+Total current of \na in dendrite (\mAcm):
+\begin{align}
+I_{Na,tot_{d}} = I_{NaP_{d}} + I_{Na,leak_{d}} + I_{pump,Na_{d}} + I_{NMDA,Na_d}
+\end{align}
+%
+\pot current through \sodpot \gls{atp}-ase pump in the soma/axon or dendrite (*) (\mAcm):
+\begin{align}
+I_{pump,K_{*}} &= -2 \: I_{pump_{*}}
+\end{align}
+%
+\na current through \sodpot \gls{atp}-ase pump in soma/axon or dendrite (*) (\mAcm):
+\begin{align}
+I_{pump,Na_{*}} &= 3 \: I_{pump_{*}}
+\end{align}
+%
+ \sodpot \gls{atp}-ase pump flux in soma/axon or dendrite (*) (\mAcm):
+\begin{align}
+I_{pump_{*}} &= I_{max} J_{pump1_{*}} J_{pump2}(O_2)
+\end{align}
+%
+Oxygen independent term of the \gls{atp}-ase pump in both the soma/axon or dendrite (*) (-):
+	\begin{align}
+	J_{pump1_{*}} &= \left( 1 + \frac{ K_{e,0} }{K_e} \right)^{-2} \left( 1 + \frac{ Na_{*,0} }{Na_{*}} \right)^{-3} 
+	\end{align}
+%
+Oxygen dependent term of the \gls{atp}-ase pump (-): 
+	\begin{align}
+	J_{pump2}(O_2) = 2 \left( 1 + \frac{ O2_0 }{ (1 - \alpha_{O2}) \: O_2 + \alpha_{O2} \: O2_0  }    \right)^{-1}
+	\end{align}
+%
+The vascular supply of oxygen (mM \psec):	
+	\begin{align}
+	J_{O_2 \: vascular} = J \frac{O2_b - O_2}{O2_b - O2_0}
+	\end{align}
+%	
+The background oxygen consumption (mM \psec):
+	\begin{align}
+	J_{O_2 \: background} = J_0 P_{O2} (1 - \gamma_{O2})
+	\end{align}
+%	
+The tissue oxygen consumption due to the \gls{atp}-ase pump (mM \psec):
+	\begin{align}
+	J_{O_2 \: pump} = J_0 P_{O2} \gamma_{O2} \frac{J_{pump1_{sa}} + J_{pump1_{d}}}{J_{pump1_{sa_0}} + J_{pump1_{d_0}}}
+	\end{align}
+%
+The change in oxygen concentration due to \gls{cbf} (mM \psec):
+	\begin{align}
+	J = J_0 \frac{\text{CBF}}{\text{CBF}_{init}}
+	\end{align}
+%
+The cerebral blood flow (-):
+	\begin{align}
+	\text{CBF} =  \text{CBF}_{init} \frac{R^4}{R_{init}^4}
+	\end{align}
+%
+The normalised pump rate (-):
+	\begin{align}
+	P_{O2} = \frac{J_{pump2}(O_2) - J_{pump2}(0)}{J_{pump2}(O2_0) - J_{pump2}(0)}
+	\end{align}
+%
+Leak currents of \pot, \na and general leak in the soma/axon or dendrite (\mAcm):
+	\begin{align}
+	I_{K,leak_{*}} &= g_{K,leak_{*}} (v_{*} - E_{K_{*}}) \\
+	I_{Na,leak_{*}} &= g_{Na,leak_{*}} (v_{*} - E_{Na_{*}}) \\
+	I_{leak_{*}} &= g_{leak_{*}} (v_{*} - E_{leak_{*}}) 
+	\end{align}
+%
+Nernst potential for \pot and \na in the soma/axon or dendrite (*), (mV):
+\begin{align}
+E_{K_{*}} &= \frac{\phi}{z_K} \ln \left(\frac{K_e}{K_{*}}\right) \\
+E_{Na_{*}} &= \frac{\phi}{z_{Na}} \ln \left(\frac{Na_e}{Na_{*}}\right)
+\end{align}
+%		
+\pot current through KDR channel in the soma/axon (\mAcm):
+\begin{align}
+I_{KDR_{sa}} = m_2^2 \; \frac{  g_{KDR} F v_{sa} \left( K_{sa} - \exp \left( \frac{-v_{sa}}{\phi}  \right) K_e  \right)   }{   \phi \left( 1 - \exp  \left(  \frac{-v_{sa}}{\phi}  \right)  \right)   }
+\end{align}
+%
+\pot current through KA channel in the soma/axon (\mAcm):
+\begin{align}
+I_{KA_{sa}} = m_3^2 \; h_2 \; \frac{  g_{KA} F v_{sa} \left( K_{sa} - \exp \left( \frac{-v_{sa}}{\phi}  \right) K_e  \right)   }{   \phi \left( 1 - \exp  \left(  \frac{-v_{sa}}{\phi}  \right)  \right)   }
+\end{align}
+%
+\pot current through KDR channel in the dendrite (\mAcm):
+\begin{align}
+I_{KDR_{d}} = m_6^2 \; \frac{  g_{KDR} F v_{d} \left( K_{d} - \exp \left( \frac{-v_{d}}{\phi}  \right) K_e  \right)   }{   \phi \left( 1 - \exp  \left(  \frac{-v_{d}}{\phi}  \right)  \right)   }
+\end{align}
+%		
+\pot current through KA channel in the dendrite (\mAcm):
+\begin{align}
+I_{KA_{d}} = m_7^2 \; h_5 \; \frac{  g_{KA} F v_{d} \left( K_{d} - \exp \left( \frac{-v_{d}}{\phi}  \right) K_e  \right)   }{   \phi \left( 1 - \exp  \left(  \frac{-v_{d}}{\phi}  \right)  \right)   }
+\end{align}
+%
+\pot current through \gls{nmda} channel in the dendrite (\mAcm):
+\begin{align}
+I_{NMDA,K_{d}} = m_5 \; h_4 \; \frac{  g_{NMDA} F v_{d} \left( K_{d} - \exp \left( \frac{-v_{d}}{\phi}  \right) K_e  \right)   }{   \phi \left( 1 - \exp  \left(  \frac{-v_{d}}{\phi}  \right)  \right)  \Big(  1 + 0.33 \: [Mg]_0 \exp (-0.07 v_d - 0.7 ) \Big) } 
+\end{align}		
+%
+\na current through NaP channel in soma/axon (\mAcm):
+\begin{align}
+I_{NaP,Na_{sa}}    = m_1^2 \; h_1 \; \frac{  g_{NaP} F v_{sa} \left( Na_{sa} - \exp \left( \frac{-v_{sa}}{\phi}  \right) Na_e  \right)   }{   \phi \left( 1 - \exp  \left(  \frac{-v_{sa}}{\phi}  \right)  \right)   }
+\end{align}
+%
+\na current through NaT channel in soma/axon (\mAcm):
+\begin{align}
+I_{NaT,Na_{sa}}    = m_8^3 \; h_6 \; \frac{  g_{NaT} F v_{sa} \left( Na_{sa} - \exp \left( \frac{-v_{sa}}{\phi}  \right) Na_e  \right)   }{   \phi \left( 1 - \exp  \left(  \frac{-v_{sa}}{\phi}  \right)  \right)   }
+\end{align}
+%		
+\na current through NaP channel in dendrite (\mAcm):
+\begin{align}
+I_{NaP,Na_{d}}    = m_4^2 \; h_3 \; \frac{  g_{NaP} F v_{d} \left( Na_{d} - \exp \left( \frac{-v_{d}}{\phi}  \right) Na_e  \right)   }{   \phi \left( 1 - \exp  \left(  \frac{-v_{d}}{\phi}  \right)  \right)   }
+\end{align}
+%
+\na current through \gls{nmda} channel in dendrite (\mAcm):
+\begin{align}
+I_{NMDA,Na_{d}} = m_5 \; h_4 \; \frac{  g_{NMDA} F v_{d} \left( Na_{d} - \exp \left( \frac{-v_{d}}{\phi}  \right) Na_e  \right)   }{   \phi \left( 1 - \exp  \left(  \frac{-v_{d}}{\phi}  \right)  \right)  \Big(  1 + 0.33 \: [Mg]_0 \exp (-0.07 v_d - 0.7 ) \Big) } 
+\end{align}		
+%
+Rate functions for the activation $m$ and deactivation $h$ gating variables (\psec):
+	\begin{align}
+	&\alpha_{m_1} = \frac{1000}{6}\frac{1}{ 1 + \exp(- (0.143 v_{sa} + 5.67))  } \\
+	&\beta_{m_1} = \frac{1000}{6} - \alpha_{m_1}
+	\end{align}
+	%
+	\begin{align}
+	&\alpha_{m_2} = 16 \frac{v_{sa} + 34.9}{1 - \exp(-(0.2 v_{sa} + 6.98))} \\
+	&\beta_{m_2} = 250 \exp(-(0.025 v_{sa} + 1.25))
+	\end{align}
+	%
+	\begin{align}
+	&\alpha_{m_3} = 20 \frac{v_{sa} + 56.9}{1 - \exp(-(0.1 v_{sa} + 5.69))} \\
+	&\beta_{m_3} = 17.5 \frac{v_{sa} + 29.9}{\exp(0.1 v_{sa} + 2.99) - 1}
+	\end{align}
+	%
+	\begin{align}
+	&\alpha_{m_4} = \frac{1000}{6} \frac{1}{ 1 + \exp(- (0.143 v_{d} + 5.67)) } \\
+	&\beta_{m_4} = \frac{1000}{6} - \alpha_{m_4}
+	\end{align}
+	%
+	\begin{align}
+	&\alpha_{m_5} = 500 \frac{1}{1 + \exp(\frac{13.5 - K_e}{1.42})} \\
+	&\beta_{m_5} = 500 - \alpha_{m_5}
+	\end{align}
+	%
+	\begin{align}
+	&\alpha_{m_6} = 16 \frac{v_{d} + 34.9}{1 - \exp(-(0.2 v_{d} + 6.98))} \\
+	&\beta_{m_6} = 250 \exp(-(0.025 v_{d} + 1.25))
+	\end{align}
+	%
+	\begin{align}
+	&\alpha_{m_7} = 20 \frac{v_{d} + 56.9}{1 - \exp(-(0.1 v_{d} + 5.69))} \\
+	&\beta_{m_7} = 17.5 \frac{v_{d} + 29.9}{\exp(0.1 v_{d} + 2.99) - 1}
+	\end{align}
+	%
+	\begin{align}
+	&\alpha_{m_8} = 320 \frac{-v_{sa} - 51.9}{\exp(-(0.25 v_{sa} + 12.975)) - 1} \\
+	&\beta_{m_8} = 280 \frac{v_{sa} + 24.89}{\exp(0.2 v_{sa} + 4.978) - 1} 
+	\end{align}
+	%
+	\begin{align}
+	&\alpha_{h_1} = 5.12 \times 10^{-5} \exp(-(0.056 v_{sa} + 2.94)) \\
+	&\beta_{h_1} = 1.6 \times 10^{-3} \frac{1}{1 + \exp(-(0.2 v_{sa} + 8))}
+	\end{align}
+	%
+	\begin{align}
+	&\alpha_{h_2} = 16 \exp(-(0.056 v_{sa} + 4.61)) \\
+	&\beta_{h_2} = 500 \frac{1}{1 + \exp(-(0.2 v_{sa} + 11.98))}
+	\end{align}
+	%
+	\begin{align}
+	&\alpha_{h_3} = 5.12 \times 10^{-5} \exp(-(0.056 v_{d} + 2.94)) \\
+	&\beta_{h_3} = 1.6 \times 10^{-3} \frac{1}{1 + \exp(-(0.2 v_{d} + 8))}
+	\end{align}
+	%
+	\begin{align}
+	&\alpha_{h_4} = 0.5 \frac{1}{\left( 1 + \exp \left( \frac{K_e - 6.75}{0.71} \right)  \right)} \\
+	&\beta_{h_4} =0.5 - \alpha_{h_4}
+	\end{align}
+	%
+	\begin{align}
+	&\alpha_{h_5} = 16 \exp(-(0.056 v_{d} + 4.61)) \\
+	&\beta_{h_5} = 500 \frac{1}{1 + \exp(-(0.2 v_{d} + 11.98))} 
+	\end{align}
+	%
+	\begin{align}
+	&\alpha_{h_6} = 128 \exp(-(0.056 v_{sa} + 2.94)) \\
+	&\beta_{h_6} = 4\e{3} \frac{1}{1 + \exp(-(0.2 v_{sa} + 6))}
+	\end{align}
+%	
+\begin{longtable}[h!]{ p{0.12\linewidth}   p{0.6\linewidth}   p{0.28\linewidth} }
+	\hline
+	Parameter & Description & Value \\
+	\hline
+$I_{strength}$ 		& Amplitude of input current 		& 0.022 \mAcm 		  \\
+$t_0$				& Start time of input current			& 0 s	  \\
+$t_f$		& Final time of input current 			& 20 s		  \\
+$O2_b$ 		& Blood oxygen level							& 0.04 mM		\\
+$O2_0$ 		& Equilibrium tissue oxygen level				& 0.02 mM 		\\
+$\gamma_{O2}$ 		& Fraction of the total oxygen consumption at steady state		& 0.1 		 \\
+$J_0$		& Equilibrium change in oxygen concentration due to \gls{cbf}						& 0.032 mM \psec		\\
+$\text{CBF}_{init}$		& Equilibrium \gls{cbf}						& 0.032 		\\
+$J_{pump1_{sa_0}}$ 		& Steady state pump rate in the soma/axon			& 0.0312 		 \\
+$J_{pump1_{d_0}}$ 		& Steady state pump rate in the dendrite		& 0.0312 		 \\
+$R_{init}$ 		& Vessel radius when passive and no stress is applied				& 20 \um 		 \\
+$\alpha_{O2}$ 		& Fraction of oxygen independent \gls{atp} production		& 0.05 		 \\
+$J_{pump2}(0)$ 		& Pump rate when oxygen concentration is 0		& 0.0952 		\\
+$J_{pump2}(O2_0)$ 		& Pump rate when oxygen is at equilibrium			& 1 	 \\
+$K_{e,0}$ 		& Equilibrium $K_e$		& 2.9 mM	 \\
+$Na_{sa,0}$ 		& Equilibrium $Na_{sa}$											& 10 mM		\\
+$Na_{d,0}$ 		& Equilibrium $Na_d$										& 10 mM	 \\
+$C_m$ 		& Membrane capacitance 		& 7.5$\times 10^{-7}$ S cm$^{-2}$ s 	 \\
+$R_a$		& Input resistance of dendritic tree & 1.83$\times 10^5$ $\Omega$ \\ 
+$\delta_d$	& Half length of dendrite	& 4.5$\times 10^{-2}$ cm \\
+$A_s$ 		& Soma/axon surface area		& 1.586$\times 10^{-5}$ cm$^2$ 	 \\
+$A_d$ 		& Dendrite surface area	& 2.6732$\times 10^{-4}$ cm$^2$  \\
+$V_s$ 		& Soma/axon volume			& 2.16$\times 10^{-9}$ cm$^3$ 		\\
+$V_d$ 		& Dendrite volume		& 5.614$\times 10^{-9}$ cm$^3$ 		 \\
+$f_e$		& \gls{ecs} to neuron volume ratio	& 0.15								 \\
+$D_{Na, n}$	& Intracellular diffusion rate of \na 		& 1.33$\times 10^{-5}$ cm$^2$ \psec		\\
+$D_{K,n}$		& Intracellular diffusion rate of \pot 		& 1.96$\times 10^{-5}$ cm$^2$ \psec		 \\
+$g_{K,leak_{sa}}$ & Conductance of \pot leak channel on soma/axon	&  $2.1989\e{-4}$ S cm$^{-2}$ \\		
+$g_{Na,leak_{sa}}$ & Conductance of \na leak channel on soma/axon	& $6.2378\e{-5}$  S cm$^{-2}$\\	
+$g_{leak_{sa}}$ 	& Conductance of general leak channel on soma/axon		&  $6.2378\e{-4}$ S cm$^{-2}$  \\	
+$g_{K,leak_{d}}$ 	& Conductance of \pot leak channel on dendrite	&  $2.1987\e{-4}$  S cm$^{-2}$ \\	
+$g_{Na,leak_{d}}$ 	& Conductance of \na leak channel on dendrite	&  $6.2961\e{-5}$  S cm$^{-2}$ \\	
+$g_{leak_{d}}$ 		& Conductance of general leak channel on dendrite	&  $6.2961\e{-4}$ S cm$^{-2}$  \\			
+$E_{leak_{sa}}$			& Nernst potential for general leak in the soma/axon			& $-70$ mV				 \\
+$E_{leak_{d}}$			& Nernst potential for general leak in the dendrite			& $-70$ mV	 \\				
+$g_{KDR}$ 		& KDR channel conductance		& $10^{-4}$  S cm$^{-2}$  \\		
+$g_{KA}$ 		& KA channel conductance		& $10^{-5}$  S cm$^{-2}$  \\		
+$g_{NMDA}$ 		& \gls{nmda} channel conductance		& $10^{-5}$ S cm$^{-2}$  \\		
+$g_{NaP}$ 		& NaP channel conductance		& $2\e{-6}$   S cm$^{-2}$ \\					
+$g_{NaT}$ 		& NaT channel conductance		& $10^{-5}$  S cm$^{-2}$ \\
+$[Mg]_0$ 		& Equilibrium magnesium 		& 1.2 mM L\n  \\		
+$I_{max}$ 		& Maximum rate of \sodpot \gls{atp}-ase pump		& $0.078$ \mAcm  \\		
+$\mu$ 		& Buffer rate											& $8\times10^{-4}$ m\psec 		 \\
+$B_0$		& Effective total buffer concentration 		& 500 mM \\
+				\hline
+\caption{Parameters of the neuron and extracellular space submodel, for references see \citet{Mathias2017}.}
+\end{longtable}
+%
+\section{\Gls{bold} response}
+
+\subsection{\Glspl{ode}}
+The non dimensional \gls{cbv} (-):
+\begin{align}
+\frac{d \text{CBV}}{dt} = \frac{1}{\tau_{MTT} + \tau_{TAT}} \left( \frac{\text{CBF}}{\text{CBF}_{init}} - \text{CBV}^{d} \right)
+\end{align}
+%	
+The non dimensional \gls{hbr} concentration (-):
+\begin{align}
+\frac{d \text{HbR}}{dt} = \frac{1}{\tau_{MTT}} \left(  \frac{\text{CMRO}_2}{\text{CMRO}_{2_{0}}}
+- \frac{\text{HbR}}{\text{CBV}} f_{out} 
+\right)
+\end{align}
+%
+\subsection{Algebraic Variables}	
+The non dimensional normalised \gls{hbt} concentration (-):	
+\begin{align}
+\text{HbT}_N = \frac{ \text{CBF}_N \text{HbR}_N }{\text{CMRO}_{2_N} }
+\end{align}
+%
+where the normalised \gls{cbf} is given by CBF$_N = $ CBF/CBF$(0)$ and CBF$(0)$ is the steady state value, similarly for \gls{hbr} and $\text{CMRO}_{2_N}$.
+
+The non dimensional normalised \gls{hbo} concentration (-):
+\begin{align}
+\text{HbO}_N = \text{HbT}_N - \text{HbR}_N + 1
+\end{align}
+%
+The time dependent outflow from the venous compartment (-):
+\begin{align}
+f_{out} = \text{CBV}^{d} + \tau_{TAT} \frac{d \text{CBV}}{dt}
+\end{align}
+%	
+The cerebral metabolic rate of oxygen consumption (mM \psec):
+\begin{align}
+\text{CMRO}_2 = J_{O_2 \: background} + J_{O_2 \: pump}
+\end{align}
+%	
+The equilibrium value of $\text{CMRO}_2$ (mM \psec):
+\begin{align}
+\text{CMRO}_{2_0} =  J_0 P_{02}
+\end{align}
+%	
+The oxygen extraction fraction (-):
+\begin{align}
+E = E_0\frac{\text{CMRO}_2}{J}
+\end{align}
+%
+The \gls{bold} signal change from its steady state value (-):
+\begin{align}
+\Delta BOLD \approx V_0 \left( a_1 \left[ 1 - \text{HbR}_N \right] + a_2 \left[ \text{CBV}_N - 1 \right] \right) 
+\label{eq:bold}
+\end{align}
+\xspace
+%	
+\begin{longtable}[h!]{ p{0.12\linewidth}   p{0.6\linewidth}   p{0.28\linewidth} }
+	\hline
+	Parameter & Description & Value \\
+	\hline
+	$\tau_{MTT}$ 		& Mean transit time											&  3 s		\\
+	$\tau_{TAT}$ 				& Transient adjustment time constant						& 20 s		\\
+	$ \text{CBF}_{init}$				& Steady state \gls{cbf}							& 0.032  	\\
+	$d$					& Empirical relation between \gls{cbf} and \gls{cbv}					& 2.5		\\	
+	$a_1$ 				& Weight for \gls{hbr} change											& 3.4		\\
+	$a_2$ 				& Weight for \gls{cbv} change											& 1 		\\
+	$V_0$				& Resting venous blood volume fraction 						& 0.03		\\
+	$E_0$				& Baseline oxygen extraction fraction						& 0.4		\\
+\hline
+\caption{Parameters of the \gls{bold} submodel, for references see \citet{Mathias2017}.}
+\end{longtable}
+
+\section{Synaptic Cleft and Astrocyte}
+%
+\subsection{\Glspl{ode}}
+%
+\pot concentration in the \gls{sc} (\uM):
+\begin{align}
+\frac{d K_s}{dt} = \frac{1}{VR_{sk}} \left( J_{K_k} - 2 J_{NaK_k} - J_{NKCC1_k} - J_{KCC1_k} \right) + J_{NEtoSC}
+\end{align}
+%
+\na concentration in the \gls{sc} (\uM):
+\begin{align}
+\frac{d Na_s}{dt} =  \frac{1}{VR_{sk}} \left( J_{Na_k} + 3*J_{NaK_k} - J_{NKCC1_k} - J_{NBC_k} \right) - J_{NEtoSC}
+\end{align}
+%
+\hco concentration in the \gls{sc} (\uM):
+\begin{equation} \label{eq:HCOEx}
+\frac{d HCO_{3_{s}}}{dt}=  \frac{1}{VR_{sk}} \left( -2 J_{NBC_{k}} \right)
+\end{equation} 
+%
+\pot concentration in the astrocyte (\uM):
+\begin{equation} \label{eq:KInt}
+\frac{d K_k}{dt}=- J_{K_k} + 2 J_{NaK_{k}} + J_{NKCC1_{k}} +  J_{KCC1_{k}}
+- J_{BK_k}  
+\end{equation}
+%
+\na concentration in the astrocyte (\uM):
+\begin{equation} \label{eq:NaInt}
+\frac{d Na_k}{dt}=-J_{Na_k} - 3 J_{NaK_{k}} + J_{NKCC1_{k}} +  J_{NBC_{k}}
+\end{equation}
+%
+\hco concentration in the astrocyte (\uM):
+\begin{equation} \label{eq:HCOInt}
+\frac{d HCO_{3_k}}{dt}= 2 J_{NBC_{k}} 
+\end{equation}
+%
+\cl concentration in the astrocyte (\uM):
+\begin{equation} \label{eq:ClInt}
+\frac{d Cl_k}{dt}= \frac{dNa_k}{dt} + \frac{dK_k}{dt} - \frac{d HCO_{3_{k}}}{dt} + 2 \frac{d Ca_k}{dt}
+\end{equation}
+%
+The astrocytic cytosolic \ca concentration (\uM):
+\begin{equation}
+\frac{d Ca_k}{dt} = B_{cyt} \left( J_{IP3_k} - J_{pump_k} + J_{ERleak_k} - \frac{J_{TRPV_k}}{r_{buff}} \right)
+\label{eq:ACca}
+\end{equation}	
+%
+The astrocytic \ip concentration (\uM):
+\begin{equation}
+\frac{d IP3_k}{dt} = r_h G - k_{deg} \; IP3_k
+\end{equation}
+%
+The astrocytic \gls{eet} concentration (\uM):
+\begin{equation}
+\frac{d eet_k}{dt} = V_{eet} \max(Ca_k - c_{k_{min}}, 0) - k_{eet} eet_k
+\end{equation}
+%
+The \ca concentration in the astrocytic \gls{er} (\uM):
+\begin{equation}
+\frac{d s_k}{dt} =  \frac{ -B_{cyt} }{VR_{ERcyt}} \left( J_{IP3_k} - J_{pump_k} + J_{ERleak_k} \right)
+\end{equation}
+%
+Membrane potential of the \gls{ac} (mV):
+\begin{equation} \label{eq:v_k}
+\frac{d v_k}{dt} = \gamma_j ( -J_{BK_k} - J_{K_k} - J_{Cl_k} - J_{NBC_k} - J_{Na_k} - J_{NaK_k} - 2J_{TRPV_k})
+\end{equation}
+%
+The open probability of the \gls{bk} channel (-):
+\begin{equation}
+\frac{d w_k}{dt} = \phi_n ( w_{\infty} - w_k)
+\end{equation} 
+%
+The inactivation variable $h_k$ of the astrocytic IP$_3$R channel (-):
+\begin{equation}
+\frac{d h_k}{dt} = k_{on} \left[ K_{inh} - (Ca_k + K_{inh}) h_k \right]
+\end{equation}
+
+
+			\subsection{Algebraic Variables}
+The glutamate concentration in the \gls{sc} (\uM):
+\begin{align}
+Glu = \frac{Glu_{max}}{2} \left( 1 + \tanh \left( \frac{K_e - K_{e_{switch}}}{Glu_{slope}}  \right)  \right)
+\end{align}
+%				
+The flux of \pot into the \gls{sc} based on the extracellular \pot ($\mu$Ms$^{-1}$):
+\begin{align}
+J_{NEtoSC} = c_{unit} k_{syn}  \frac{d K_e}{dt}   
+\end{align}
+%
+\cl concentration in the \gls{sc} (\uM): 
+\begin{equation} \label{eq:ClEx}
+Cl_s = Na_s + K_s - HCO_{3_s}
+\end{equation}
+%
+\cl flux through the \cl channel (\mus): 
+\begin{equation} \label{eq:J_Cl}
+J_{Cl_k}=G_{Cl_{k}}(v_k - E_{Cl_k})
+\end{equation}
+%
+\pot flux through the \pot channel (\mus): 
+\begin{equation} \label{eq:J_K}
+J_{K_k}=G_{K_{k}}(v_k - E_{K_k})
+\end{equation}
+%
+\na flux through the \na channel (\mus):
+\begin{equation} \label{eq:J_Na}
+J_{Na_k}=G_{Na_{k}}(v_k - E_{Na_k})
+\end{equation}
+%
+\na and \hco flux through the NBC channel (\mus): 
+\begin{equation} \label{eq:J_NBC}
+J_{NBC_k}=G_{NBC_k}\left(  v_k -E_{NBC_k}  \right)
+\end{equation}
+%
+\cl and \pot flux through the KCC1 channel (\mus): 
+\begin{equation} \label{eq:J_KCC1}
+J_{KCC1_k}=G_{KCC1_k} \phi \ln \left(\frac{K_s Cl_s }{K_k Cl_k}\right)
+\end{equation}
+%
+\na, \pot and \cl flux through the NKCC1 channel (\mus): 
+\begin{equation} \label{eq:J_NKCC1}
+J_{NKCC1_k}=G_{NKCC1_k} \phi \ln \left(\frac{Na_s K_s {Cl_s}^2}{Na_k K_k {Cl_k}^2}\right)
+\end{equation}
+%
+Flux through the \sodpot \gls{atp}-ase pump (\mus): 
+\begin{equation} \label{eq:J_NaK_s}
+J_{NaK_{k}}=J_{NaK_{max}}\frac{{Na_k}^{1.5}}{{Na_k}^{1.5}+{K_{Na_k}}^{1.5}}\frac{K_s}{K_s+K_{K_s}}
+\end{equation}
+%
+\pot flux through the \gls{bk} channel (\mus): 
+\begin{equation} \label{eq:J_BK}
+J_{BK_k}= G_{BK_k}w_k\left( v_k-E_{BK_k} \right)
+\end{equation}
+%
+Nernst potential for the \pot channel (mV):
+\begin{equation} \label{eq:E_K}
+E_{K_k}=\frac{\phi}{z_K}\ln\left( \frac{K_s}{K_k}\right) 
+\end{equation}
+%
+Nernst potential for the \na channel (mV):
+\begin{equation} \label{eq:E_Na}
+E_{Na_k}=\frac{\phi}{z_{Na}}\ln\left( \frac{Na_s}{Na_k}\right) 
+\end{equation}
+%
+Nernst potential for the \cl channel (mV):
+\begin{equation} \label{eq:E_Cl}
+E_{Cl_k}=\frac{\phi}{z_{Cl}}\ln\left( \frac{Cl_s}{Cl_k}\right) 
+\end{equation}
+%
+Nernst potential for the NBC channel (mV):
+\begin{equation} \label{eq:E_NBC}
+E_{NBC_k}=\frac{\phi}{z_{NBC}}\ln\left( \frac{Na_s {HCO_{3_s}}^2}{Na_k {HCO_{3_k}}^2}\right) 
+\end{equation}
+Nernst potential for the \gls{bk} channel (mV):
+\begin{equation} \label{eq:E_BK}
+E_{BK_k}=\frac{\phi}{z_K}\ln\left( \frac{K_p}{K_k}\right) 
+\end{equation}
+%
+Equilibrium state \gls{bk}-channel (-):
+\begin{equation} \label{eq:winf}
+w_{\infty}=0.5 \left(1+\mathrm{tanh}\left(\frac{v_{k}+v_{6} }{v_{4}} \right)  \right) 
+\end{equation}
+%
+The time constant associated with the opening of the \gls{bk} channel (\psec):
+\begin{equation}
+\phi_n = \psi_n \cosh \left( \frac{v_k - v_3}{2 v_4} \right)
+\end{equation}
+%
+The equilibrium state of the \gls{bk} channel (-):
+\begin{equation}
+w_{\infty} = \frac{1}{2} \left( 1 + \tanh \left( \frac{v_k + eet_{shift} eet_k - v_3}{v_4}  \right)  \right)
+\end{equation}
+%
+The voltage associated with half open probability (mV):
+\begin{equation}
+v_3 = - \frac{v_5}{2} \tanh \left(  \frac{Ca_k - Ca_3}{Ca_4}  \right) + v_6
+\end{equation}
+%
+The ratio $\rho$ of bound to unbound metabotropic receptors on the astrocytic process adjacent to the \gls{sc} (-):
+\begin{equation}
+\rho = \rho_{\text{min}} + \frac{\rho_{\text{max}} - \rho_{\text{min}}}{Glu_{max}}
+Glu
+\end{equation}
+%
+The ratio $G$ of active to total G-protein due to \gls{mglur} binding on the astrocyte endfoot surround the \gls{sc} (-):
+\begin{equation}
+G = \frac{\rho + \delta_G}{K_G + \rho + \delta_G}
+\end{equation}
+%
+Fast \ca buffering is described within the steady state approximation (-):
+\begin{equation}
+B_{cyt} = \left( 1 + BK_{end} + \frac{K_{ex} B_{ex}}{(K_{ex} + Ca_k)^2}  \right)^{-1}
+\end{equation}
+%
+The flux of \ca through the IP$_3$R channel (\mus):
+\begin{equation}
+J_{IP3_k} = J_{max} \left[  \left(\frac{IP3_k}{IP3_k + K_i}\right) \left(\frac{Ca_k}{Ca_k + K_{act_k}}\right) h_k \right]^3
+\left( 1 - \frac{Ca_k}{s_k}  \right)
+\end{equation}
+%
+The flux of \ca through the uptake pump (\mus):
+\begin{equation}
+J_{pump_k} = V_{max} \frac{Ca_k^2}{Ca_k^2 + k_{pump}^2}
+\end{equation}
+%
+The flux of \ca through the leak channel (\mus):
+\begin{equation}
+J_{ERleak_k} = P_L \left(  1 - \frac{Ca_k}{s_k}  \right)
+\end{equation}
+%
+\begin{longtable}[h!]{ p{0.1\linewidth}   p{0.68\linewidth}   p{0.22\linewidth} }
+	\hline
+	Parameter & Description & Value \\
+	\hline
+$VR_{sk}$ 			& Volume ratio between the \gls{sc} and astrocyte & 0.465 \\
+$Glu_{max}$ 		& Maximum glutamate concentration (one vesicle) 		& 1846 $\mu$M   \\
+$K_{e_{switch}}$	& Threshold past which glutamate vesicle is released		& 5.5 mM \\
+$Glu_{slope}$		& Slope of glutamate sigmoidal				& 0.1 mM	 \\
+$c_{unit}$			& Constant to convert from mM to \uM & $10^3$ \\
+$k_{syn}$			& The number of active synapses per astrocytic process					& 11.5		 \\
+$\gamma_j$				& Change in membrane potential by a scaling factor					& 1970 mV \uM\n \\
+$G_{K_{k}}$ 	& Specific ion conductance of \pot 			& 6907.77 $\mu$M mV\n \psec  \\
+$G_{Na_k}$ 		& Specific ion conductance of \na 		& 226.94  $\mu$M mV\n \psec   \\
+$G_{NBC_k}$ 	& Specific ion conductance of the NBC cotransporter			& 130.74 $\mu$M mV\n \psec  \\
+$G_{KCC1_k}$ 	& Specific ion conductance of the KCC1 cotransporter					& 1.728  $\mu$M mV\n \psec  \\
+$G_{NKCC1_k}$ 	& Specific ion conductance of the NKCC1 cotransporter	 				& 9.568 $\mu$M mV\n \psec \\
+$G_{BK_k}$ 		& Specific ion conductance of the \gls{bk} channel		& 10.25 $\mu$M mV\n \psec  \\
+$G_{Cl_k}$ 		& Specific ion conductance of \cl 		&   151.93  $\mu$M mV\n \psec \\
+$J_{NaK_{max}}$ & Maximum flux through the \sodpot \gls{atp}-ase pump							& 2.37$\e{4}$ \mus  \\
+$K_{Na_k}$ & \sodpot \gls{atp}-ase pump constant							& $10\e{3}$ \uM  \\
+$K_{K_s}$ & \sodpot \gls{atp}-ase pump constant							& $1.5\e{3}$ \uM  \\
+$v_{6}$			& Voltage associated with the opening of half the population		& 22 mV  \\
+$v_{4}$			& A measure of the spread of $w_{\infty}$	& 14.5 mV \\
+$ \psi_{w}$    	& A characteristic time for the open probability of the \gls{bk} channel		& 2.664 \psec  \\
+$\rho_{\text{min}}$ & Minimum ratio of bound to unbound \ip receptors  & 0.1  \\
+$\rho_{\text{max}}$ & Maximum ratio of bound to unbound \ip receptors  & 0.7 \\
+$\delta_G$ & Ratio of the activities of the unbound and bound receptors & $1.235 \e{-2}$ \\
+$K_G$ & G-protein disassociation constant &  8.82 \\
+$r_h$ & Maximum rate of \ip production in astrocyte due to glutamate receptors & 4.8 $\mu$M \psec  \\
+$k_{deg}$ & Rate constant for \ip degradation in astrocyte  & 1.25 \psec  \\
+$r_{buff}$ & Rate of \ca buffering at the endfoot compared to the astrocyte body  & 0.05  \\
+$VR_{ERcyt}$ & Volume ratio between \gls{er} and astrocytic cytosol  & 0.185  \\
+$BK_{end}$ & Ratio of endogenous buffer concentration to disassociation constant  & 40  \\
+$K_{ex}$& Disassociation constant of exogenous buffer & 0.26 \uM  \\
+$B_{ex}$& Concentration of exogenous buffer  & 11.35 \uM  \\
+$J_{max}$ & Maximum rate of \ca through the \ip mediated channel  & 2880 \mus \\
+$K_i$& Disassociation constant for \ip binding to an $IP_3R$  & 0.03 \uM  \\
+$K_{act_k}$ & Disassociation constant for \ca binding to an activation site on an $IP_3R$  & 0.17 \uM \\
+$k_{on}$ & Rate of \ca binding to the inhibitory site on the $IP_3R$  & 2 \uM\n \psec \\
+$K_{inh}$ & Disassociation constant of $IP_3R$ & 0.1 \uM   \\
+$V_{max}$ & Maximum rate of \ca uptake pump on the \gls{er}  & 20 \mus  \\
+$k_{pump}$ & \ca uptake pump disassociation constant  & 0.24 \uM  \\
+$P_L$ & \Gls{er} leak channel steady state balance constant  & 0.0804 \uM \psec \\			
+$V_{eet}$& \Gls{eet} production rate & 72 \psec  \\
+$c_{k_{min}}$& Minimum \ca concentration required for \gls{eet} production  & 0.1 \uM \\
+$k_{eet}$ & \gls{eet} degradation rate  & 7.2 \psec  \\
+$\psi_n$ & Characteristic time for the opening of the \gls{bk} channel & 2.664 \psec  \\
+$v_4$ & Measure of the spread of $w_{\infty}$  & 8 mV \\
+$eet_{shift}$& Describes the \gls{eet} dependent voltage shift  & 2 mV \uM\n   \\
+$v_5$ & Determines the range of the shift of $w_{\infty}$ as \ca varies  & 15 mV \\
+$v_6$& Shifts the range of $w_{\infty}$  & -55 mV  \\
+$Ca_3$ & \Gls{bk} open probability \ca constant  & 0.4 \uM \\
+$Ca_4$& \gls{bk} open probability \ca constant   & 0.35 \uM  \\			
+			\hline
+\caption{Parameters of the astrocyte and \gls{sc} submodel, for references see \citet{Dormanns2015, Kenny2018}.}
+\end{longtable}
+
+\section{\Gls{pvs}}
+%
+\subsection{\Glspl{ode}}
+%
+\pot concentration in the \gls{pvs}  (\uM):
+\begin{equation} \label{eq:K_p}
+\frac{dK_{p}}{dt}= \frac{J_{BK_k}}{VR_{pk}} + \frac{J_{KIR_i}}{VR_{pi}} - K_{decay_p} (K_p - K_{min_p})
+\end{equation}
+%
+\ca concentration in the \gls{pvs} (\uM): 
+\begin{equation}
+\frac{d Ca_p}{dt} = \frac{J_{TRPV_k}}{VR_{pk}} + \frac{J_{VOCC_i}}{VR_{pi}} - Ca_{decay_p} ( Ca_p - Ca_{min_p} )
+\end{equation}
+%
+The open probability of the \gls{trpv} channel (-): 
+\begin{equation}
+\frac{d m_k}{dt} = \frac{m_{\infty_k} - m_k}{t_{TRPV_k}} 
+\end{equation}
+%
+		\subsection{Algebraic Variables}	
+%
+The flux of \ca through the \gls{vocc} which connects the \gls{smc} to the \gls{pvs} (\mus):
+\begin{equation}
+J_{VOCC_i} = G_{Cai} \frac{v_i - v_{Ca1}}{1 + \exp \left[-(v_i - v_{Ca2})/R_{Cai} \right]} 
+\end{equation}
+%
+The flux of \ca through the \gls{trpv} channel (\mus):
+\begin{equation}
+J_{TRPV_k} = G_{TRPV_k} m_k (v_k - E_{TRPV_k})
+\label{eq:Jtrpv}
+\end{equation}
+%			
+The Nernst potential of the \gls{trpv} channel (mV):
+\begin{equation}
+E_{TRPV_k} = \frac{\phi}{z_{Ca}} \ln \left(\frac{Ca_p}{Ca_k} \right)
+\end{equation}
+%
+The equilibrium state of the \gls{trpv} channel (-):
+\begin{equation}
+m_{\infty_k} =  \Gamma_m
+				\left[
+				\frac{1}{1 + H_{Ca_k}} \left( H_{Ca_k} + \tanh \left( \frac{v_k - v_{1,TRPV}}{v_{2,TRPV}} \right) \right) 
+				\right] 
+\end{equation}
+%
+The material strain gating term (-):
+\begin{equation}
+\Gamma_m = \frac{1}{1+\exp \left( {-\frac{\eta - \eta_0}{\kappa_k}} \right) }  
+\end{equation}
+%	
+The strain on the perivascular endfoot of the astrocyte (-)
+\begin{equation}
+\eta = \frac{R - R_{init}}{R_{init}}
+\end{equation}
+%
+The \ca inhibitory term (-)
+\begin{equation}
+H_{Ca_k} = \frac{Ca_k}{\gamma_{Cai}} + \frac{Ca_p}{\gamma_{Cae}}
+\end{equation}
+%
+\begin{longtable}[h!]{ p{0.1\linewidth}   p{0.52\linewidth}   p{0.27\linewidth} }
+	\hline
+	Parameter & Description & Value \\
+	\hline
+$VR_{pk}$  & Volume ratio between \gls{pvs} and astrocyte   & 0.001 \\
+$VR_{pi}$  & Volume ratio between \gls{pvs} and \gls{smc} & 0.001  \\
+$K_{decay_p}$  & Rate of decay of \pot in \gls{pvs} & 0.15 \psec \\
+$K_{min_p}$  & Steady state value of \pot in \gls{pvs} & $3\e{3}$ $\mu$M  \\
+$Ca_{decay_p}$  & Rate of decay of \ca in \gls{pvs} & 0.5 \psec \\
+$Ca_{min_p}$  & Steady state value of \ca in \gls{pvs} & $2\e{3}$ $\mu$M  \\
+$G_{Cai}$  & \Gls{vocc} whole cell conductance & $1.29 \e{-3}$ $\mu$M mV\n \psec \\
+$v_{Ca1}$  & \gls{vocc} reversal potential & 100 mV \\
+$v_{Ca2}$ & Half point of the \gls{vocc} activation sigmoidal & $-24$ mV  \\
+$R_{Cai}$ & Maximum slope of the \gls{vocc} activation sigmoidal & 8.5 mV \\
+$G_{TRPV_k}$  & \Gls{trpv} whole cell conductance & $3.15 \e{-4}$ $\mu$M mV\n \psec \\
+$t_{TRPV_k}$  & Characteristic time constant for $m_k$ & 0.9 s\\
+$\eta_0$ & Strain required for half activation of the \gls{trpv} channel  & 0.1 \\
+$\kappa_k$  & \gls{trpv} channel strain constant & 0.1  \\
+$v_{1,TRPV}$ & \gls{trpv} channel voltage gating constant & 120 mV \\
+$v_{2,TRPV}$ & \gls{trpv} channel voltage gating constant  & 13 mV \\
+$\gamma_{Cai}$  & \ca concentration constant & 0.01 $\mu$M \\
+$\gamma_{Cae}$& \ca concentration constant & 200 $\mu$M  \\
+\hline
+\caption{Parameters of the \gls{pvs} compartment, for references see \citet{Dormanns2015, Kenny2018}.}
+		\end{longtable}
+
+\section{\Gls{smc}}
+%
+\subsection{\Glspl{ode}}
+%
+Cytosolic \ca in the \gls{smc} (\uM):
+\begin{equation}\label{eq:ci}
+\begin{split}
+\frac{dCa_i}{dt} = J_{IP_{3i}} - J_{SR_{uptake_{i}}} + J_{CICR_{i}} - J_{extrusion_{i}} +  J_{SR_{leak_{i}}}\dots \\
+ - J_{VOCC_{i}} + J_{Na/Ca_{i}}  - 0.1J_{stretch_{i}} + J_{Ca^{2+}-coupling_{i}}^{SMC-EC}
+\end{split} 
+\end{equation}
+%
+\ca in the \gls{sr} of the \gls{smc} (\uM):
+\begin{equation} \label{eq:si}
+\frac{ds_i}{dt} =  J_{SR_{uptake_{i}}} - J_{CICR_{i}} - J_{SR_{leak_{i}}}
+\end{equation}
+%
+Membrane potential of the \gls{smc} (mV):
+\begin{equation} \label{eq:vi}
+\begin{split}
+\frac{dv_{i}}{dt} = \gamma_j( -J_{NaK_{i}} - J_{Cl_{i}} - 2J_{VOCC_{i}}- J_{Na/Ca_{i}} - J_{K_{i}}
+- J_{stretch_{i}} - J_{KIR_{i}} ) +V^{SMC-EC}_{coupling_{i}}
+\end{split}
+\end{equation}
+%
+Open state probability of \ca-activated \pot channels (-):
+\begin{equation} \label{eq:dwidt}
+\frac{dw_{i}}{dt} =  \lambda_{i} \left( K_{act_{i}} - w_{i} \right)
+\end{equation}
+%
+\ip concentration in the \gls{smc} (\uM):
+\begin{equation} \label{eq:dIidt}
+\frac{dIP3_i}{dt} = J^{SMC-EC}_{IP_{3}-coupling_{i}} - J_{degrad_{i}}
+\end{equation}
+%
+\pot concentration in the \gls{smc} (\uM):
+\begin{equation} \label{eq:dkidt}
+\frac{d K_i}{dt}  = J_{NaK_{i}}  - J_{KIR_{i}} - J_{K_{i}}
+\end{equation}
+%
+		\subsection{Algebraic Variables}	
+%
+Release of \ca from \ip sensitive stores in the \gls{smc} (\mus):
+\begin{equation} \label{eq:IP3i}
+J_{IP3_i} = F_{i}\frac{IP3_i^{2}}{K_{ri}^{2}+IP3_{i}^{2}}
+\end{equation}
+%
+Uptake of \ca into the \gls{sr} (\mus):
+\begin{equation} \label{eq:JSRuptakei}
+J_{SR_{uptake_{i}}} = B_{i}\frac{Ca_i^{2}}{c_{bi}^{2}+Ca_i^{2}}
+\end{equation}
+%
+\Gls{cicr} (\mus):
+\begin{equation} \label{eq:JCICRi}
+J_{CICR_{i}} = C_{i}\frac{\ s_i^{2}}{s_{ci}^{2}+\ s_i^{2}}    \frac{Ca_i^{4}}{c_{ci}^{4}+Ca_i^{4}}
+\end{equation}
+%
+\ca extrusion by \ca-\gls{atp}-ase pumps (\mus):
+\begin{equation} \label{eq:Jextrusioni}
+J_{extrusion_{i}} = D_{i}Ca_i   \left( 1+ \frac{v_{i}-v_{d}}{R_{di}}\right)
+\end{equation}
+%
+Leak current from the \gls{sr} (\mus):
+\begin{equation} \label{eq:JSRleaki}
+J_{SR_{leak_{i}}} = L_{i} s_i
+\end{equation}
+%
+Flux of \ca exchanging with \na in the \na/\ca exchange (\mus): 
+\begin{equation} \label{eq:JNaCai}
+J_{Na/Ca_{i}} = G_{Na/Ca_{i}} \frac{Ca_i}     {Ca_i + c_{Na/Cai}} \left( v_{i}-v_{Na/Ca_{i}} \right)
+\end{equation}
+%
+\ca flux through the stretch-activated channels in the \gls{smc} (\mus): 
+\begin{equation} \label{eq:Jstretchi}
+\begin{split}
+J_{stretch_{i}}= \frac{G_{stretch}}{1+ \exp\left(-\alpha_{stretch}  \left(  \frac{\Delta pR}{h} -\sigma_{0}   \right) \right)}  \left(  v_{i}-E_{SAC}   \right) 
+\end{split}
+\end{equation}
+%
+Flux through the \sodpot pump (\mus): 
+\begin{equation} \label{eq:J_NaK_i}
+J_{NaK_{i}}= F_{NaK}
+\end{equation}
+%
+\cl flux through the \cl channel (\mus):
+\begin{equation} \label{eq:JCli}
+J_{Cl_{i}} = G_{Cli} \left(  v_{i} - v_{Cli}  \right) 
+\end{equation}
+%
+\pot flux through \pot channel (\mus):
+\begin{equation} \label{eq:JKi}
+J_{K_{i}}= G_{Ki} w_{i} \left(  v_{i} - v_{K_i}  \right) 
+\end{equation}
+%
+Flux through \gls{kir} channels in the \gls{smc} (\mus): 
+\begin{equation} \label{eq:JKIRi}
+J_{KIR_{i}} =  G_{KIR_{i}}( v_{i} - v_{KIR_{i}})
+\end{equation}
+%
+\ip degradation (\mus): 
+\begin{equation} \label{eq:Jdegradi}
+J_{degrad_{i}}= k_{di}I_{i}
+\end{equation}
+%
+Nernst potential of the \gls{kir} channel in the \gls{smc} (mV):
+\begin{equation}\label{eq:vKIR}
+v_{KIR_i} = z_1 K_p-z_2
+\end{equation}
+%
+Conductance of \gls{kir} channel (\uM mV\n \psec):
+\begin{equation}\label{eq:gKIR}
+G_{KIR_i} = F_{KIR_{i}} \exp(z_5 v_i +z_3 K_p - z_4)
+\end{equation}
+%
+Equilibrium distribution of open channel states for the \gls{smc} \gls{bk} channels (-):
+\begin{equation} \label{eq:Kacti}
+K_{act_{i}} = \frac{  \left( Ca_i + c_{w,i}\right)^{2}}    {\left( Ca_i + c_{w,i} \right)^{2}    + \alpha_{act_i} \exp( -\left(   \left[ v_{i}-v_{Ca_{3i}}\right] /R_{Ki}   \right) )      }
+\end{equation}
+%
+Translation factor, regulatory effect of \gls{cgmp} on the \gls{bk} channel open probability (\uM): 
+\begin{equation} 
+c_{\text{w},i} = \frac{\beta_{w,i}}{2} (1 + \tanh\left( \frac{\text{cGMP}_i - \alpha_{w,i}}{\epsilon_{w,i}}\right) )
+\end{equation}
+%
+Heterocellular electrical coupling between \glspl{smc} and \glspl{ec} (mV \psec):
+\begin{equation} \label{eq:Vcouplingi}
+V_{coupling_{i}}^{SMC-EC}= -G_{coup}(v_{i}-v_{j})
+\end{equation}
+%
+Heterocellular \ip coupling between \glspl{smc} and \glspl{ec} (\mus):
+\begin{equation} \label{eq:JIP3couplingi}
+J_{IP_{3}-coupling_{i}}^{SMC-EC}= -P_{IP_{3}}(IP3_{i}-IP3_{j})
+\end{equation}
+%
+\ca coupling between \glspl{smc} and \glspl{ec} (\mus):
+\begin{equation} \label{eq:JCAcouplingi}
+J_{Ca^{2+}-coupling_{i}}^{SMC-EC}= -P_{Ca^{2+}}(Ca_i-Ca_j)
+\end{equation}
+%
+\xspace 
+%
+\begin{longtable}[h!]{ p{0.12\linewidth}   p{0.58\linewidth}   p{0.26\linewidth} }
+	\hline
+	Parameter & Description & Value \\
+	\hline
+$\lambda_{i} $				& Rate constant for opening											& 45 \psec \\
+ $F_{i}$      			& Maximal rate of activation-dependent \ca influx			& 0.23 \mus	\\
+$K_{ri}$				& Half-saturation constant for agonist-dependent \ca entry	& 1 \uM	\\
+$B_{i}$      			& \gls{sr} uptake rate constant							& 2.025 \mus \\
+$c_{bi}$				& Half-point of the \gls{sr} \gls{atp}-ase activation sigmoidal 	& 1 \uM \\
+$C_{i}$      			& \gls{cicr} rate constant									& 55 \mus \\
+$s_{ci}$				& Half-point of the \gls{cicr} \ca efflux sigmoidal			& 2 \uM\\
+$c_{ci}$				& Half-point of the \gls{cicr} activation sigmoidal			& 0.9 \uM \\
+$D_{i}$      			& Rate constant for \ca extrusion by the \gls{atp}-ase pump		 & 0.24	\psec \\
+$v_{d}$					& Intercept of voltage dependence of extrusion \gls{atp}-ase			 & $-100$ mV \\
+$R_{di}$				& Slope of voltage dependence of extrusion \gls{atp}-ase				 & 250 mV	 \\
+$L_{i}$      			& Leak from \gls{sr} rate constant						 & 0.025 \psec	 \\
+$G_{Cai}$ 	& Whole-cell conductance for \glspl{vocc}	 	& 1.29$\times$10$^{-3}$  \uM mV\n \psec	\\
+$v_{Ca_{1i}}$   & Reversal potential for \glspl{vocc}	 						& 100  mV \\
+$v_{Ca_{2i}}$  	& Half-point of the \gls{vocc} activation sigmoidal		 	& $-24$ mV	 \\
+$R_{Cai}$      	& Maximum slope of the \gls{vocc}	activation sigmoidal		& 8.5 mV	 \\
+$G_{Na/Cai}$   	& Whole-cell conductance for \na/\ca exchange & 3.16$\times$10$^{-3}$ \uM mV\n \psec \\
+$c_{Na/Cai}$   	& Half-point for activation of \na/\ca exchange by \ca		 & 0.5 \uM	 \\
+$v_{Na/Cai}$   	& Reversal potential for the \na/\ca exchanger					 & -30 mV	 \\
+$G_{stretch}$      		& Whole cell conductance for \glspl{sac}						& 6.1$\times$10$^{-3}$ \uM mV\n \psec \\
+$\alpha_{stretch}$ & Slope of stress dependence of the \gls{sac} activation sigmoidal	& 7.4$\times$10$^{-3}$ mmHg$^{-1}$ \\
+$ \Delta p $			& Pressure difference over vessel								& 30 mmHg	\\
+$\sigma_{0}$      		& Half-point of the \gls{sac} activation sigmoidal				& 500 mmHg	 \\
+$E_{SAC}$      			& Reversal potential for \glspl{sac}							& $-18$ mV \\
+$F_{NaK}$      			& Rate of the \pot influx by the \sodpot pump & 4.32$\times$10$^{-2}$ \mus \\
+$G_{Cli}$      			& Whole-cell conductance for \cl current		& 1.34$\times$10$^{-3}$ \uM mV\n \psec\\
+$v_{Cli}$      			& Reversal potential for \cl channels		& $-25$  mV \\
+$G_{Ki}$      	& Whole-cell conductance for \pot efflux		& 4.46$\times$10$^{-3}$ \uM mV\n \psec \\
+$v_{K_i}$      	& Nernst potential										& $-94$ mV	 \\
+$ F_{KIR_{i}} $ & Scaling factor of \pot efflux through the \gls{kir} channel & 0.381 \uM mV\n \psec  \\
+$k_{di}$      			& Rate constant of \ip degradation	& 0.1 \psec \\
+$\alpha_{act_i}$ & Translation factor for $v_i$ dependence of $K_{act_{i}}$ sigmoidal	& 0.13 \uM$^2$ \\
+$v_{Ca_{3i}}$   		& Half-point for the K$_{Ca}$ channel activation sigmoidal		& $-27$ mV	\\
+$R_{Ki}$      			& Maximum slope of the K$_{Ca}$ activation sigmoidal				& 12 mV \\
+$ z_1 $	& Model estimation for membrane voltage \gls{kir} channel			  & 4.5$\times$10$^3$ mV \uM\n\\
+$ z_2 $	& Model estimation for membrane voltage \gls{kir} channel			  & 112 mV \\
+$ z_3 $	& Model estimation for the \gls{kir} channel conductance			  & $4.2\e{-4}$ \uM\n  \\
+$ z_4 $	& Model estimation for the \gls{kir} channel conductance			  & 12.6 \\
+$ z_5 $	& Model estimation for the \gls{kir} channel conductance	 & $-7.4\e{-2}$ mV\n  \\
+$\beta_{w,i}$ & Constant to fit data & 1 \uM \\
+$\alpha_{w,i}$ & Constant to fit data & 10.75 \uM \\
+$\epsilon_{w,i}$ & Constant to fit data & 0.668 \uM \\
+$G_{coup}$      		& Heterocellular electrical coupling coefficient		& 0.5 \psec	 \\
+$P_{IP_{3}}$      		& Heterocellular \ip coupling coefficient	& 0.05 \psec\\
+$P_{Ca^{2+}}$      		& Heterocellular $P_{Ca^{2+}}$ coupling coefficient	& 0.05 \psec \\
+  \hline
+\caption{Parameters of the \gls{smc} compartment, for references see \citet{Dormanns2015}.}
+\end{longtable}
+
+\section{\Gls{ec}}
+%
+\subsection{\Glspl{ode}}
+%
+Cytosolic \ca concentration in the \gls{ec} (\uM):
+\begin{equation} \label{eq:cj}
+\begin{split}
+\frac{dCa_j}{dt} = J_{IP_{3j}} - J_{ER_{uptake_{j}}} + J_{CICR_{j}} - J_{extrusion_{j}}\dots \\
+ + J_{ER_{leak_{j}}} + J_{cation_{j}} + J_{0_{j}} - J_{stretch_{j}} - J_{Ca^{2+}-coupling_{j}}^{SMC-EC}
+\end{split}
+\end{equation}
+%
+\ca concentration in the \gls{er} in the \gls{ec} (\uM): 
+\begin{equation} \label{eq:sj}
+\frac{ds_j}{dt} =  J_{ER_{uptake_{j}}} - J_{CICR_{j}} - J_{ER_{leak_{j}}}
+\end{equation}
+%
+Membrane potential of the \gls{ec} (mV):
+\begin{equation} \label{eq:dvjdt}
+\frac{dv_{j}}{dt} =-\frac{1}{C_{m_{j}}} ( I_{K_{j}}+I_{R_{j}}) - V^{SMC-EC}_{coupling_{j}}
+\end{equation}
+%
+\ip concentration of the \gls{ec} (\uM):
+\begin{equation} \label{eq:dIjdt}
+\frac{dIP3_{j}}{dt} =  J_{PLC}- J_{degrad_{j}}  - J^{SMC-EC}_{IP_{3}-coupling_{j}}
+\end{equation}
+%
+		\subsection{Algebraic Variables}	
+%
+Release of \ca from \ip-sensitive stores in the \gls{ec} (\mus):
+\begin{equation} \label{eq:JIP3j}
+J_{IP_{3j}} = F_{j}\frac{IP3_{j}^{2}}{K_{rj}^{2}+IP3_{j}^{2}}
+\end{equation}
+%
+Uptake of \ca into the endoplasmic reticulum (\mus):
+\begin{equation} \label{eq:JERuptakej}
+J_{ER_{uptake_{j}}} = B_{j}\frac{Ca_j^{2}}{c_{bj}^{2}+Ca_j^{2}}
+\end{equation}
+%
+\Gls{cicr} (\mus):
+\begin{equation} \label{eq:JCICRJ}
+J_{CICR_{j}} = C_{j}\frac{s_j^{2}}{s_{cj}^{2}+s_j^{2}}    \frac{Ca_j^{4}}{c_{cj}^{4}+Ca_j^{4}}
+\end{equation}
+%
+\ca extrusion by \ca-\gls{atp}-ase pumps (\mus):
+\begin{equation} \label{eq:Jextrusionj}
+J_{extrusion_{j}} = D_{j}Ca_j 
+\end{equation}
+%
+\ca flux through the stretch-activated channels in the \gls{ec} (\mus): 
+\begin{equation} \label{eq:Jstretchj}
+J_{stretch_{j}}= \frac{G_{stretch}}{1+ \exp\left(-\alpha_{stretch}  \left(  \frac{\Delta pR}{h} -\sigma_{0}   \right) \right)}  \left(  v_{j}-E_{SAC}   \right) 
+\end{equation}
+%
+Leak current from the \gls{er} (\mus):
+\begin{equation} \label{eq:JERleakj}
+J_{ER_{leak_{j}}} = L_{j}s_j
+\end{equation}
+%
+\ca influx through nonselective cation channels (\mus):
+\begin{equation} \label{eq:Jcationj}
+J_{cation_{j}} = G_{cat_{j}} (E_{Ca_{j}} - v_{j}) \frac{1}{2} \left(   1+ \mathrm{tanh}  \left(  \frac{\mathrm{log}_{10} (Ca_j/c_{log})  - m_{3_{cat_{j}}} }    {m_{4_{cat_{j}}}}   \right)      \right) 
+\end{equation}
+%
+\pot current through the $BK_{Caj}$ channel and the $SK_{Caj}$ channel (fA):
+\begin{equation} \label{eq:JKj}
+I_{K_{j}} = G_{totj} (v_{j}-v_{Kj}) \left(   I_{BK_{Caj}} + I_{SK_{Caj}} \right) 
+\end{equation}
+%
+\pot efflux through the $BK_{Caj}$ channel (-):
+\begin{equation} \label{eq:JBKCAj}
+I_{BK_{Caj}} = 0.2 \left(   1+ \mathrm{tanh}   \left(   \frac{   (\mathrm{log}_{10} (Ca_j/c_{log}) - c) (v_{j}-b_{j}) - a_{1j}  }   { m_{3bj} ( v_{j} + a_{2j} (\mathrm{log}_{10} (Ca_j/c_{log}) -c )-b_{j} )^{2} + m_{4bj} }  \right)     \right)  
+\end{equation}
+%
+\pot efflux through the $SK_{Caj}$ channel (-):
+\begin{equation} \label{eq:JSKCaj}
+I_{SK_{Caj}} = 0.3\left( 1+ \mathrm{tanh}  \left(  \frac{   \mathrm{log}_{10} (Ca_j/c_{log}) -m_{3sj}  } {m_{4sj}}  \right)      \right) 
+\end{equation}
+%
+Residual current regrouping \cl and \na current flux (fA):
+\begin{equation} \label{eq:JRj}
+I_{R_{j}} = G_{R_{j}} ( v_{j} - v_{rest j}  )
+\end{equation}
+%
+\ip degradation (\mus):  
+\begin{equation} \label{eq:Jdegradj}
+J_{degrad_{j}}= k_{dj} IP3_{j}
+\end{equation}
+%
+\begin{longtable}[h!]{ p{0.12\linewidth}   p{0.6\linewidth}   p{0.28\linewidth} }
+	\hline
+	Parameter & Description & Value \\
+	\hline
+$J_{0_{j}}$ 			& Constant \ca influx & 0.029 \mus \\
+$C_{m_{j}}$				& Membrane capacitance												& 25.8  pF \\
+$ J_{PLC} $  & \ip production rate & 0.11 \mus  \\
+$F_{j}$      			& Maximal rate of activation-dependent \ca influx			& 0.23 \mus			 \\
+$K_{rj}$				& Half-saturation constant for agonist-dependent \ca entry	& 1 \uM	 \\
+$B_{j}$      			& \gls{er} uptake rate constant							& 0.5 \mus	 \\
+$c_{bj}$				& Half-point of the \gls{sr} \gls{atp}-ase activation sigmoidal 	& 1  \uM	 \\
+$C_{j}$      			& \gls{cicr} rate constant									& 5 \mus \\
+$s_{cj}$				& Half-point of the \gls{cicr} \ca efflux sigmoidal			& 2  \uM \\
+$c_{cj}$				& Half-point of the \gls{cicr} activation sigmoidal			& 0.9 \uM \\
+$D_{j}$      			& Rate constant for \ca extrusion by the \gls{atp}-ase pump		 & 0.24	\psec	\\
+$L_{j}$      			& Rate constant for \ca leak from the \gls{er} 		 & 0.025	\psec \\
+$G_{cat j}$      		& Whole-cell cation channel conductivity	& 6.6$\times$10$^{-4}$ \uM mV\n \psec	 \\
+$E_{Caj}$      			& \ca equilibrium potential								 	& 50 mV	 \\
+$c_{log}$				& Log constant & 1 \uM \\
+$G_{totj}$      		& Total \pot channel conductivity	& 6927 pS \\
+$v_{Kj}$      			& \pot equilibrium potential			& $-80$ mV	 \\
+$m_{3_{catj}}$      	& Model constant, further explanation see \cite{Koenigsberger2006}		& $-0.18$	 \\
+$m_{4_{catj}}$      	& Model constant, further explanation see \cite{Koenigsberger2006}		& 0.37	 \\
+$c$      				& Model constant, further explanation see \cite{Koenigsberger2006}		& $-0.4$	 \\
+$b_{j}$      			& Model constant, further explanation see \cite{Koenigsberger2006}		& $-80.8$ mV	 \\
+$a_{1j}$      			& Model constant, further explanation see \cite{Koenigsberger2006}	& 53.3 mV \\
+$a_{2j}$      			& Model constant, further explanation see \cite{Koenigsberger2006}		& 53.3 mV \\
+$m_{3bj}$ & Model constant, further explanation see \cite{Koenigsberger2006} & 1.32$\times$10$^{-3}$ mV\n \\
+$m_{4bj}$      			& Model constant, further explanation see \cite{Koenigsberger2006}		& 0.30 mV\\
+$m_{3sj}$      			& Model constant, further explanation see \cite{Koenigsberger2006}	& $-0.28$	 \\
+$m_{4sj}$      			& Model constant, further explanation see \cite{Koenigsberger2006}		& 0.389 \\
+$G_{R_{j}}$      		& Residual current conductivity		& 955 pS		 \\
+$v_{rest j}$      		& Membrane resting potential						 				& $-31.1$ mV	 \\
+$k_{dj}$      			& Rate constant of \ip degradation						 		& 0.1 \psec \\
+\hline
+\caption{Parameters of the \gls{ec} compartment, for references see \citet{Dormanns2015}.}
+\end{longtable}
+
+\section{\Gls{no} pathway}
+%
+\subsection{\Glspl{ode}}
+%
+\ca concentration in the neuron (\uM): 
+\begin{equation}       
+\dfrac{dCa_n}{dt} = \frac{1}{1 + \lambda_{\text{buf}}}  \left( \frac{I_{\text{Ca,tot}}}{2 F V_{\text{spine}}} - \kappa_{\text{ex}}(Ca_n - [Ca]_{\text{rest}})
+\right)
+\end{equation}
+%
+Activated \gls{nnos} (\uM):
+\begin{equation}  
+\dfrac{d[\text{nNOS}]_n}{dt} = \frac{V_{\text{max,nNOS}} [\text{CaM}]_n}{K_{\text{m,nNOS}}+[\text{CaM}]_n}-\mu_{\text{deact},n} [\text{nNOS}]_n
+\end{equation} 
+%
+\gls{no} concentration in the neuron (\uM):
+\begin{equation}  
+\dfrac{d\text{NO}_n}{dt} = p_{NO,n} - c_{NO,n} + d_{NO,n}
+\end{equation}          	
+%
+\gls{no} concentration in the astrocyte (\uM):
+\begin{equation}  
+\dfrac{d\text{NO}_k}{dt} = p_{NO,k} - c_{NO,k} + d_{NO,k}
+\end{equation}   
+%
+\gls{no} concentration in the \gls{smc} (\uM):
+\begin{equation}  
+\dfrac{d\text{NO}_i}{dt} = p_{NO,i} - c_{NO,i} + d_{NO,i} 
+\end{equation}
+%
+Activated \gls{enos} (\uM):
+\begin{equation} 
+\dfrac{d[\text{eNOS}]_j}{dt} = \gamma_{\text{eNOS}} \frac{K_{\text{dis}}Ca_j}{K_{\text{m,eNOS}}+Ca_j} + (1-\gamma_{\text{eNOS}}) g_{\max} F_{\text{wss}}   - \mu_{\text{deact},j}[\text{eNOS}]_j
+\end{equation}	
+%
+\gls{no} concentration in the \gls{ec} (\uM):
+\begin{equation} 
+\dfrac{d\text{NO}_j}{dt} = p_{NO,j} - c_{NO,j} + d_{NO,j} 
+\end{equation}
+%
+Fraction of \gls{sgc} in the basal state (-):% Yang2005
+\begin{equation} 
+\dfrac{dE_b}{dt} = -k_1 E_b \text{NO}_i + k_{-1} E_{6c} + k_4 E_{5c}
+\end{equation}	
+%
+Fraction of \gls{sgc} in the intermediate form (-):% Yang2005
+\begin{equation} 
+\dfrac{dE_{6c}}{dt} = k_1 E_b \text{NO}_i - (k_{-1} + k_2) E_{6c} - k_3 E_{6c} \text{NO}_i
+\end{equation}	
+%
+Concentration of \gls{cgmp} in the \gls{smc} (\uM):		% Yang2005	
+\begin{equation} 
+\dfrac{d\text{cGMP}_i}{dt} = V_{\text{max,sGC}} E_{5c} - V_{\text{max,pde}} \frac{\text{cGMP}_i}
+{K_{\text{m,pde}} + \text{cGMP}_i}
+\end{equation}	
+%
+		\subsection{Algebraic Variables}
+%
+Fraction of open NR2A \gls{nmda} receptors (-): 
+\begin{equation} 
+w_{\text{NR2},A} = \frac{Glu}{K_{m,A} + Glu}
+\end{equation}	
+%
+Fraction of open NR2B \gls{nmda} receptors (-):
+\begin{equation} 
+w_{\text{NR2},B} = \frac{Glu}{K_{\text{m},B} + Glu}
+\end{equation}	
+%
+Inward \ca current per open \gls{nmda} receptor (fA):	
+\begin{equation} 
+I_{\text{Ca}} = \frac{4 v_n G_\text{M} (P_{\text{Ca}}/P_\text{M})([Ca]_{\text{ex}}/[\text{M}])}{1+ \exp(\alpha_v(v_n+\beta_v))} \frac{\exp(2v_n/\phi))}{1-\exp(2v_n/\phi))}
+\end{equation}
+%
+Total inward \ca current for all open \gls{nmda} receptors per synapse (fA): 
+\begin{equation} 
+I_{\text{Ca,tot}} = (n_{\text{NR2},A} w_{\text{NR2},A} + n_{\text{NR2},B}  w_{\text{NR2},B}) I_{\text{Ca}} 
+\end{equation}	
+%
+\ca-calmodulin complex concentration (\uM):
+\begin{equation} 
+[\text{CaM}]_n = \frac{Ca_n}{m_c}
+\end{equation}
+%
+Neuronal \gls{no} production flux (\mus): 	
+\begin{equation} 
+p_{NO,n} = V_{\text{max,NO},n} [\text{nNOS}]_n \frac{[O_2]_n}{K_{\text{m,O2},n}+[O_2]_n} \frac{[LArg]_n}{K_{\text{m,LArg},n}+[LArg]_n}
+\end{equation}	
+%
+Neuronal \gls{no} consumption flux (\mus): 				
+\begin{equation} 
+c_{NO,n} = k_{\text{O2},n} [\text{NO}]_n^2 [O_2]_n
+\end{equation}
+%
+Neuronal \gls{no} diffusive flux (\mus): 	
+\begin{equation} 
+d_{NO,n} = \frac{[\text{NO}]_k - [\text{NO}]_n}{\tau_{nk}}
+\end{equation}	
+%
+Time for \gls{no} to diffuse between the centres of the neuron and the astrocyte (s):
+\begin{equation}
+\tau_{nk} = \frac{x_{nk}^2}{2 D_{\text{c,NO}}}
+\end{equation}
+%
+Astrocytic \gls{no} production flux (\mus):
+\begin{equation} 
+p_{NO,k} = 0
+\end{equation}
+%
+Astrocytic \gls{no} consumption flux (\mus):
+\begin{equation} 
+c_{NO,k} = k_{\text{O2},k} [\text{NO}]_k^2 [O_2]_k
+\end{equation}
+%
+Astrocytic \gls{no} diffusive flux (\mus):
+\begin{equation} 
+d_{NO,k} = \frac{[\text{NO}]_n - [\text{NO}]_k}{\tau_{nk}} + \frac{[\text{NO}]_i - [\text{NO}]_k}{\tau_{ki}}
+\end{equation}	
+%
+Time for \gls{no} to diffuse between the centres of the astrocyte and the \gls{smc} (s):
+\begin{equation}
+\tau_{ki} = \frac{x_{ki}^2}{2 D_{\text{c,NO}}}
+\end{equation}
+%
+\gls{smc} \gls{no} production flux (\mus):
+\begin{equation} 
+p_{NO,i} = 0
+\end{equation}
+%
+\gls{smc} \gls{no} consumption flux (\mus):
+\begin{equation} 
+c_{NO,i} = k_{\text{dno}} [\text{NO}]_i
+\end{equation}
+%
+\gls{smc} \gls{no} diffusive flux (\mus):
+\begin{equation} 
+d_{NO,i} = \frac{[\text{NO}]_k - [\text{NO}]_i}{\tau_{ki}} + \frac{[\text{NO}]_j - [\text{NO}]_i}{\tau_{ij}}
+\end{equation}
+%
+\gls{sgc} kinetics rate constant (s\n): % Yang2005
+\begin{equation} 
+k_4 = C_4 [\text{cGMP}]_i^{2}
+\end{equation}	
+%
+Fraction of \gls{sgc} in the fully activated form (-):% Yang2005
+\begin{equation} 
+E_{5c} = 1 - E_b - E_{6c}
+\end{equation}	
+%
+Regulatory effect of \gls{cgmp} on myosin dephosphorylation (-):			%not on the BK channel open probability !
+\begin{equation} 
+R_{\text{cGMP}} = \frac{[\text{cGMP}]_i^2}{K_{\text{m,mlcp}}^2 + [\text{cGMP}]_i^2}
+\end{equation}
+%	
+Maximum \gls{cgmp} production rate (\mus):
+\begin{equation}
+V_{\text{max,pde}} = k_{\text{pde}} [\text{cGMP}]_i
+\end{equation}
+%
+Time for \gls{no} to diffuse between the centres of the \gls{smc} and the \gls{ec} (s):
+\begin{equation}
+\tau_{ij} = \frac{x_{ij}^2}{2 D_{\text{c,NO}}}
+\end{equation}
+%
+Fraction of the elastic strain energy stored within the membrane (-): 
+\begin{equation} 
+F_{\text{wss}} = \frac{1}{1+\alpha_{\text{wss}} \exp(-W_{\text{wss}})} - \frac{1}{1+\alpha_{\text{wss}}}
+\end{equation}	
+%
+Strain energy density (-): 
+\begin{equation} 
+W_{\text{wss}} = W_0 \frac{(\tau_{\text{wss}} + \sqrt{16 \delta_{\text{wss}}^2 + \tau_{\text{wss}}^2} - 4 \delta_{\text{wss}})^2}{\tau_{\text{wss}} + \sqrt{16\delta_{\text{wss}}^2 + \tau_{\text{wss}}^2}}
+\end{equation}	
+%
+Wall shear stress (Pa): % unit??
+\begin{equation}
+\tau_{\text{wss}} = \frac{R \Delta P}{2 L}
+\end{equation}
+%
+\ox concentration in the \gls{ec} (\uM):
+\begin{equation}
+[O_2]_j =  c_{unit} \, O_2 
+\end{equation}
+\gls{ec} \gls{no} production flux (\mus):
+\begin{equation} 
+p_{NO,j} = V_{\text{max,NO},j} [\text{eNOS}]_j  \frac{[O_2]_j}{K_{\text{m,O2},j}+[O_2]_j} \frac{[LArg]_j}{K_{\text{m,L-Arg},j}+[LArg]_j}
+\end{equation}	
+%
+\gls{ec} \gls{no} consumption flux (\mus):
+\begin{equation} 
+c_{NO,j} = k_{\text{O2},j} [\text{NO}]_j^2 [O_2]_j 
+\end{equation}	
+%
+\gls{ec} \gls{no} diffusive flux (\mus):					
+\begin{equation} 
+d_{NO,j} = \frac{[\text{NO}]_i - [\text{NO}]_j}{\tau_{ij}} - \frac{4 D_{\text{c,NO}}[\text{NO}]_j}{r_l^2}
+\end{equation}		
+%
+\begin{longtable}[h!]{ p{0.12\linewidth}   p{0.64\linewidth}   p{0.24\linewidth} }
+	\hline
+	Parameter & Description & Value \\
+	\hline
+$ [\text{Glu}]_{\max} $			& Maximum glutamate concentration 						& 1846 \uM 	\\ 
+$ V_{\text{spine}} $		& Dendritic spine volume 								& $8\e{-5}$ pL		\\ 
+$ \kappa_{\text{ex}} $		& Decay rate constant of internal \ca concentration	& $1.6\e{3}$ s\n \\
+$ [Ca]_{\text{rest}} $		& Resting internal \ca concentration				& 0.1 \uM		\\
+$ \lambda_{\text{buf}} $	& Buffer capacity										& 20 	\\
+$ V_{\text{max,nNOS}} $		& Maximum \gls{nnos} activation rate							& $25\e{-3}$ \uM \psec	\\
+$ K_{\text{m,nNOS}} $		& Michaelis constant									& $9.27\e{-2}$ \uM	\\			
+$ \mu_{\text{deact},n} $	& Rate constant at which \gls{nnos} is deactivated 			& 0.0167 s\n	\\ 
+$ K_{\text{m},A} $			& Michaelis constant & 650 \uM \\ 
+$ K_{\text{m},B} $			& Michaelis constant  & 2800 \uM \\
+$ v_n $						& Neuronal membrane potential							& $-40$ mV	 \\
+$ G_\text{M} $				& Conductance of \gls{nmda} receptor  						& $46$ pS	\\ 
+$ P_{\text{Ca}}/P_\text{M} $ & Ratio of \ca permeability to monovalent ion permeability & 3.6 \\
+$ [Ca]_{\text{ex}} $   	& External \ca concentration						& $2\e{3}$ \uM  \\
+$ [\text{M}] $ 				& Concentration of monovalent ions 						& $1.3\e{5}$ \uM  \\
+$ \alpha_v $				& Voltage-dependent Mg$^{2+}$ block parameter			& $-0.08$ mV\n	\\ 
+$ \beta_v $					& Voltage-dependent Mg$^{2+}$ block parameter			& 20 mV \\ 
+$ n_{\text{NR2},A} $		& Average number of NR2A \gls{nmda} receptors 	& 0.63  \\
+$ n_{\text{NR2},B} $		& Average number of NR2B \gls{nmda} receptors 	& 11   \\
+$m_c$						& Number of \ca ions bound per calmodulin & 4 \\
+$ V_{\text{max,NO},n} $ 	& Maximum catalytic rate of neuronal \gls{no} production 		& 4.22 s\n 	\\
+$ [O_2]_n $ 				& \ox concentration in the neuron 					& 200 \uM 	\\
+$ K_{\text{m,O2},n} $ 		& Michaelis constant for \gls{nnos} for \ox  				& 243 \uM \\
+$ [LArg]_n $ 				& L-Arg concentration in the neuron 					& 100 \uM 	\\ 
+$ K_{\text{m,LArg},n} $ 	& Michaelis constant for \gls{nnos} for LArg 				& 1.5 \uM 	 \\
+$ k_{\text{O2},n} $ 		& \ox reaction rate constant							& $9.6\e{-6}$ \uM$^{-2}$ s\n \\
+$ x_{nk} $ 					& Distance between centres of neuron and astrocyte  	& 25 \um  \\ 
+$ k_{\text{O2},k} $ 	& \ox reaction rate constant							& $9.6\e{-6}$\uM$^{-2}$s\n \\ 
+$[O_2]_k$ 				& \ox concentration in the astrocyte & 200 \uM \\
+$ x_{ki} $ 				& Distance between centres of astrocyte and \gls{smc} compartments 	& 25 \um \\ 
+$ k_{-1} $ 				& \gls{sgc} kinetics rate constant 	& 100 s\n 			 \\ 
+$ k_1 $ 				& \gls{sgc} kinetics rate constant 	& $2\e{3}$ \uM\n\ s\n 	 \\ 
+$ k_2 $ 				& \gls{sgc} kinetics rate constant 	& 0.1 s\n 			 \\ 
+$ k_3 $ 				& \gls{sgc} kinetics rate constant 	& 3 \uM\n\ s\n 		 \\ 
+$ V_{\text{max,sGC}} $ 	& Maximal \gls{cgmp} production rate	& 0.8520 \mus  	 \\ 
+$ K_{\text{m,pde}} $ 	& Michaelis constant 			& 2 \uM 			 \\ 
+$ k_{\text{dno}}$ 		& Constant reflecting the activity of various \gls{no} scavengers & 0.01 s\n \\ 
+$ C_4 $ 				& \gls{sgc} rate scaling constant 						& 0.011 \uM$^{-2}$ \psec \\ 
+$ K_{\text{m,mlcp}} $ 	& Hill coefficient				& 5.5 \uM 			 \\
+$ v_{\text{Ca}3,i} $ 			& Half-point for the $ K_{\text{Ca}} $ channel activation sigmoidal & $-27$ mV \\ 
+$ R_{\text{K},i}  $ 				& Maximum slope of the $K_{Ca}$ activation sigmoidal & 12 mV \\ 
+$ k_{\text{pde}} $		& Phosphodiesterase rate constant & 0.0195 s\n \\
+$ x_{ij} $ 				& Distance between centres of \gls{smc} and \gls{ec} compartments 	& 3.75 \um \\
+$ \gamma_{\text{eNOS}} $	& Relative strength of the \ca dependent pathway for \gls{enos} activation	& 0.1 	\\
+$ \mu_{\text{deact},j} $	& \gls{enos}-caveolin association rate											& 0.0167 s\n	\\
+$ K_{\text{dis}} $			& \gls{enos}-caveolin disassociation rate											& 0.09 \mus	\\
+$ K_{\text{m,eNOS}} $		& Michaelis constant														& 0.45 \uM		\\
+$ g_{\max} $		& Maximum wall-shear-stress-induced \gls{enos} activation			& 0.06 \mus	\\
+$ \alpha_{\text{wss}} $				& Zero shear open channel constant						& 2 		\\
+$ W_0 $					& Shear gating constant 									& 1.4 Pa\n			\\
+$ \delta_{\text{wss}} $		& Membrane shear modulus			& 2.86 Pa		\\
+$ V_{\text{max,NO},j} $ 	& Maximum catalytic rate of \gls{no} production		& 1.22 s\n		\\ 
+$ K_{\text{m,O2},j} $		& Michaelis constant for \gls{enos} for \ox  		& 7.7 \uM 	 \\
+$ [LArg]_j $				& L-Arg concentration in the neuron 		& 100 \uM 	 \\ 
+$ K_{\text{m,L-Arg},j} $	& Michaelis constant for L-Arg 			& 1.5 \uM  \\
+$ \Delta P / L $			& Pressure drop over length of arteriole	& $9.1\e{-2}$ Pa \um\n 	\\
+$ k_{\text{O2},j} $ 		& \ox reaction rate constant			& $9.6\e{-6}$ \uM$^{-2}$ s\n \\ 
+$ D_{\text{c,NO}} $			& \Gls{no} diffusion coefficient	& 3300 \um$^2$s\n  \\
+$r_l$	& Constant of lumen radius & 25 \um \\
+\hline
+\caption{Parameters of the \gls{no} submodel, for references see \citet{Dormanns2016}.}
+\end{longtable}	
+
+
+\section{Wall mechanics}
+
+\subsection{\Glspl{ode}}
+Fraction of free phosphorylated cross-bridges (-):
+\begin{equation} \label{eq:dMpdt}
+\frac{d[Mp]}{d t} =  \chi_w 
+\left( K_{4}[AMp] +K_{1} [M] - ( K_{2} + K_{3} ) [Mp]
+\right) 
+\end{equation}
+%
+Fraction of attached phosphorylated cross-bridges (-):
+\begin{equation} \label{eq:dAMpdt}
+\frac{d[AMp]}{d t} = \chi_w 
+\left( K_{3} [Mp] + K_{6} [AM] - ( K_{4} + K_{5} )[AMp] \right)
+\end{equation} 
+%
+Fraction of attached dephosphorylated cross-bridges (-):
+\begin{equation} \label{eq:dAMdt}
+\frac{d[AM]}{d t} =  \chi_w 
+\left(  K_{5} [AMp]-(K_{7}+K_{6})[AM] \right)
+\end{equation}
+%
+Vessel radius (\um):
+\begin{equation} \label{eq:dRdt2e}
+\frac{dR}{dt}= \frac{R_{init}}{\eta}\left(   \frac{ R P_{T}}{h}  - E \frac{R - R_0}{R_0} \right)
+\end{equation}
+%
+		\subsection{Algebraic Variables}
+Fraction of free non-phosphorylated cross-bridges (-):
+\begin{equation} \label{eq:dMdt}
+[M]=1-[AM]-[AMp]-[Mp]
+\end{equation}
+%
+Rate constants for phosphorylation of M to Mp and of AM to AMp (\psec):
+\begin{equation} \label{eq:gamma}
+K_{1} = K_{6} = \gamma_{cross} Ca_i ^{n_{cross}}
+\end{equation}
+%
+Rate constants for dephosphorylation of Mp to M and of AMp to AM (\psec):
+\begin{equation} 
+K_{2} = K_{5} = \delta_K \left(k_{\text{mlpc,b}} + k_{\text{mlpc,c}} R_{\text{cGMP}}\right)
+\end{equation}	
+%
+Wall thickness of the vessel (in \um):
+\begin{equation} \label{eq:h2}
+h=0.1 R
+\end{equation}
+%
+Fraction of attached myosin cross-bridges (-):
+\begin{equation}
+F_r = [AM_p] + [AM]
+\end{equation}
+%
+Young's modulus (Pa):
+\begin{equation}
+E = E_{pas} + F_r \left(E_{act} - E_{pas} \right)
+\end{equation}
+%
+Initial radius (\um):
+\begin{equation}
+R_0 = R_{init} + F_r (\alpha -1) R_{init}
+\end{equation}
+%
+\begin{longtable}[h!]{ p{0.1\linewidth}   p{0.64\linewidth}   p{0.26\linewidth} }
+	\hline
+	Parameter & Description & Value \\
+	\hline
+$\chi_w$ 		& Scaling constant for wall mechanics & 1.7 \\
+$K_{3}$      	& Rate constant for attachment of phosphorylated crossbridges	 & 0.4 \psec \\
+$K_{4}$      	& Rate constant for detachment of phosphorylated crossbridges 	 & 0.1 \psec \\
+$K_{7}$      	& Rate constant for detachment of dephosphorylated crossbridges 	& 0.1 \psec	 \\
+$\gamma_{cross}$    & Sensitivity of the contractile apparatus to \ca		& 17 \uM$^{-3}$\psec \\
+$n_{cross}$      	& Fraction constant of the phosphorylation crossbridge				& 3  \\
+$ \delta_K $ 			& Constant to fit data			& 58.14 \\
+$ k_{\text{mlpc,b}} $ & Basal MLC dephosphorylation rate constant			& $8.6\e{-3}$ \psec  \\
+$ k_{\text{mlpc,c}} $ & First-order rate constant for \gls{cgmp} regulated MLC dephosphorylation & $32.7\e{-3}$ \psec  \\
+$\eta$			& Viscosity															& 10$^4$ Pa s \\
+$P_T$				& Transmural pressure												& 4$\times$10$^3$ Pa	 \\
+${E}_{pas}$			& Young's moduli for the passive vessel								& 66$\times$10$^3$ Pa 	\\
+${E}_{act}$			& Young's moduli for the active vessel								& 233$\times$10$^3$ Pa \\
+$\alpha$			& Scaling factor for initial radius										& 0.6   \\
+\hline
+\caption{Parameters of the wall mechanics submodel, for references see \citet{Dormanns2015}.}
+\end{longtable}
+
+\section{Tissue Slice Model}
+
+\subsection{\Glspl{ode}}
+%
+\pot concentration in the astrocyte of block $i$ with four neighbours $j$ (\uM):
+\begin{align}
+\frac{d K_k^i}{dt} = \sum_j Q_{K,j \to i} - J_{K_k}^i + 2 J_{NaK_{k}}^i + J_{NKCC1_{k}}^i +  J_{KCC1_{k}}^i
+\end{align}
+%
+Membrane potential in the astrocyte of block $i$ with four neighbours $j$ (mV):
+\begin{align}
+\frac{d v_k}{dt} = \gamma_j \left[ \sum_j z_K Q_{K,j \to i} -J_{BK_k}^i - J_{K_k}^i - J_{Cl_k}^i - J_{NBC_k}^i - J_{Na_k}^i - J_{NaK_k}^i - 2J_{TRPV_k}^i \right]
+\end{align}
+%
+\pot concentration in the \gls{ecs} of block $i$ with four neighbours $j$ (mM):
+\begin{align}
+\frac{dK_{e}^i}{dt} &= \sum_j Q^{e}_{K,j\to i} + \frac{1}{F f_e} \left( \frac{A_s I_{K,tot_{sa}}^i}{V_s} + \frac{A_d I_{K,tot_d}^i}{V_d} \right) - \frac{d \text{Buff}^i_e}{dt}
+\end{align}
+%
+\na concentration in the \gls{ecs} of block $i$ with four neighbours $j$ (mM):
+\begin{align}
+\frac{d Na_e}{dt} &= \sum_j Q^{e}_{Na,j\to i} + \frac{1}{F f_e} \left( \frac{A_s I_{Na,tot_{sa}}^i}{V_s} + \frac{A_d I_{Na,tot_d}^i}{V_d} \right)
+\end{align}
+%
+		\subsection{Algebraic Variables}
+Rate of change of $K_k$ in block $i$ due to gap junctional flux from neighbour $j$ (\mus):
+\begin{align}
+Q_{K,j \to i} = \frac{D_{gap}}{\Delta x^2} \left( (K_k^j - K_K^i) + \frac{z_K F}{RT} \frac{K_k^i + K_k^j}{2} (v_k^j - v_k^i) \right)
+\end{align}
+%
+Rate of change of $K_e$ and $Na_e$ in block $i$ due to extracellular electrodiffusion from neighbour $j$ (mM \psec):
+\begin{align}
+Q^{e}_{K,j\to i} &= \frac{D_{K,e}}{\Delta x^2} \left[ 
+(K_e^j - K_e^i) - z_K \left(\frac{K_e^i + K_e^j}{2}\right) 
+\left(   \ddfrac{z_K D_{K,e} (K_e^j - K_e^i) + z_{Na} D_{Na,e} (Na_e^j - Na_e^i)}
+{z_K^2 D_{K,e} \frac{K_e^i + K_e^j}{2} + z_{Na}^2 D_{Na,e} \frac{Na_e^i + Na_e^j}{2} }
+\right) 
+\right]   
+\\
+Q^{e}_{Na,j\to i} &= \frac{D_{Na,e}}{\Delta x^2} \left[ 
+(Na_e^j - Na_e^i) - z_{Na} \left(\frac{Na_e^i + Na_e^j}{2}\right) 
+\left(   \ddfrac{z_K D_{K,e} (K_e^j - K_e^i) + z_{Na} D_{Na,e} (Na_e^j - Na_e^i)}
+{z_K^2 D_{K,e} \frac{K_e^i + K_e^j}{2} + z_{Na}^2 D_{Na,e} \frac{Na_e^i + Na_e^j}{2} }
+\right) 
+\right]   
+\end{align}
+\pagebreak
+\begin{longtable}[h!]{ p{0.12\linewidth}   p{0.66\linewidth}   p{0.22\linewidth} }
+	\hline
+	Parameter & Description & Value \\
+	\hline
+$D_{gap}$ 		& Astrocytic gap junction diffusion coefficient & $3.1\e{-9}$ m$^2$\psec \\
+$\Delta x^2$ 	& Width of one \gls{nvu} block & $1.24\e{-4}$ m \\
+$D_{K,e}$ 		& Extracellular \pot diffusion coefficient & $3.8\e{-9}$ m$^2$\psec \\
+$D_{Na,e}$ 		& Extracellular \na diffusion coefficient & $2.5\e{-9}$ m$^2$\psec \\
+\hline
+\caption{Parameters of the large scale tissue slice model.}
+\end{longtable}
+
+\section*{References}
+\bibliographystyle{apalike}
+\addcontentsline{toc}{chapter}{Bibliography}
+\bibliography{library}
+\end{document}

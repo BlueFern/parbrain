@@ -3,10 +3,8 @@
 
 // Optional command line arguments for parBrainSim: N, T_FINAL, DT_PSEC (in that order). If none specified then the following are used.
 
-
-
 /*** Run parameters ***/
-    static const double T_FINAL        	= 35;        // Final run time
+    static const double T_FINAL        	= 50;        // Final run time
 	static const double T_STIM_0       	= 5;        // Start time for stimulation
 	static const double T_STIM_END     	= 25;        // End time for stimulation
     static const int    DT_PSEC       	= 10;       // Time step for writing to file (and screen)
@@ -16,42 +14,45 @@
 									  	  	  	  	 // For NTREE=3, P_TOP=4100 Pa. For NTREE=7, P_TOP=4160 Pa. For NTREE=13, P_TOP=4175
 	static const int 	SPATIAL_CHOICE	= 0;	     // 1: current input is a Gaussian plateau into the centre (fixed size), 0: square input
 
-/*** Switches for various pathways (default 1) ***/
+/*** Switches for various pathways ***/
 	static const double DIFFUSION_SWITCH 	= 2;		// 2: ECS electrodiffusion, 1: extracellular diffusion between blocks, 0: none
-	static const double GJ_SWITCH 			= 2;		// 2: multiple ion astrocytic gap junctions, 1: just K+ astrocytic gap junctions, 0: none
+	static const double GJ_SWITCH 			= 1;		// 2: multiple ion astrocytic gap junctions, 1: just K+ astrocytic gap junctions, 0: none
 	static const double GluSwitch			= 1;		// 1: glutamate is released with current stimulation, 0: no glutamate
 	static const double NOswitch			= 1;		// 1: NO is produced in the NVU, 0: no NO production at all
     static const double trpv_switch	    	= 1;		// 1: TRPV4 channel is active, 0: completely closed (no flux)
-    static const double O2switch			= 1;		// 1: Oxygen is limited, 0: oxygen is plentiful
+    static const double O2switch			= 1;		// 1: Oxygen is limited, 0: oxygen is plentiful (default 1)
 
 /*** Commonly changed model parameters ***/
 
-	static const double I_STRENGTH		= 0.022;	  	// [A] strength of current input (default 0.022)
-    static const double wallMech	    = 1.7;          // rate of wall mechanics, 1 for normal (default 1.7)
-    static const double SC_coup	        = 11.5;         // scaling factor for the change in SC K+ concentration based on extracellular K+ concentration (default 11.5)
-    static const double J_PLC 		    = 0.11; 	    // 0.11 for steady state or 0.3 for oscillations
-    static const double R_decay         = 0.15;  	    // [s^-1] rate of decay of K+ in the PVS (default 0.15)
+    /* Normal conditions (neurovascular coupling - stimulation then vasodilation) */
+//	static const double I_STRENGTH		= 0.022;	  	// [A] strength of current input (default 0.022)
+//    static const double SC_coup	        = 11.5;         // scaling factor for the change in SC K+ concentration based on extracellular K+ concentration (default 11.5)
+//    static const double Imax		    = 0.013*6;         // rate of the ATP pump (default 0.013*6)
+//    static const double gNaleak_sa	    = 6.2378e-5;       // channel conductances, change depending on Imax, see OO-NVU for other values
+//    static const double gKleak_sa	    = 2.1989e-4;
+//    static const double gleak_sa	    = 10*6.2378e-5;
+//    static const double gNaleak_d	    = 6.2961e-5;
+//    static const double gKleak_d	    = 2.1987e-4;
+//    static const double gleak_d	        = 10*6.2961e-5;
 
-//    static const double Imax		    = 0.013;         // rate of the ATP pump (default 0.013*6)
-//    static const double gNaleak_sa	    = 9.5999e-6;       // channel conductances, change depending on Imax, see OO-NVU for other values
-//    static const double gKleak_sa	    = 3.4564e-5;
-//    static const double gleak_sa	    = 10*9.5999e-6;
-//    static const double gNaleak_d	    = 1.0187e-5;
-//    static const double gKleak_d	    = 3.4564e-5;
-//    static const double gleak_d	        = 10*1.0187e-5;
-    
-    static const double Imax		    = 0.013*6;         // rate of the ATP pump (default 0.013*6)
-    static const double gNaleak_sa	    = 6.2378e-5;       // channel conductances, change depending on Imax, see OO-NVU for other values
-    static const double gKleak_sa	    = 2.1989e-4;
-    static const double gleak_sa	    = 10*6.2378e-5;
-    static const double gNaleak_d	    = 6.2961e-5;
-    static const double gKleak_d	    = 2.1987e-4;
-    static const double gleak_d	        = 10*6.2961e-5;
+    /* Cortical spreading depression conditions (stimulation then vasoconstriction), also should change T_STIM_END so that the stimulus is only 1 sec long */
+	static const double I_STRENGTH		= 0.006;	  	// [A] strength of current input (default 0.022)
+    static const double SC_coup	        = 1;         // scaling factor for the change in SC K+ concentration based on extracellular K+ concentration (default 11.5)
+    static const double Imax		    = 0.013;         // rate of the ATP pump (default 0.013*6)
+    static const double gNaleak_sa	    = 9.5999e-6;       // channel conductances, change depending on Imax, see OO-NVU for other values
+    static const double gKleak_sa	    = 3.4564e-5;
+    static const double gleak_sa	    = 10*9.5999e-6;
+    static const double gNaleak_d	    = 1.0187e-5;
+    static const double gKleak_d	    = 3.4564e-5;
+    static const double gleak_d	        = 10*1.0187e-5;
 
-    static const double D_Ke      = 1.05*3.6e-9;  // [m^2/s] The diffusion rate of ECS K+
-    static const double D_Nae     = 1.05*2.4e-9;  // [m^2/s] The diffusion rate of ECS Na+
+    static const double D_Ke      = 3.8e-9;  // [m^2/s] The diffusion rate of ECS K+
+    static const double D_Nae     = 2.5e-9;  // [m^2/s] The diffusion rate of ECS Na+
 	static const double D_gap	  = 3.1e-9; // [m^2/s] effective diffusion rate for K+ via gap junctions, D_Kgap = A_ef * P_K / R_k = 3.7e-9 * 5e-8 / 6e-8 = 3.1e-9 
     
+    static const double wallMech	    = 1.7;          // rate of wall mechanics (default 1.7)
+    static const double J_PLC 		    = 0.11; 	    // 0.11 for steady state or 0.3 for oscillations
+	
     // Steady state values used for normalisation of BOLD signal and change in CBF
     //if J_PLC = 0.11
         static const double HbR_0		  = 0.6662;
@@ -63,6 +64,8 @@
         //static const double CBF_0		  = 0.0295
 
 /*** Model parameters ***/
+        
+    static const double R_decay         = 0.15;  	    // [s^-1] rate of decay of K+ in the PVS (default 0.15)
 
 // General constants:
     static const double F             	= 96500;          // [C mol-1] Faradays constant

@@ -602,15 +602,15 @@ double current_input(double t, double x, double y)
     else
     {
     // in centre square with 'radius'=6 blocks
-    if ( fmax(fabs(x),fabs(y)) <= (6*0.0004 - 0.0002))
-//    if (x <= 0 && y <= 0)
-    {
-        current_space = 1;
-    }
-    else
-    {
-        current_space = 0;
-    }
+        if ( fmax(fabs(x),fabs(y)) <= (4*0.0004 - 0.0002))
+	//    if (x <= 0 && y <= 0)
+		{
+			current_space = 1;
+		}
+		else
+		{
+			current_space = 0;
+		}
     }
 
     double current_time;
