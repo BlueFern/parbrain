@@ -508,7 +508,7 @@ int main(int argc, char *argv[])
 
 				for (int i = 0; i < n_lines; i++)
 				{
-					flowVar[0]->InsertNextValue(temp_array_tree[i] * pow(2, ((n_levels - level - 1))));
+					flowVar[0]->InsertNextValue( 100*(temp_array_tree[i] * pow(2, ((n_levels - level - 1))) - 4.015)/4.015); //*** scales the blood flow relative to baseline of 4.015 and gives as percentage change
 					flowVar_unscaled[0]->InsertNextValue(temp_array_tree[i]);
 				}
 			}
@@ -570,7 +570,7 @@ int main(int argc, char *argv[])
 
 				vtkSmartPointer<vtkPolyData> branchPolyData = lineSource->GetOutput();
 				vtkSmartPointer<vtkDoubleArray> flowArray = vtkSmartPointer<vtkDoubleArray>::New();
-				flowArray->InsertNextValue((flowVar[0]->GetValue(line_id)));
+				flowArray->InsertNextValue((flowVar[0]->GetValue(line_id))); //*****
 				flowArray->SetName("blood_flow");
 
 				branchPolyData->GetCellData()->AddArray(flowArray);
@@ -597,7 +597,7 @@ int main(int argc, char *argv[])
 
 			vtkSmartPointer<vtkPolyData> branchPolyData = lineSource->GetOutput();
 			vtkSmartPointer<vtkDoubleArray> flowArray = vtkSmartPointer<vtkDoubleArray>::New();
-			flowArray->InsertNextValue((flowVar[0]->GetValue(n_branches - 1)));
+			flowArray->InsertNextValue((flowVar[0]->GetValue(n_branches - 1))); //*****
 			flowArray->SetName("blood_flow");
 
 			branchPolyData->GetCellData()->AddArray(flowArray);

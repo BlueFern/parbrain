@@ -4,9 +4,9 @@
 // Optional command line arguments for parBrainSim: N, T_FINAL, DT_PSEC (in that order). If none specified then the following are used.
 
 /*** Run parameters ***/
-    static const double T_FINAL        	= 50;        // Final run time
+    static const double T_FINAL        	= 35;        // Final run time
 	static const double T_STIM_0       	= 5;        // Start time for stimulation
-	static const double T_STIM_END     	= 25;        // End time for stimulation
+	static const double T_STIM_END     	= 6;        // End time for stimulation
     static const int    DT_PSEC       	= 10;       // Time step for writing to file (and screen)
     static const int 	NTREE          	= 11;         // Number of levels in the H-tree (where the tissue slice has 2^(N-1) tissue blocks)
     static const int 	NSUB           	= 1;         // Subtree size (easiest to just keep as 1)
@@ -15,8 +15,8 @@
 	static const int 	SPATIAL_CHOICE	= 0;	     // 1: current input is a Gaussian plateau into the centre (fixed size), 0: square input
 
 /*** Switches for various pathways ***/
-	static const double DIFFUSION_SWITCH 	= 2;		// 2: ECS electrodiffusion, 1: extracellular diffusion between blocks, 0: none
-	static const double GJ_SWITCH 			= 1;		// 2: multiple ion astrocytic gap junctions, 1: just K+ astrocytic gap junctions, 0: none
+	static const double DIFFUSION_SWITCH 	= 1;		// 2: ECS electrodiffusion, 1: extracellular diffusion between blocks, 0: none
+	static const double GJ_SWITCH 			= 0;		// 2: multiple ion astrocytic gap junctions, 1: just K+ astrocytic gap junctions, 0: none
 	static const double GluSwitch			= 1;		// 1: glutamate is released with current stimulation, 0: no glutamate
 	static const double NOswitch			= 1;		// 1: NO is produced in the NVU, 0: no NO production at all
     static const double trpv_switch	    	= 1;		// 1: TRPV4 channel is active, 0: completely closed (no flux)
