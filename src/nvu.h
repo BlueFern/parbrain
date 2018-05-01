@@ -6,82 +6,15 @@
 #endif
 
 #include <cs.h>
+#include "constants.h"
 
 // Forward declaration to avoid errors
 typedef struct ghost_block ghost_block;
 
-// State variable indexing (TODO: shouldn't be initialised here but is needed in various files - make external or something?)
-static const int i_radius  = 0; // radius has to be 0, this is assumed elsewhere
-
-// AC
-static const int R_k       = 1;
-static const int N_Na_k    = 2;
-static const int N_K_k     = 3;
-static const int N_HCO3_k  = 4;
-static const int N_Cl_k    = 5;
-static const int w_k       = 10;
-
-// SC
-static const int N_Na_s    = 6;
-static const int N_K_s     = 7;
-static const int N_HCO3_s  = 8;
-
-// PVS
-static const int K_p       = 9;
-
-// SMC
-static const int ca_i      = 11; // or use enum
-static const int ca_sr_i   = 12;
-static const int v_i       = 13;
-static const int w_i       = 14;
-static const int ip3_i     = 15;
-static const int K_i       = 16;
-
-// EC
-static const int ca_j      = 17;
-static const int ca_er_j   = 18;
-static const int v_j       = 19;
-static const int ip3_j     = 20;
-
-// Mech
-static const int Mp        = 21;
-static const int AMp       = 22;
-static const int AM        = 23;
-
-// ECS
-static const int K_e	   = 24;
-
-// NO pathway
-static const int NOn        = 25;
-static const int NOk        = 26;
-static const int NOi        = 27;
-static const int NOj        = 28;
-static const int cGMP       = 29;
-static const int eNOS       = 30;
-static const int nNOS       = 31;
-static const int ca_n       = 32;
-static const int E_b        = 33;
-static const int E_6c       = 34;
-
-// AC Ca2+
-static const int ca_k       = 35;
-static const int s_k        = 36;
-static const int h_k        = 37;
-static const int ip3_k      = 38;
-static const int eet_k      = 39;
-static const int m_k        = 40;
-static const int ca_p       = 41;
-
-// Constants we may want to use that are defined in brain.c. 
-extern const double RMIN;   // radius of smallest vessel
-extern const double R0;     // radius scaling characteristic value
-extern const double P0;     // pressure characteristic value (Pa)
-extern const double PCAP;   // nominal capillary bed pressure (Pa)
-
 // nvu_workspace gets created once per node (not once per block). So the
 // parameters therein are generic for each nvu. Spatial inhomogeneity
 // should be implemented by making the RHS explicitly dependent on the
-// spatial coordinates of the block. 
+// spatial coordinates of the block.
 //
 // The struct needs to have the fields
 //      neq: the number of differential equations per block
@@ -94,7 +27,7 @@ typedef struct nvu_workspace {
     // Mandatory fields (accessed externally). Initialised in nvu_init
     int neq;
     cs *dfdp_pattern; // neq * 1 matrix indicating dependence on p
-    cs *dfdx_pattern; // neq * neq matrix indicating Jacobian structure of nvu 
+    cs *dfdx_pattern; // neq * neq matrix indicating Jacobian structure of nvu
 
     // Other NVU parameters for radius and pressure. TODO: rename
     double a1, a2, a3, a4, a5;
@@ -103,7 +36,7 @@ typedef struct nvu_workspace {
     double pcap;		// pressure at capillaries (min)
 
     // Indices of neighbours for every tissue block. Ghost blocks are numbered
-    // with negative indices in counter-clockwise flu_Kactivation_idirection.
+    // with negative indices in counter-clockwise direction.
     int *neighbours;
 
     // Indices of all edge tissue blocks for one MPI domain.
@@ -129,21 +62,15 @@ void  *nvu_free(nvu_workspace *nvu_w);
 // Time-varying input pressure function
 double nvu_p0(double t);
 
-//time- and space-dependent Glu input
-double nvu_Glu(double t, double x, double y);
+//time- and space-dependent current input
+double current_input(double t, double x, double y);
 
-//time- and space-dependent K+ input
-double K_input(double t, double x, double y);
-
-//time- and space-dependent flux_ft input
-double flux_ft(double t, double x, double y);
-	
 //time- and space-dependent PLC input
 double PLC_input(double t, double x, double y);
 
-// ECS K+ input
+// ECS K+ inpNVU_Hut
 double ECS_input(double t, double x, double y);
-	
+
 //factorial
 double factorial(int c);
 

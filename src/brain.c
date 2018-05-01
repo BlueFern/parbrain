@@ -1,21 +1,8 @@
 #include "brain.h"
 #include "diffusion.h"
 
-const int NDEFAULT      = 9;
-const int NSUBDEFAULT   = 3;
+
 const int NSYMBOLS      = 4;
-
-const double RMIN  = 10e-6 ;  							// m, radius of smallest vessel
-const double BIFURCATION_SCALE = 1.4142135623730951;	// = sqrt(2), amount the radius decreases by when going down a level
-const double L0    = 200e-6;  							// m (for nondimensionalising), length characteristic value
-const double LRR   = 20    ;  							// Nondimensional, length to radius ratio
-const double MU    = 3.5e-3;  							// Pa s, blood viscosity
-
-// External variables (initialised in nvu.h, also used in nvu.c)
-const double R0    = 10e-6 ;  // m (for nondimensionalising)
-const double P0    = 8000  ;  // Pa (scaling factor for nondim)
-const double PCAP  = 4000  ;  // Pa (capillary bed pressure)
-
 
 /* Methods for external use: essentially function evaluation and Jacobian
  * updates. evaluate, solve and jacupdate both have the side effect of updating
@@ -77,6 +64,7 @@ void evaluate(workspace *W, double t, double *y, double *dy)
     }
     // Solve for pressure and flow: takes p0 and pcap (boundary conditions) as input
     solve(W, nvu_p0(t), W->nvu_w->pcap);
+
     // Evaluate the right hand side equations
     rhs(W, t, y, W->p, dy);
 
@@ -121,7 +109,7 @@ void jacupdate(workspace *W, double t, double *u)
     eval_dgdx(W, t, u);
     eval_dpdg(W, t, u);
     eval_dfdx(W, t, u, f, eps);
-    eval_dfdp(W, t, u, f, eps); 
+    eval_dfdp(W, t, u, f, eps);
 
     if (W->isjac) cs_spfree(W->J);
     cs *Y;
@@ -145,7 +133,7 @@ void init_parallel(workspace *W, int argc, char **argv)
 
     /*
     Parse input parameters and set tree sizes. There are four N values
-    that matter: 
+    that matter:
         N is the number of levels in the tree (total)
         N0: number of levels in the root subtree
         Np: number of levels in the subtrees corresponding to each
@@ -153,19 +141,15 @@ void init_parallel(workspace *W, int argc, char **argv)
         Nsub: number of levels in the small scale subtrees for Jacobian
         computation
     */
-    W->N    = NDEFAULT; 
-    W->Nsub = NSUBDEFAULT;
+    W->N    = NTREE;
+    W->Nsub = NSUB;
 
     if (argc > 1)
     {
         W->N = atoi(argv[1]); // N has been specified at command line
     }
-    if (argc > 2)
-    {
-    	W->Nsub = atoi(argv[2]); // Nsub has been specified at command line
-    }
 
-    W->N0 = (int) round(log2((double) W->n_procs)); 
+    W->N0 = (int) round(log2((double) W->n_procs));
     W->Np = W->N - W->N0; 		// Dependent on number of levels and number of cores running
 
 
@@ -251,7 +235,7 @@ void init_io(workspace *W)
 
     W->n_writes = 0;
     W->displacement = 0; // bytes
-    W->displacement_per_write = (sizeof(double)) * (1 + W->nu * W->n_procs); // bytes 
+    W->displacement_per_write = (sizeof(double)) * (1 + W->nu * W->n_procs); // bytes
 
 }
 
@@ -288,8 +272,8 @@ void write_data(workspace *W, double t, double *y)
 void write_flow(workspace *W, double t, double *q, double *q0)
 {
     int displ0, displ1;
-   
-    int xbranch = 1;  
+
+    int xbranch = 1;
     int pos = W->QglobalPos;  	// rank-specific position in Qtot
     int pos_q = 0;     			// position in q vector
 
@@ -348,10 +332,10 @@ void write_flow(workspace *W, double t, double *q, double *q0)
 void write_pressure(workspace *W, double t, double *p, double *p0)
 {
     int displ0, displ1;
-   
+
     int xbranch = 0;  // different from q, because we don't have leaf level
     int pos = W->PglobalPos;   // rank-specific position in Ptot
-    int pos_p = 0;     // position in p vector 
+    int pos_p = 0;     // position in p vector
 
     int nlocal = W->nlocal;
     int mlocal_half = W->mlocal/2;  // half as many rows, because p only holds internal node pressure values
@@ -389,17 +373,17 @@ void write_pressure(workspace *W, double t, double *p, double *p0)
 
 	xbranch = !xbranch;
     }
-    
+
     // write data from roottree
     MPI_File_set_view(W->Poutfile, pos*sizeof(double), MPI_DOUBLE, MPI_DOUBLE,"native", MPI_INFO_NULL);
     int roottreeSize = POW_OF_2(W->N0) - 1;
     if (W->rank == 0)
     {
         MPI_File_write(W->Poutfile, &p0[0], roottreeSize, MPI_DOUBLE, MPI_STATUS_IGNORE);
-        
+
     }
     pos = pos+ roottreeSize;
-    
+
     W->PglobalPos = pos;
 }
 
@@ -416,7 +400,7 @@ void write_info(workspace *W)
         sprintf(infofilename, "%s%s", W->dirName, iSuffix);
 
         fp = fopen(infofilename, "w");
-        fprintf(fp, "n_processors    n_blocks_per_rank        n_state_vars   m_local         n_local         m_global        n_global\n");
+        fprintf(fp, "n_processors    n_blocks_per_rank        n_state_vars   m_local         n_local         m_global        n_global    N_tree\n");
         fprintf(fp, "%-16d", W->n_procs);
         fprintf(fp, "%-16d", W->nblocks);
         fprintf(fp, "%-16d", W->neq);
@@ -424,6 +408,7 @@ void write_info(workspace *W)
         fprintf(fp, "%-16d", W->nlocal);
         fprintf(fp, "%-16d", W->mglobal);
         fprintf(fp, "%-16d", W->nglobal);
+        fprintf(fp, "%-16d", W->N);
         fprintf(fp, "\n");
         fclose(fp);
 
@@ -469,7 +454,7 @@ void set_spatial_coordinates(workspace *W)
         mglobal = POW_OF_2( (log2P / 2) + log2P % 2);
         nglobal = POW_OF_2(log2P / 2);
     }
-    
+
     // Work out how many rows / columns of blocks we have for each core
     mlocal = m / mglobal;
     nlocal = n / nglobal;
@@ -496,7 +481,7 @@ void set_spatial_coordinates(workspace *W)
     W->mglobal = mglobal;
     W->nglobal = nglobal;
 }
- 
+
 int is_power_of_two (unsigned int x)
 {
       return ((x != 0) && !(x & (x - 1)));	// &: bitwise AND, numbers that are powers of two are of binary form 10...0
@@ -507,7 +492,7 @@ int is_power_of_two (unsigned int x)
 
 void init_subtree(workspace *W)
 {
-    // First construct the local subtree 
+    // First construct the local subtree
     W->A    = adjacency(W->Np); // where Np = N - N0, dependent on the number of levels (N) and cores (2^N0)
     W->At   = cs_transpose(W->A, 1);
     W->G    = speye(W->A->n); 	// creates identity matrix I_n
@@ -588,7 +573,7 @@ void init_roottree(workspace *W)
         W->level0[i] = (int) floor(log2(W->A0->n - i));
     }
 
-    // Initialise workspace variables for solving 
+    // Initialise workspace variables for solving
     W->b0  = malloc (W->A0->n * sizeof (*W->b0));
     W->p0  = malloc (W->A0->m * sizeof (*W->b0));
     W->q0  = malloc (W->A0->n * sizeof (*W->b0));
@@ -692,7 +677,7 @@ void init_dgdx(workspace *W)
 
     int neq = W->nvu_w->neq; // number of equations per block
 
-    // matrix is 
+    // matrix is
     T = cs_spalloc(W->A->n, neq * W->nblocks, W->nblocks, 1, 1);
     Ti = T->i;
     Tj = T->p;
@@ -752,7 +737,7 @@ void init_dpdg(workspace *W)
     cs *Pt;
     Pt = cs_compress(T);
     cs_spfree(T);
-    
+
     // Compute A_A, A_A.', and the matrix Proj used to construct dp/dg
     W->A_A  = cs_multiply(Pt, W->A);
     W->A_At = cs_transpose(W->A_A, 1);
@@ -787,7 +772,7 @@ void init_dfdp(workspace *W)
     J = blkdiag(B, W->nblocks / 2, W->A->m);
 
     W->dfdp = numjacinit(J);
-    
+
     cs_spfree(J);
     cs_spfree(B);
 }
@@ -834,7 +819,7 @@ void compute_uv(workspace *W, double pcap)
         W->u[i] = -W->u[i];                 /* u = -u = -AGb */
     }
 
-    cs_spfree(AG); 
+    cs_spfree(AG);
 
     // And solve, using our computed factorisations - what is this outputting..?
     cholsoln(Nu, W->symbchol, W->A->m, W->u, W->xm);
@@ -848,7 +833,7 @@ void compute_uv(workspace *W, double pcap)
     }
 
     cholsoln(Nu, W->symbchol, W->A->m, W->v, W->xm);
-    cs_nfree(Nu); 
+    cs_nfree(Nu);
 
     // Put the end entries into communication buffers
     W->ucomm[W->rank] = W->u[W->A->m-1];
@@ -880,7 +865,7 @@ void communicate(workspace *W)
             W->ucomm[i] = recv_buf[NSYMBOLS * i    ];
             W->vcomm[i] = recv_buf[NSYMBOLS * i + 1];
             W->gcomm[i] = recv_buf[NSYMBOLS * i + 2];
-            W->flag[i]  = (int) recv_buf[NSYMBOLS * i + 3]; 
+            W->flag[i]  = (int) recv_buf[NSYMBOLS * i + 3];
         }
     }
 }
@@ -904,20 +889,20 @@ void compute_root(workspace *W, double p0)
     // Define the diagonal modification D to be added to AGA'
     for (int i = 0; i < W->n_procs; i++)
     {
-        d[i/2] += W->gcomm[i] * (1 - W->vcomm[i]); // Parent is simply i/2 
+        d[i/2] += W->gcomm[i] * (1 - W->vcomm[i]); // Parent is simply i/2
     }
 
     D = spdiags(d, W->A0->n);
 
-    // Define the matrices AG = A_0 G_0 and B = A_0 G_0 A_0^T + D 
+    // Define the matrices AG = A_0 G_0 and B = A_0 G_0 A_0^T + D
     AG = cs_multiply(W->A0, W->G0);
     X = cs_multiply(AG, W->A0t);
     B = cs_add(X, D, 1.0, 1.0);
 
-    cs_spfree(D); 
+    cs_spfree(D);
     cs_spfree(X);
 
-    // Perform numerical Cholesky factorisation 
+    // Perform numerical Cholesky factorisation
     Nu = cs_chol(B, W->symbchol0);
     if (!Nu) printf("Numerical Cholesky failed in compute_root\n");
     cs_spfree(B);
@@ -934,14 +919,14 @@ void compute_root(workspace *W, double p0)
     {
         W->p0[i] = 0.0;                              // p0 = 0
     }
-    cs_gaxpy(AG, W->q0, W->p0);                     // p0 = AGb + p0 = AGb 
+    cs_gaxpy(AG, W->q0, W->p0);                     // p0 = AGb + p0 = AGb
 
     for (int i = 0; i < W->A0->m; i++)
     {
         W->p0[i] = -W->p0[i];
     }
     // p = -p = -AGb */
-    // p = -AGb + sum g_i u_i e_ki 
+    // p = -AGb + sum g_i u_i e_ki
 
     for (int i = 0; i < W->n_procs; i++)
     {
@@ -951,8 +936,8 @@ void compute_root(workspace *W, double p0)
     cs_spfree(AG);
 
     // And solve, using our numerical Cholesky
-    cholsoln(Nu, W->symbchol0, W->A0->m, W->p0, W->xn0);          
-    // W->p0 is overwritten with p 
+    cholsoln(Nu, W->symbchol0, W->A0->m, W->p0, W->xn0);
+    // W->p0 is overwritten with p
 
     // Now compute q0: W->q0 is currently p_0 e_n
     cs_gaxpy(W->A0t, W->p0, W->q0);       // q = A'p + q = A'p + p_0 en
@@ -1067,7 +1052,7 @@ void eval_dfdx(workspace *W, double t, double *y, double *f, double eps)
     y1 = malloc(W->nu * sizeof (*y1));
     h  = malloc(W->nu * sizeof (*h));
     f1 = malloc(W->nu * sizeof (*f1));
-    
+
     for (int igrp = 0; igrp < W->dfdx->ng; igrp++)
     {
         for (int k = 0; k < W->nu; k++)
@@ -1078,7 +1063,7 @@ void eval_dfdx(workspace *W, double t, double *y, double *f, double eps)
         for (int k = W->dfdx->r[igrp]; k < W->dfdx->r[igrp + 1]; k++)
         {
             j = W->dfdx->g[k];
-            h[j] = eps; // * fabs(y[j]); 
+            h[j] = eps; // * fabs(y[j]);
             y1[j] += h[j];
         }
 
@@ -1114,7 +1099,7 @@ void eval_dfdp(workspace *W, double t, double *y, double *f, double eps)
         for (int k = 0; k < W->A->m; k++)
             p1[k] = W->p[k];
 
-        // Increment entry of h for every entry column in the group 
+        // Increment entry of h for every entry column in the group
         for (int k = W->dfdp->r[igrp]; k < W->dfdp->r[igrp+1]; k++)
         {
             j = W->dfdp->g[k];

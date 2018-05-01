@@ -30,7 +30,7 @@ def readTissueBlock(dirName, n_blocks, eqs_per_block, m_local, n_local, m_global
 
 	xCoords=values[:n_blocks]
 	yCoords=values[n_blocks:2*n_blocks]
-	print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< COORDNIATEs >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+	print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< COORDINATES >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
 	for i in range(n_blocks):
 		print "Block #%.2d  (%7.4f, %7.4f)" %(i, xCoords[i], yCoords[i])
@@ -59,33 +59,7 @@ def readTissueBlock(dirName, n_blocks, eqs_per_block, m_local, n_local, m_global
 		
 
 #	print values[2*n_blocks:]
-	print "Len=%d" %len(values[2*n_blocks:])
-
-
-
-def readInfo(dirName):
-	fileName = '%s/info.dat' %(dirName)
-
-	af = open(fileName, 'r')
-	lines=af.readlines()
-	header=[x.rstrip('\n') for x in lines[0].split(' ') if x!='' and x!='\n']
-	values=[int(x.rstrip('\n')) for x in lines[1].split(' ') if x!='' and x!='\n']
-	print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<   I N F O   >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-	n_processors=values[0]
-	n_blocks=values[1]*values[0] 
-	eqs_per_block=values[2]
-	m_local = values[3]
-	n_local = values[4]
-	m_global=values[5]
-	n_global=values[6]
-	for i in range(len(header)):
-		print "%s : %d" %(header[i],values[i])
-
-
-	readTissueBlock(dirName, n_blocks,eqs_per_block, m_local,n_local, m_global, n_global)
-
-
-	
+	print "Len=%d" %len(values[2*n_blocks:])	
 
 def readFlow(dirName,numLevels):
 	values = []	
@@ -133,17 +107,39 @@ def readPressure(dirName,numLevels):
 		printList(oneTimeStampList)
 
 
+def readInfo(dirName):
+	fileName = '%s/info.dat' %(dirName)
+
+	af = open(fileName, 'r')
+	lines=af.readlines()
+	header=[x.rstrip('\n') for x in lines[0].split(' ') if x!='' and x!='\n']
+	values=[int(x.rstrip('\n')) for x in lines[1].split(' ') if x!='' and x!='\n']
+	print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<   I N F O   >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+	n_processors=values[0]
+	n_blocks=values[1]*values[0] 
+	eqs_per_block=values[2]
+	m_local = values[3]
+	n_local = values[4]
+	m_global=values[5]
+	n_global=values[6]
+        numLevels=values[7]
+	for i in range(len(header)):
+		print "%s : %d" %(header[i],values[i])
+
+
+	readTissueBlock(dirName, n_blocks,eqs_per_block, m_local,n_local, m_global, n_global)
+	readFlow(dirName,numLevels)
+	readPressure(dirName,numLevels)
+
+
 if __name__ == '__main__':
 
-	if len(sys.argv) == 3:
+	if len(sys.argv) == 2:
 		dirName=sys.argv[1]
-		numLevels = int(sys.argv[2])
 	else:
-		print "Usage: %s dirName numLevels" %sys.argv[0]
+		print "Usage: %s dirName" %sys.argv[0]
 		sys.exit()
 
 	readInfo(dirName)
-	readFlow(dirName,numLevels)
-	readPressure(dirName,numLevels)
 
 

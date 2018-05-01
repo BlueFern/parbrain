@@ -41,22 +41,24 @@ int main(int argc, char *argv[])
 
 	std::cerr << "Reminder that usage: " << argv[0] << " <Data directory> <Final time> <Output per sec>\n";
 
-	//*****************************************************************************************
-	// run with no arguments for debugging
-	#if 0
-		char *dirName="np01_nlev03_sbtr01";
-		int tf = 10;
-	#else
-		if (argc != 3)
-		{
-			printf("Uh oh, spaghettio. You have not entered the correct number of arguments.\n");
-			std::cerr << "Usage: " << argv[0] << " <Data directory> <Final time>\n";
-			exit(EXIT_FAILURE);
-		}
+//*****************************************************************************************
+// run with no arguments for debugging
+#if 0
+	char *dirName="np01_nlev03_sbtr01";
+	int tf = 10;
+#else
+	if (argc != 4)
+	{
+		printf("Uh oh, spaghettio. You have not entered the correct number of arguments.\n");
+		std::cerr << "Usage: " << argv[0] << " <Data directory> <Final time> <Output per sec>\n";
+		exit(EXIT_FAILURE);
+	}
 
-		char *dirName=argv[1];       	// First argument: Folder name.
-		int tf = atoi(argv[2]); 		// Second argument: Final time (atoi: str -> int).
-	#endif
+	char *dirName = argv[1]; // First argument: Folder name.
+	int tf = atoi(argv[2]);  // Second argument: Final time (atoi: str -> int).
+	int dt_psec = atoi(argv[3]); // Third argument: Output per second
+
+#endif
 	//******************************************************************************************
 
 	// Read configuration file:
@@ -77,7 +79,7 @@ int main(int argc, char *argv[])
 	std::string header;
 	std::getline(conf_file, header); // Skip header line.
 
-	int conf_array[7]; // Create temporary array that stores parameters from configuration file (info.dat).
+	int conf_array[8]; // Create temporary array that stores parameters from configuration file (info.dat).
 	int b;
 	int i = 0;
 
@@ -94,6 +96,7 @@ int main(int argc, char *argv[])
 	int n_local = conf_array[4];
 	int m_global = conf_array[5];
 	int n_global = conf_array[6];
+	int N_tree = conf_array[7];
 	int n_blocks = n_procs * n_blocks_per_rank;
 	int n_cols = n_local * n_global; // Number of columns of tissue blocks (j).
 	int n_rows = m_local * m_global; // Number of rows of tissue blocks (i).
@@ -328,10 +331,11 @@ int main(int argc, char *argv[])
 
 	// 4. Add binary data as attributes to cells:
 
-	char const *var_names[] = {"R","R_k","Na_k","K_k","HCO3_k","Cl_k","Na_s","K_s","HCO3_s","K_p","w_k","Ca_i","s_i","v_i","w_i","IP3_i","K_i","Ca_j","s_j","v_j","IP3_j","Mp","AMp","AM","K_e","PLC_input","K_input","flux_ft","NO_n","NO_k","NO_i","NO_j","cGMP","eNOS","nNOS","Ca_n","E_b","E_6c","Ca_k","s_k","h_k","IP3_k","eet_k","m_k","Ca_p"};
+	char const *var_names[] = {"R", "v_k", "Na_k", "K_k", "HCO3_k", "Cl_k", "Na_s", "K_s", "HCO3_s", "K_p", "w_k", "Ca_i", "s_i", "v_i", "w_i", "IP3_i", "K_i", "Ca_j", "s_j", "v_j", "IP3_j", "Mp", "AMp", "AM", "NO_n", "NO_k", "NO_i", "NO_j", "cGMP", "eNOS", "nNOS", "Ca_n", "E_b", "E_6c", "Ca_k", "s_k", "h_k", "IP3_k", "eet_k", "m_k", "Ca_p", "v_sa", "v_d", "K_sa", "Na_sa", "K_d", "Na_d", "K_e", "Na_e", "Buff_e", "O2", "CBV", "HbR", "m1", "m2", "m3", "m4", "m5", "m6", "m7", "m8", "h1", "h2", "h3", "h4", "h5", "h6", "D_CBF", "BOLD", "HBT", "HBO", "CRMO2"};
 
-	int num_time_steps = tf; 
-	int n_output = n_state_vars;
+	int extra_output = 5; // number of extra output variables (BOLD,CBF,HBT,HBO,CMRO2), see below
+	int n_output = n_state_vars + extra_output;
+	int num_time_steps = tf * dt_psec; // Number of files to output = final time * output per sec
 
 	// Compute the each time step's segment size in both binary file
 	int tissue_seg_size = n_blocks * n_state_vars + 1;
@@ -437,27 +441,52 @@ int main(int argc, char *argv[])
 			{
 				double *temp_array_tb = cur_ts_tissue + k * n_state_vars;
 
-				// Convert variables into a nicer form! **************************************************************************************************
+				// Initial values for normalisation (will change if e.g. JPLC changes)
+				double CBV_0 = 1.3123;
+				double HbR_0 = 0.667547;
+				double CMRO2_0 = 0.0379408;
+				double CBF_0 = 0.063508;
+
+				temp_array_tb[51] = temp_array_tb[51] / CBV_0; // Convert CBV to normalised
+				temp_array_tb[52] = temp_array_tb[52] / HbR_0; // Convert HbR to normalised
+				double CBV_N = temp_array_tb[51];
+				double HbR_N = temp_array_tb[52];
+
+				// Make extra things for output - BOLD, CBF_change, HBT, HBO, CRMO2. Many things hardcoded in, see nvu.c for formulas ***************************
+				double J_pump2 = 2 * pow((1 + 0.02 / (((1 - 0.05) * temp_array_tb[50]) + 0.05 * 0.02)), -1);
+				double P_02 = (J_pump2 - 0.0952) / (1 - 0.0952);
+				double J_pump1_sa = pow((1 + (2.9 / temp_array_tb[47])), -2) * pow((1 + (10 / temp_array_tb[44])), -3);
+				double J_pump1_d = pow((1 + (2.9 / temp_array_tb[47])), -2) * pow((1 + (10 / temp_array_tb[46])), -3);
+				double J_O2_background = 0.032 * P_02 * (1 - 0.1);
+				double J_O2_pump = 0.032 * P_02 * 0.1 * ((J_pump1_sa + J_pump1_d) / (0.0312 + 0.0312));
+
+				double CMRO2_N = (J_O2_background + J_O2_pump) / CMRO2_0;
+
+				double CBF_N = (0.032 * (pow((temp_array_tb[0] * 20e-6), 4) / pow(1.9341e-5, 4))) / CBF_0;
+				double CBF_change = CBF_N - 1;
+				double BOLD = 100 * 0.03 * (3.4 * (1 - HbR_N) - 1 * (1 - CBV_N));
+				double HBT_N = CBF_N * HbR_N / CMRO2_N;
+				double HBO_N = (HBT_N - 1) - (HbR_N - 1) + 1;
+
+				// Convert other variables into a nicer form! **************************************************************************************************
+				// dependent on the indexes used in constants.h, if they change then need to update here too
 
 				temp_array_tb[0] = 20 * temp_array_tb[0];	// Convert radius to um from nondimensional
 				temp_array_tb[9] = 0.001 * temp_array_tb[9]; // Convert Kp to mM
-				temp_array_tb[24] = 0.001 * temp_array_tb[24]; // Convert Ke to mM
-
-				temp_array_tb[2] = temp_array_tb[2] / temp_array_tb[1]; // Convert N_Na_k to Na_k;
-				temp_array_tb[3] = temp_array_tb[3] / temp_array_tb[1]; // Convert N_k_k to K_k;
-				temp_array_tb[4] = temp_array_tb[4] / temp_array_tb[1]; // Convert N_HCO3_k to HCO3_k;
-				temp_array_tb[5] = temp_array_tb[5] / temp_array_tb[1]; // Convert N_Cl_k to Cl_k;
-
-				temp_array_tb[6] = temp_array_tb[6] / (8.79e-8 - temp_array_tb[1]);			// Convert N_Na_s to Na_s;
-				temp_array_tb[7] = 0.001 * temp_array_tb[7] / (8.79e-8 - temp_array_tb[1]); // Convert N_K_s to K_s in mM;
-				temp_array_tb[8] = temp_array_tb[8] / (8.79e-8 - temp_array_tb[1]);			// Convert N_HCO3_s to HCO3_s;
+				temp_array_tb[3] = 0.001 * temp_array_tb[3]; // Convert K_k to mM
+				temp_array_tb[7] = 0.001 * temp_array_tb[7]; // Convert K_s to mM
 
 				// Add state variables into array
 				for (int v = 0; v < n_state_vars; v++)
 				{
 					stateVars[v]->InsertNextValue(temp_array_tb[v]);
 				}
-
+				// Add extra variables into array
+				stateVars[n_state_vars]->InsertNextValue(CBF_change);
+				stateVars[n_state_vars + 1]->InsertNextValue(BOLD);
+				stateVars[n_state_vars + 2]->InsertNextValue(HBT_N);
+				stateVars[n_state_vars + 3]->InsertNextValue(HBO_N);
+				stateVars[n_state_vars + 4]->InsertNextValue(CMRO2_N);
 			}
 
 #pragma omp critical
@@ -479,7 +508,7 @@ int main(int argc, char *argv[])
 
 				for (int i = 0; i < n_lines; i++)
 				{
-					flowVar[0]->InsertNextValue(temp_array_tree[i] * pow(2, ((n_levels - level - 1))));
+					flowVar[0]->InsertNextValue( 100*(temp_array_tree[i] * pow(2, ((n_levels - level - 1))) - 4.015)/4.015); //*** scales the blood flow relative to baseline of 4.015 and gives as percentage change
 					flowVar_unscaled[0]->InsertNextValue(temp_array_tree[i]);
 				}
 			}
@@ -541,7 +570,7 @@ int main(int argc, char *argv[])
 
 				vtkSmartPointer<vtkPolyData> branchPolyData = lineSource->GetOutput();
 				vtkSmartPointer<vtkDoubleArray> flowArray = vtkSmartPointer<vtkDoubleArray>::New();
-				flowArray->InsertNextValue((flowVar[0]->GetValue(line_id)));
+				flowArray->InsertNextValue((flowVar[0]->GetValue(line_id))); //*****
 				flowArray->SetName("blood_flow");
 
 				branchPolyData->GetCellData()->AddArray(flowArray);
@@ -568,7 +597,7 @@ int main(int argc, char *argv[])
 
 			vtkSmartPointer<vtkPolyData> branchPolyData = lineSource->GetOutput();
 			vtkSmartPointer<vtkDoubleArray> flowArray = vtkSmartPointer<vtkDoubleArray>::New();
-			flowArray->InsertNextValue((flowVar[0]->GetValue(n_branches - 1)));
+			flowArray->InsertNextValue((flowVar[0]->GetValue(n_branches - 1))); //*****
 			flowArray->SetName("blood_flow");
 
 			branchPolyData->GetCellData()->AddArray(flowArray);

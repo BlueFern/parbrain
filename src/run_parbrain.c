@@ -4,7 +4,7 @@
 
 //        printf("%s, %s, %d\n", __FUNCTION__, __FILE__, __LINE__);
 
-// Main simulation program 
+// Main simulation program
 int main(int argc, char **argv)
 {
 
@@ -18,22 +18,32 @@ int main(int argc, char **argv)
 
     // Problem parameters
     odews->dt  	  = 1e-5; 			// time step  1e-5
-    odews->t0     = 0.;   			// initial time 0
-    odews->tf     = 10;  			// final time  10
+    odews->t0     = 0;   			// initial time 0
+    odews->tf     = T_FINAL;  		// final time  10
     odews->ftol   = 1e-3; 			// function evaluation tolerance for Newton convergence 1e-3
     odews->ytol   = 1e-3; 			// relative error tolerance for Newton convergence 1e-3
     odews->nconv  = 5;    			// Newton iteration threshold for Jacobian reevaluation 5
     odews->maxits = 100;   			// Maximum number of Newton iterations 100
-    odews->dtwrite = 1; 			// Time step for writing to file (and screen)
+    odews->dtwrite = (double) 1/DT_PSEC; 		// Time step for writing to file (and screen)
 
-    // If optional command line argument is passed change the default final time.
+    // If optional command line arguments are passed change the default final time and output timestep.
+    if (argc > 2)
+    {
+    	odews->tf = atoi(argv[2]);
+    }
     if (argc > 3)
     {
-    	odews->tf = atoi(argv[3]);
+    	odews->dtwrite = (double) 1/atoi(argv[3]);
     }
 
     // Initialise the solver with all the bits and pieces
     solver_init(odews, argc, argv);
+
+    if (odews->W->rank == 0)
+    {
+    	printf("Reminder that usage: mpirun -np <number of cores> %s <Number of levels in tree> <Final time> <Number of outputs per second>\n", argv[0]);
+    	printf("ECS diffusion: %1.f, Gap junctions: %1.f\n", DIFFUSION_SWITCH, GJ_SWITCH);
+    }
 
     // Print out the adjacency matrix A containing the structure of the H tree
 //    if (odews->W->rank == 0)
@@ -66,6 +76,8 @@ int main(int argc, char **argv)
         {
             printf("%4d%4d%4d%12.4e%4d%4d%12.4e%12.4e%12.4e\n", odews->W->N, odews->W->Nsub, odews->W->n_procs, tf - t0, odews->W->fevals, odews->W->jacupdates, odews->W->tfeval, odews->W->tjacupdate, odews->W->tjacfactorize);
         }
+        
+        printf("Directory: %s, ECS diffusion: %1.f, Gap junctions: %1.f\n", odews->W->dirName, DIFFUSION_SWITCH, GJ_SWITCH);
     }
 
     // And clean up

@@ -1,5 +1,14 @@
-# Default values if they are not set
-SUITESPARSE ?= ./SuiteSparse/4.5.5
+# Optimised for use on brats01 machine
+
+## Do this in terminal if it can't find libcxsparse
+## LD_LIBRARY_PATH=/opt/pgi/linux86-64/2017/SuiteSparse/4.5.5
+## export LD_LIBRARY_PATH
+
+## Do this every log in
+# module load pgi-openmpi and suitesparse
+
+# Default values if they are not set, optimised for use on brats01 (change for local computer)
+SUITESPARSE ?= /opt/pgi/linux86-64/2017/SuiteSparse/4.5.5
 MPICC ?= mpicc
 CFLAGS ?= -O2
 RPATH ?= -Wl,-rpath=$(SUITESPARSE)/lib

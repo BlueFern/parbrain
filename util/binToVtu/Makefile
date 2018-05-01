@@ -1,3 +1,7 @@
+# OpenMP things to do before running:
+# 	export OMP_NUM_THREADS=14 (4 for local computer)
+# 	taskset -c 0-13 ./ConvertBinToVtu <Data directory> <Final time> <Output per sec> (0-3 for local computer)
+
 # Default values if they are not set
 VTKINCLUDE ?= /usr/include/vtk-6.2
 VTKLIBPATH ?=

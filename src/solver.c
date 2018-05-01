@@ -86,9 +86,9 @@ void back_euler(ode_workspace *odews)
 //            }
 //            printf("_______________________\n");
 
-            W->flag[W->rank] = 1; //sizecheck(x, ny, odews->ftol); // function value size check
+            W->flag[W->rank] = 1;  //sizecheck(x, ny, odews->ftol); // function value size check
             lusoln(odews, x);  // solve (x is now increment)
-            W->flag[W->rank] = 1; //sizecheck(x, ny, odews->ytol); // increment size check
+            W->flag[W->rank] = 1;  //sizecheck(x, ny, odews->ytol); // increment size check
             daxpy(ny, -1, x, w); // update w with new value
         }
 
@@ -115,7 +115,7 @@ void back_euler(ode_workspace *odews)
         	start_t = end_t;
 
         	// Output progress in terms of percentage remaining, time elapsed and estimated time remaining
-        	if (W->rank == 0)
+        	if (W->rank == 0 && fmod(t,1)<odews->dt)
         	{
         		printf("Time: %4.0f  | %4d min %2d sec elapsed\n", t, (int)(total_t / 60), ((int)total_t % 60));
         	}
