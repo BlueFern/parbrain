@@ -93,7 +93,7 @@
 
 \begin{frontmatter}
 	
-	\title{\vspace{-2cm}Supplementary material: Model equations and parameters}
+	\title{\vspace{-2cm}Supplementary material: model equations and parameters}
 	
 	
 	\author[1]{Allanah Kenny\corref{3}}
@@ -106,8 +106,10 @@
 	
 \end{frontmatter}
 
-The single \gls{nvu} model originally developed by \citet{Farr2011} and later extended by \citet{Dormanns2015}, \citet{Dormanns2016}, \citet{Mathias2017}, \citet{Kenny2018}, and (Elshin ref) contains 67 \glspl{ode} plus a large number of algebraic variables and parameters. The equations and parameters are divided into sections corresponding to different compartments and pathways of the model.
+The single \gls{nvu} model originally developed by \citet{Farr2011} and later extended by \citet{Dormanns2015}, \citet{Dormanns2016}, \citet{Mathias2017}, \citet{Kenny2018}, and most recently \citet{Mathias2018} contains 68 \glspl{ode} plus a large number of algebraic variables and parameters. The equations and parameters are divided into sections corresponding to different compartments and pathways of the model.
 The following parameters are given for ordinary \gls{nvc} conditions.
+
+% % 279 parameters!
 
 \section{Global Constants}
 \begin{longtable}[h!]{ p{0.12\linewidth}   p{0.6\linewidth}   p{0.28\linewidth} }
@@ -136,9 +138,9 @@ The input current to the soma (mA cm$^{-2}$):
 %	I_{stim} = I_{strength} \cdot \text{rectpuls}(t - t_0, lengthpulse)
 	I_{stim} = 
 	\begin{cases} 
-	      0 & t\leq t_0 \\
+	      0 & t< t_0 \\
 	      I_{strength} & t_0\leq t\leq t_f \\
-	      0 & t_f\leq t 
+	      0 & t_f< t 
 	\end{cases}
 	\end{equation}
 %
@@ -166,6 +168,11 @@ The \pot and \na ion concentrations in the \gls{ecs} (mM):
 	\frac{d Na_e}{dt} &= \frac{1}{F f_e} \left( \frac{A_s I_{Na,tot_{sa}}}{V_s} + \frac{A_d I_{Na,tot_d}}{V_d} \right) \\
 	\frac{d K_e}{dt} &= \frac{1}{F f_e} \left( \frac{A_s I_{K,tot_{sa}}}{V_s} + \frac{A_d I_{K,tot_d}}{V_d} \right) - \frac{d \text{Buff}_e}{dt}
 	\end{align}	
+%
+%The \cl ion concentration in the \gls{ecs} via electroneutrality (mM):
+%	\begin{align}
+%	\frac{d Cl_e}{dt} &= \frac{d Na_e}{dt} + \frac{d K_e}{dt}
+%	\end{align}
 %
 The buffer concentration in the \gls{ecs} ($\text{Buff}_e$) (mM):
 	\begin{align}
@@ -556,7 +563,7 @@ The \gls{bold} signal change from its steady state value (-):
 \frac{d HCO_{3_k}}{dt}= 2 J_{NBC_{k}} 
 \end{equation}
 %
-\cl concentration in the astrocyte (\uM):
+\cl concentration in the astrocyte via electroneutrality (\uM):
 \begin{equation} \label{eq:ClInt}
 \frac{d Cl_k}{dt}= \frac{dNa_k}{dt} + \frac{dK_k}{dt} - \frac{d HCO_{3_{k}}}{dt} + 2 \frac{d Ca_k}{dt}
 \end{equation}
@@ -584,7 +591,7 @@ The \ca concentration in the astrocytic \gls{er} (\uM):
 %
 Membrane potential of the \gls{ac} (mV):
 \begin{equation} \label{eq:v_k}
-\frac{d v_k}{dt} = \gamma_j ( -J_{BK_k} - J_{K_k} - J_{Cl_k} - J_{NBC_k} - J_{Na_k} - J_{NaK_k} - 2J_{TRPV_k})
+\frac{d v_k}{dt} = \gamma_v ( -J_{BK_k} - J_{K_k} - J_{Cl_k} - J_{NBC_k} - J_{Na_k} - J_{NaK_k} - 2J_{TRPV_k})
 \end{equation}
 %
 The open probability of the \gls{bk} channel (-):
@@ -609,7 +616,7 @@ The flux of \pot into the \gls{sc} based on the extracellular \pot ($\mu$Ms$^{-1
 J_{NEtoSC} = c_{unit} k_{syn}  \frac{d K_e}{dt}   
 \end{align}
 %
-\cl concentration in the \gls{sc} (\uM): 
+\cl concentration in the \gls{sc} via electroneutrality (\uM): 
 \begin{equation} \label{eq:ClEx}
 Cl_s = Na_s + K_s - HCO_{3_s}
 \end{equation}
@@ -740,7 +747,7 @@ $K_{e_{switch}}$	& Threshold past which glutamate vesicle is released		& 5.5 mM 
 $Glu_{slope}$		& Slope of glutamate sigmoidal				& 0.1 mM	 \\
 $c_{unit}$			& Constant to convert from mM to \uM & $10^3$ \\
 $k_{syn}$			& The number of active synapses per astrocytic process					& 11.5		 \\
-$\gamma_j$				& Change in membrane potential by a scaling factor					& 1970 mV \uM\n \\
+$\gamma_v$				& Change in membrane potential by a scaling factor					& 1970 mV \uM\n \\
 $G_{K_{k}}$ 	& Specific ion conductance of \pot 			& 6907.77 $\mu$M mV\n \psec  \\
 $G_{Na_k}$ 		& Specific ion conductance of \na 		& 226.94  $\mu$M mV\n \psec   \\
 $G_{NBC_k}$ 	& Specific ion conductance of the NBC cotransporter			& 130.74 $\mu$M mV\n \psec  \\
@@ -893,7 +900,7 @@ Cytosolic \ca in the \gls{smc} (\uM):
 Membrane potential of the \gls{smc} (mV):
 \begin{equation} \label{eq:vi}
 \begin{split}
-\frac{dv_{i}}{dt} = \gamma_j( -J_{NaK_{i}} - J_{Cl_{i}} - 2J_{VOCC_{i}}- J_{Na/Ca_{i}} - J_{K_{i}}
+\frac{dv_{i}}{dt} = \gamma_v( -J_{NaK_{i}} - J_{Cl_{i}} - 2J_{VOCC_{i}}- J_{Na/Ca_{i}} - J_{K_{i}}
 - J_{stretch_{i}} - J_{KIR_{i}} ) +V^{SMC-EC}_{coupling_{i}}
 \end{split}
 \end{equation}
@@ -1548,42 +1555,42 @@ $\alpha$			& Scaling factor for initial radius										& 0.6   \\
 
 \subsection{\Glspl{ode}}
 %
-\pot concentration in the astrocyte of block $i$ with four neighbours $j$ (\uM):
+\pot concentration in the astrocyte of \gls{nvu} block $i$ with four neighbours $j$ (\uM):
 \begin{align}
-\frac{d K_k^i}{dt} = \sum_j Q_{K,j \to i} - J_{K_k}^i + 2 J_{NaK_{k}}^i + J_{NKCC1_{k}}^i +  J_{KCC1_{k}}^i
+\frac{d K_k^i}{dt} = - \frac{1}{\Delta x}\sum_j J_{K,i \to j} - J_{K_k}^i + 2 J_{NaK_{k}}^i + J_{NKCC1_{k}}^i +  J_{KCC1_{k}}^i
 \end{align}
 %
-Membrane potential in the astrocyte of block $i$ with four neighbours $j$ (mV):
+Membrane potential in the astrocyte of \gls{nvu} block $i$ with four neighbours $j$ (mV):
 \begin{align}
-\frac{d v_k}{dt} = \gamma_j \left[ \sum_j z_K Q_{K,j \to i} -J_{BK_k}^i - J_{K_k}^i - J_{Cl_k}^i - J_{NBC_k}^i - J_{Na_k}^i - J_{NaK_k}^i - 2J_{TRPV_k}^i \right]
+\frac{d v_k^i}{dt} = \gamma_v \left[ -\frac{1}{\Delta x} \sum_j z_K J_{K,i \to j} -J_{BK_k}^i - J_{K_k}^i - J_{Cl_k}^i - J_{NBC_k}^i - J_{Na_k}^i - J_{NaK_k}^i - 2J_{TRPV_k}^i \right]
 \end{align}
 %
-\pot concentration in the \gls{ecs} of block $i$ with four neighbours $j$ (mM):
+\pot concentration in the \gls{ecs} of \gls{nvu} block $i$ with four neighbours $j$ (mM):
 \begin{align}
-\frac{dK_{e}^i}{dt} &= \sum_j Q^{e}_{K,j\to i} + \frac{1}{F f_e} \left( \frac{A_s I_{K,tot_{sa}}^i}{V_s} + \frac{A_d I_{K,tot_d}^i}{V_d} \right) - \frac{d \text{Buff}^i_e}{dt}
+\frac{dK_{e}^i}{dt} &= -\frac{1}{\Delta x} \sum_j J^{e}_{K,i\to j} + \frac{1}{F f_e} \left( \frac{A_s I_{K,tot_{sa}}^i}{V_s} + \frac{A_d I_{K,tot_d}^i}{V_d} \right) - \frac{d \text{Buff}^i_e}{dt}
 \end{align}
 %
-\na concentration in the \gls{ecs} of block $i$ with four neighbours $j$ (mM):
+\na concentration in the \gls{ecs} of \gls{nvu} block $i$ with four neighbours $j$ (mM):
 \begin{align}
-\frac{d Na_e}{dt} &= \sum_j Q^{e}_{Na,j\to i} + \frac{1}{F f_e} \left( \frac{A_s I_{Na,tot_{sa}}^i}{V_s} + \frac{A_d I_{Na,tot_d}^i}{V_d} \right)
+\frac{d Na_e^i}{dt} &= -\frac{1}{\Delta x} \sum_j J^{e}_{Na,i\to j} + \frac{1}{F f_e} \left( \frac{A_s I_{Na,tot_{sa}}^i}{V_s} + \frac{A_d I_{Na,tot_d}^i}{V_d} \right)
 \end{align}
 %
 		\subsection{Algebraic Variables}
-Rate of change of $K_k$ in block $i$ due to gap junctional flux from neighbour $j$ (\mus):
+Gap junction flux of $K_k$ from \gls{nvu} block $i$ to neighbour $j$ ($\mu$Mm \psec):
 \begin{align}
-Q_{K,j \to i} = \frac{D_{gap}}{\Delta x^2} \left( (K_k^j - K_K^i) + \frac{z_K F}{RT} \frac{K_k^i + K_k^j}{2} (v_k^j - v_k^i) \right)
+J_{K,i \to j} = -\frac{D_{gap}}{\Delta x^2} \left( (K_k^j - K_K^i) + \frac{z_K F}{RT} \frac{K_k^i + K_k^j}{2} (v_k^j - v_k^i) \right)
 \end{align}
 %
-Rate of change of $K_e$ and $Na_e$ in block $i$ due to extracellular electrodiffusion from neighbour $j$ (mM \psec):
+Extracellular electrodiffusive flux of $K_e$ and $Na_e$ from \gls{nvu} block $i$ to neighbour $j$ (mMm \psec):
 \begin{align}
-Q^{e}_{K,j\to i} &= \frac{D_{K,e}}{\Delta x^2} \left[ 
+J^{e}_{K,i\to j} &= -\frac{D_{K,e}}{\Delta x} \left[ 
 (K_e^j - K_e^i) - z_K \left(\frac{K_e^i + K_e^j}{2}\right) 
 \left(   \ddfrac{z_K D_{K,e} (K_e^j - K_e^i) + z_{Na} D_{Na,e} (Na_e^j - Na_e^i)}
 {z_K^2 D_{K,e} \frac{K_e^i + K_e^j}{2} + z_{Na}^2 D_{Na,e} \frac{Na_e^i + Na_e^j}{2} }
 \right) 
 \right]   
 \\
-Q^{e}_{Na,j\to i} &= \frac{D_{Na,e}}{\Delta x^2} \left[ 
+J^{e}_{Na,i\to j} &= -\frac{D_{Na,e}}{\Delta x} \left[ 
 (Na_e^j - Na_e^i) - z_{Na} \left(\frac{Na_e^i + Na_e^j}{2}\right) 
 \left(   \ddfrac{z_K D_{K,e} (K_e^j - K_e^i) + z_{Na} D_{Na,e} (Na_e^j - Na_e^i)}
 {z_K^2 D_{K,e} \frac{K_e^i + K_e^j}{2} + z_{Na}^2 D_{Na,e} \frac{Na_e^i + Na_e^j}{2} }
@@ -1595,10 +1602,10 @@ Q^{e}_{Na,j\to i} &= \frac{D_{Na,e}}{\Delta x^2} \left[
 	\hline
 	Parameter & Description & Value \\
 	\hline
-$D_{gap}$ 		& Astrocytic gap junction diffusion coefficient & $3.1\e{-9}$ m$^2$\psec \\
+$D_{gap}$ 		& Astrocytic gap junction diffusion coefficient & $3.1\e{-9}$ m$^2$ \psec \\
 $\Delta x^2$ 	& Width of one \gls{nvu} block & $1.24\e{-4}$ m \\
-$D_{K,e}$ 		& Extracellular \pot diffusion coefficient & $3.8\e{-9}$ m$^2$\psec \\
-$D_{Na,e}$ 		& Extracellular \na diffusion coefficient & $2.5\e{-9}$ m$^2$\psec \\
+$D_{K,e}$ 		& Extracellular \pot diffusion coefficient & $3.8\e{-9}$ m$^2$ \psec \\
+$D_{Na,e}$ 		& Extracellular \na diffusion coefficient & $2.5\e{-9}$ m$^2$ \psec \\
 \hline
 \caption{Parameters of the large scale tissue slice model.}
 \end{longtable}
