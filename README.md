@@ -1,15 +1,19 @@
-parbrain - NVU 2.0 with extracellular diffusion
+parbrain - NVU 2.1 with extracellular diffusion and astrocytic gap junctions
 ========
 Parbrain stands for "parallel brain". This code generates a binary tree, which globally couples multiple neurovascular units (NVUs). The binary tree represents a vascular tree, which perfuses the cerebral tissue. It is laid out in such a way that it spatially fills a 2-dimensional tissue slice consisting of NVU blocks. The code computes the blood flow in the branches of the tree and the pressure in the nodes. The NVUs are located at the leaves of the tree and can (through smooth muscle activation/relaxation) control the vessel radii. 
 
-NVU 2.0 contains the following pathways:
+NVU 2.1 contains the following pathways:
 * Neuronal dynamics stimulated by a current input to the soma
 * K+ pathway via K+ release from the neuron into the SC
 * Nitric oxide pathway via glutamate release from the neuron into the SC
 * Astrocytic calcium pathway via glutamate release from the neuron into the SC
 * TRPV4 calcium channel on the astrocytic endfoot
 
-The NVU model also contains extracellular space with diffusion of extracellular K+ and Na+ throughout the tissue block.
+The NVU model also contains extracellular diffusion of K+ and Na+ and an astrocytic K+ gap junction network throughout the tissue block. Both normal neurovascular coupling and pathological conditions (cortical spreading depression) can be simulated. For further information refer to the following papers:
+
+* Kenny, A., Zakkaroff, C., Plank, M. J., & David, T. (2018). Massively parallel simulations of neurovascular coupling with extracellular diffusion. Journal of Computational Science, 24, 116–124. http://doi.org/10.1016/j.jocs.2017.07.001
+* Dormanns, K., Brown, R. G., & David, T. (2015). Neurovascular coupling: a parallel implementation. Frontiers in Computational Neuroscience, 9, 109. http://doi.org/10.3389/fncom.2015.00109
+
 
 Inputs to the Model
 ===================
@@ -17,7 +21,7 @@ There are multiple inputs to the model coming from different "ends":
 
 From the tissue:
 ----------------
-* Current input to the neuron (soma) stimulates the following:
+A current input to the neuron (soma) stimulates the following:
 * neuronal K+ release/Na+ uptake
 * neuronal Glu release -> activates NO production and astrocytic calcium release
 
