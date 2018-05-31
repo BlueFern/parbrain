@@ -88,4 +88,6 @@ void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w);
 
 int sizecheck(double *x, int n, double tol);
 
+char* concat(const char *s1, const char *s2);
+
 #endif

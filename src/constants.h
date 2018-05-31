@@ -4,9 +4,9 @@
 // Optional command line arguments for parBrainSim: N, T_FINAL, DT_PSEC (in that order). If none specified then the following are used.
 
 /*** Run parameters ***/
-    static const double T_FINAL        	= 5;        // Final run time
+    static const double T_FINAL        	= 20;        // Final run time
 	static const double T_STIM_0       	= 2;        // Start time for stimulation
-	static const double T_STIM_END     	= 6;        // End time for stimulation
+	static const double T_STIM_END     	= 3;        // End time for stimulation
     static const int    DT_PSEC       	= 10;       // Time step for writing to file (and screen)
     static const int 	NTREE          	= 13;         // Number of levels in the H-tree (where the tissue slice has 2^(N-1) tissue blocks)
     static const int 	NSUB           	= 1;         // Subtree size (easiest to just keep as 1)
@@ -23,6 +23,8 @@
     static const double O2switch			= 1;		// 1: Oxygen is limited, 0: oxygen is plentiful (default 1)
 
 /*** Curvature constants ***/
+    static const double CURVATURE_SWITCH = 1;	// Flat surface if 0, curvy (taken from csv map) if 1
+    
     static const double r_th = 3.1831;	// Minor radius of torus
     static const double n_th = 4;		// Major:Minor radius ratio - Decreasing n (but must have n>1) increases how curvy the surface will be (higher max and min), also modifies a_th and eta_th!!!
     static const double a_th = 12.3281;	// a = r*sqrt(n^2-1)

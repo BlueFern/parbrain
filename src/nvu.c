@@ -63,27 +63,43 @@ nvu_workspace *nvu_init(void)
     nvu_w->pcap  = PCAP / P0; // pressure is nondimensional
     nvu_w->l  = 1; // normalised away
     
-    // Obtain theta map from csv file and input into data_theta array for use in theta(x,y) function later
-    
-    
-	FILE *inFile = fopen("thetamap64.csv", "r");
-	
-	// How many NVUs on each side of tissue slice
-		int row     = pow(pow(2,NTREE-1),0.5);
-		int col     = pow(pow(2,NTREE-1),0.5);
 
+	
+    /***** Obtain theta map from csv file and input into data_theta array for use in theta(x,y) function later    ****/
+    
+    if (CURVATURE_SWITCH == 1) 
+    {
+	// How many NVUs on each side of tissue slice
+	int row     = pow(pow(2,NTREE-1),0.5);
+    
+	// Convert row number to string
+	char* row_str;
+	row_str = (char*)malloc(3 * sizeof(char));
+	sprintf(row_str, "%d", row);
+	
+	// Generate file name based on number of NVUs
+    char* tempfilename = concat("thetamap",row_str);
+    char* filename = concat(tempfilename,".csv");
+    printf("Using %s\n",filename);
+    
+	FILE *inFile = fopen(filename, "r");
+	free(tempfilename);
+	free(filename);
+
+	// Allocate space
 	double **data_theta;
 	data_theta = (double **)malloc(row * sizeof(double *));
-	for (int i = 0; i < row; ++i){
-		data_theta[i] = (double *)malloc(col * sizeof(double));
+	for (int i = 0; i < row; ++i)
+	{
+		data_theta[i] = (double *)malloc(row * sizeof(double));
 	}
 	
 	int i_th,j_th;
 	double temp;
 	
-	for(i_th=0;i_th<col;i_th++)
+	for(i_th = 0; i_th < row; i_th++)
 	{
-		for(j_th=0;j_th<row;j_th++)
+		for(j_th = 0; j_th < row; j_th++)
 		{
 		int warning = fscanf(inFile,"%lf%*[, \t\n]",&temp);  		// reads number from csv/txt file and puts it in temp, stopping at delimiters (comma, space, tab or \n)
 		data_theta[i_th][j_th] = temp;					// puts number into data_theta array
@@ -93,6 +109,7 @@ nvu_workspace *nvu_init(void)
 	}
 	
 	nvu_w->data_theta = data_theta;
+    }
 
     return nvu_w;
 }
@@ -765,6 +782,16 @@ double ECS_input(double t, double x, double y)
     return ECS_out;
 }
 
+// Function for concatenating strings
+char* concat(const char *s1, const char *s2)
+{
+    char *result = malloc(strlen(s1)+strlen(s2)+1);//+1 for the null-terminator
+    //in real code you would check for errors in malloc here
+    strcpy(result, s1);
+    strcat(result, s2);
+    return result;
+}
+
 // Initial conditions. If you want spatial inhomegeneity, make it a
 // function of the coordinates x and y. u0 is already allocated, you just
 // need to fill in the entries
@@ -854,10 +881,17 @@ void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w)
 		u0[i_h4]     	= 0.9899;
 		u0[i_h5]     	= 0.1210;
 		u0[i_h6]     	= 0.9961;
-
-		u0[i_curvature]	= cos(theta_function(x,y,nvu_w))/(pow(r_th,2) * (n_th + cos(theta_function(x,y,nvu_w)))); // Gaussian curvature over x,y coordinates
-		u0[i_coup]		= 10/(pow(a_th,2)) * pow(( cosh(eta_th) - n_th + pow(a_th,2)* (cos(theta_function(x,y,nvu_w))/(pow(r_th,2) * (n_th + cos(theta_function(x,y,nvu_w))))) / cos(theta_function(x,y,nvu_w)) ) , 2); // Diffusion scaling rate
-
+		
+	    if (CURVATURE_SWITCH == 1) 
+	    {
+			u0[i_curvature]	= cos(theta_function(x,y,nvu_w))/(pow(r_th,2) * (n_th + cos(theta_function(x,y,nvu_w)))); // Gaussian curvature over x,y coordinates
+			u0[i_coup]		= 10/(pow(a_th,2)) * pow(( cosh(eta_th) - n_th + pow(a_th,2)* (cos(theta_function(x,y,nvu_w))/(pow(r_th,2) * (n_th + cos(theta_function(x,y,nvu_w))))) / cos(theta_function(x,y,nvu_w)) ) , 2); // Diffusion scaling rate
+	    }
+	    else
+	    {
+	    	u0[i_curvature]	= 0;
+			u0[i_coup]		= 1;
+	    }
 //		printf("x:%f y:%f theta:%f curvature:%f C:%f\n",x,y,theta_function(x,y,nvu_w),u0[i_curvature],u0[i_coup]);
 
 }
