@@ -35,6 +35,21 @@ int main(int argc, char **argv)
     {
     	odews->dtwrite = (double) 1/atoi(argv[3]);
     }
+    
+    
+	
+	
+//	
+//	printf("row: %d\n",row);
+//
+
+//
+//	read_csv(row, col, fname, data_theta);
+	
+	
+	
+	
+//	printf("%f,%f",data[0][0], data[0][1]);
 
     // Initialise the solver with all the bits and pieces
     solver_init(odews, argc, argv);

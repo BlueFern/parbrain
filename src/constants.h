@@ -8,9 +8,9 @@
 	static const double T_STIM_0       	= 2;        // Start time for stimulation
 	static const double T_STIM_END     	= 6;        // End time for stimulation
     static const int    DT_PSEC       	= 10;       // Time step for writing to file (and screen)
-    static const int 	NTREE          	= 5;         // Number of levels in the H-tree (where the tissue slice has 2^(N-1) tissue blocks)
+    static const int 	NTREE          	= 13;         // Number of levels in the H-tree (where the tissue slice has 2^(N-1) tissue blocks)
     static const int 	NSUB           	= 1;         // Subtree size (easiest to just keep as 1)
-	static const double P_TOP			= 4140;	     // Pressure at the top of the tree, chosen so that the drop over the terminating arterioles is around 18.2 Pa to match with the single NVU model.
+	static const double P_TOP			= 4175;	     // Pressure at the top of the tree, chosen so that the drop over the terminating arterioles is around 18.2 Pa to match with the single NVU model.
 									  	  	  	  	 // For NTREE=3, P_TOP=4100 Pa. For NTREE=7, P_TOP=4160 Pa. For NTREE=13, P_TOP=4175
 	static const int 	SPATIAL_CHOICE	= 0;	     // 1: current input is a Gaussian plateau into the centre (fixed size), 0: square input
 
@@ -23,10 +23,10 @@
     static const double O2switch			= 1;		// 1: Oxygen is limited, 0: oxygen is plentiful (default 1)
 
 /*** Curvature constants ***/
-    static const double r_th = 3.1831;
-    static const double n_th = 2;
-    static const double a_th = 5.5133;
-	static const double eta_th = 1.3170;
+    static const double r_th = 3.1831;	// Minor radius of torus
+    static const double n_th = 4;		// Major:Minor radius ratio - Decreasing n (but must have n>1) increases how curvy the surface will be (higher max and min), also modifies a_th and eta_th!!!
+    static const double a_th = 12.3281;	// a = r*sqrt(n^2-1)
+	static const double eta_th = 2.0634;// eta = atanh(sqrt(n^2-1)/n)
     
 /*** Commonly changed model parameters ***/
 

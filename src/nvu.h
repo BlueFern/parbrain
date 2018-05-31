@@ -7,6 +7,7 @@
 
 #include <cs.h>
 #include "constants.h"
+#include <string.h>
 
 // Forward declaration to avoid errors
 typedef struct ghost_block ghost_block;
@@ -47,6 +48,9 @@ typedef struct nvu_workspace {
     int num_ghost_blocks;
     // Array of ghost blocks of size num_ghost_blocks.
     ghost_block *ghost_blocks;
+    
+    // Array for theta mapping
+    double** data_theta;
 
 } nvu_workspace;
 
@@ -59,8 +63,10 @@ void   nvu_rhs(double t, double x, double y, double p, double *u, double *du, nv
 // Tidy up routine. Free anything allocated in nvu_init here
 void  *nvu_free(nvu_workspace *nvu_w);
 
+void read_csv(int row, int col, char *filename, double **data);
+
 // Theta function (curvature)
-double theta_function(double x, double y);
+double theta_function(double x, double y, nvu_workspace *nvu_w);
 
 // Time-varying input pressure function
 double nvu_p0(double t);

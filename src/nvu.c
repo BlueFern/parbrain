@@ -62,6 +62,37 @@ nvu_workspace *nvu_init(void)
     // Allocate other nvu workspace parameters
     nvu_w->pcap  = PCAP / P0; // pressure is nondimensional
     nvu_w->l  = 1; // normalised away
+    
+    // Obtain theta map from csv file and input into data_theta array for use in theta(x,y) function later
+    
+    
+	FILE *inFile = fopen("thetamap64.csv", "r");
+	
+	// How many NVUs on each side of tissue slice
+		int row     = pow(pow(2,NTREE-1),0.5);
+		int col     = pow(pow(2,NTREE-1),0.5);
+
+	double **data_theta;
+	data_theta = (double **)malloc(row * sizeof(double *));
+	for (int i = 0; i < row; ++i){
+		data_theta[i] = (double *)malloc(col * sizeof(double));
+	}
+	
+	int i_th,j_th;
+	double temp;
+	
+	for(i_th=0;i_th<col;i_th++)
+	{
+		for(j_th=0;j_th<row;j_th++)
+		{
+		int warning = fscanf(inFile,"%lf%*[, \t\n]",&temp);  		// reads number from csv/txt file and puts it in temp, stopping at delimiters (comma, space, tab or \n)
+		data_theta[i_th][j_th] = temp;					// puts number into data_theta array
+//		printf("%f ",temp);
+		}
+//	printf("\n");
+	}
+	
+	nvu_w->data_theta = data_theta;
 
     return nvu_w;
 }
@@ -555,25 +586,54 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 	//PVS:
     du[i_ca_p]		= -flu_J_TRPV_k / VR_pa + flu_VOCC_i / VR_ps - Ca_decay_k * (state_ca_p - Capmin_k);
 
+    // Curvature variables - don't change with time but added as ODEs for convenience
     du[i_curvature] = 0;
     du[i_coup] = 0;
 
 }
 
+void read_csv(int row, int col, char *filename, double **data){
+	FILE *file;
+	file = fopen(filename, "r");
 
-// Theta (curvature) spatially varied
-double theta_function(double x, double y)
+	int i = 0;
+    char line[4098];
+	while (fgets(line, 4098, file) && (i < row))
+    {
+    	// double row[ssParams->nreal + 1];
+        char* tmp = strdup(line);
+
+	    int j = 0;
+	    const char* tok;
+	    for (tok = strtok(line, "\t"); tok && *tok; j++, tok = strtok(NULL, "\t\n"))
+	    {
+	        data[i][j] = atof(tok);
+	        printf("%f\t", data[i][j]);
+	    }
+	    printf("\n");
+
+        free(tmp);
+        i++;
+    }
+}
+
+// Theta (curvature) spatially varied ***change
+double theta_function(double x, double y, nvu_workspace *nvu_w)
 {
-    double theta_min = 0;	// positive curvature
-    double theta_max = M_PI; // negative curvature
-    double ampl = 2;
-    double ramp = 0.0003;
-    double x_centre = 0; 
-    double y_centre = 0;
-    double theta1 = fmin(1.0, ampl * (exp(-((pow((x - x_centre), 2) + pow((y - y_centre), 2)) / (2 * pow(ramp, 2))))));
+	double** data_theta = nvu_w->data_theta; // data from csv mapping
+	
+	// Number of NVUs along the side of the tissue slice
+	int row     = pow(pow(2,NTREE-1),0.5);
+	int col     = pow(pow(2,NTREE-1),0.5);
+	
+	int i,j; // Coordinates for the tissue slice
+	
+	// Convert x,y into i,j, add small number 1e-9 to somehow fix issue in converting double to int
+	i = (x + 0.0002*(row-1))/0.0004 + 1e-9;
+	j = (y + 0.0002*(col-1))/0.0004 + 1e-9;
 
-    double theta = theta_max*theta1;
-
+    double theta = data_theta[i][j];
+//    printf("x:%f y%f i:%d j:%d theta:%f\n", x, y, i, j, theta);
     return theta;
 }
 
@@ -795,6 +855,9 @@ void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w)
 		u0[i_h5]     	= 0.1210;
 		u0[i_h6]     	= 0.9961;
 
-		u0[i_curvature]	= cos(theta_function(x,y))/(pow(r_th,2) * (n_th + cos(theta_function(x,y)))); // Gaussian curvature over x,y coordinates
-		u0[i_coup]		= 10/(pow(a_th,2)) * pow(( cosh(eta_th) - n_th + pow(a_th,2)* (cos(theta_function(x,y))/(pow(r_th,2) * (n_th + cos(theta_function(x,y))))) / cos(theta_function(x,y)) ) , 2); // Diffusion scaling rate
+		u0[i_curvature]	= cos(theta_function(x,y,nvu_w))/(pow(r_th,2) * (n_th + cos(theta_function(x,y,nvu_w)))); // Gaussian curvature over x,y coordinates
+		u0[i_coup]		= 10/(pow(a_th,2)) * pow(( cosh(eta_th) - n_th + pow(a_th,2)* (cos(theta_function(x,y,nvu_w))/(pow(r_th,2) * (n_th + cos(theta_function(x,y,nvu_w))))) / cos(theta_function(x,y,nvu_w)) ) , 2); // Diffusion scaling rate
+
+//		printf("x:%f y:%f theta:%f curvature:%f C:%f\n",x,y,theta_function(x,y,nvu_w),u0[i_curvature],u0[i_coup]);
+
 }
