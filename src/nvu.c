@@ -796,5 +796,5 @@ void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w)
 		u0[i_h6]     	= 0.9961;
 
 		u0[i_curvature]	= cos(theta_function(x,y))/(pow(r_th,2) * (n_th + cos(theta_function(x,y)))); // Gaussian curvature over x,y coordinates
-		u0[i_coup]		= 1/(pow(a_th,2)) * pow(( cosh(eta_th) - n_th + pow(a_th,2)* (cos(theta_function(x,y))/(pow(r_th,2) * (n_th + cos(theta_function(x,y))))) / cos(theta_function(x,y)) ) , 2); // Diffusion scaling rate
+		u0[i_coup]		= 10/(pow(a_th,2)) * pow(( cosh(eta_th) - n_th + pow(a_th,2)* (cos(theta_function(x,y))/(pow(r_th,2) * (n_th + cos(theta_function(x,y))))) / cos(theta_function(x,y)) ) , 2); // Diffusion scaling rate
 }

@@ -16,7 +16,7 @@
 
 /*** Switches for various pathways ***/
 	static const double DIFFUSION_SWITCH 	= 2;		// 2: ECS electrodiffusion, 1: extracellular diffusion between blocks, 0: none
-	static const double GJ_SWITCH 			= 1;		// 2: multiple ion astrocytic gap junctions, 1: just K+ astrocytic gap junctions, 0: none
+	static const double GJ_SWITCH 			= 0;		// 2: multiple ion astrocytic gap junctions, 1: just K+ astrocytic gap junctions, 0: none
 	static const double GluSwitch			= 1;		// 1: glutamate is released with current stimulation, 0: no glutamate
 	static const double NOswitch			= 1;		// 1: NO is produced in the NVU, 0: no NO production at all
     static const double trpv_switch	    	= 1;		// 1: TRPV4 channel is active, 0: completely closed (no flux)

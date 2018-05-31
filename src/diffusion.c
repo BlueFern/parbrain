@@ -15,6 +15,9 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
     double state_HCO3_k = u[i_HCO3_k];	// Astrocytic HCO3 in our block.
     double state_Cl_k = u[i_Cl_k];	// Astrocytic chlorine in our block.
     double state_Ca_k = u[i_ca_k];	// Astrocytic calcium in our block.
+    
+    // Curvature
+    double diffusion_scaling = u[i_coup];
 
     // Iterate over all neighbours.
     for(int neigh_idx = 0; neigh_idx < NUM_NEIGHBOURS; neigh_idx++)
@@ -77,11 +80,11 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
         	double flu_diff_K 	= (D_Ke / pow(delta_x,2)) * (neighbour_K_e - state_K_e);
         	double flu_diff_Na 	= (D_Nae / pow(delta_x,2)) * (neighbour_Na_e - state_Na_e);
     		
-			du[i_K_e] += flu_diff_K;
-			du[i_Na_e] += flu_diff_Na;
+			du[i_K_e] += diffusion_scaling * flu_diff_K;
+			du[i_Na_e] += diffusion_scaling * flu_diff_Na;
 	//    	// As these two variables contain the term "SC_coup * du[K_e] * 1e3", they must also be updated!
-			du[i_K_s] += SC_coup * flu_diff_K * 1e3;
-			du[i_Na_s] += -SC_coup * flu_diff_K * 1e3;
+			du[i_K_s] += SC_coup * diffusion_scaling * flu_diff_K * 1e3;
+			du[i_Na_s] += -SC_coup * diffusion_scaling * flu_diff_K * 1e3;
 		}
     	else if (DIFFUSION_SWITCH == 2)
     	{
@@ -100,11 +103,11 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
         	double flu_diff_K 	= (D_Ke / pow(delta_x,2)) * (  Delta_K_e + ((z_K * Farad)/(R_gas * Temp)) * ( average_K_e * Delta_v_e ) );
         	double flu_diff_Na 	= (D_Nae / pow(delta_x,2)) * (  Delta_Na_e + ((z_Na * Farad)/(R_gas * Temp)) * ( average_Na_e * Delta_v_e ) );
     		
-			du[i_K_e] += flu_diff_K;
-			du[i_Na_e] += flu_diff_Na;
+			du[i_K_e] += diffusion_scaling * flu_diff_K;
+			du[i_Na_e] += diffusion_scaling * flu_diff_Na;
 	//    	// As these two variables contain the term "SC_coup * du[K_e] * 1e3", they must also be updated!
-			du[i_K_s] += SC_coup * flu_diff_K * 1e3;
-			du[i_Na_s] += -SC_coup * flu_diff_K * 1e3;
+			du[i_K_s] += SC_coup * diffusion_scaling * flu_diff_K * 1e3;
+			du[i_Na_s] += -SC_coup * diffusion_scaling * flu_diff_K * 1e3;
     	}
     	if (GJ_SWITCH == 1) // Just K gap junctions
     	{
