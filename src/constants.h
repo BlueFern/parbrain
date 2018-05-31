@@ -4,24 +4,30 @@
 // Optional command line arguments for parBrainSim: N, T_FINAL, DT_PSEC (in that order). If none specified then the following are used.
 
 /*** Run parameters ***/
-    static const double T_FINAL        	= 35;        // Final run time
-	static const double T_STIM_0       	= 5;        // Start time for stimulation
+    static const double T_FINAL        	= 5;        // Final run time
+	static const double T_STIM_0       	= 2;        // Start time for stimulation
 	static const double T_STIM_END     	= 6;        // End time for stimulation
     static const int    DT_PSEC       	= 10;       // Time step for writing to file (and screen)
-    static const int 	NTREE          	= 11;         // Number of levels in the H-tree (where the tissue slice has 2^(N-1) tissue blocks)
+    static const int 	NTREE          	= 5;         // Number of levels in the H-tree (where the tissue slice has 2^(N-1) tissue blocks)
     static const int 	NSUB           	= 1;         // Subtree size (easiest to just keep as 1)
-	static const double P_TOP			= 4170;	     // Pressure at the top of the tree, chosen so that the drop over the terminating arterioles is around 18.2 Pa to match with the single NVU model.
+	static const double P_TOP			= 4140;	     // Pressure at the top of the tree, chosen so that the drop over the terminating arterioles is around 18.2 Pa to match with the single NVU model.
 									  	  	  	  	 // For NTREE=3, P_TOP=4100 Pa. For NTREE=7, P_TOP=4160 Pa. For NTREE=13, P_TOP=4175
 	static const int 	SPATIAL_CHOICE	= 0;	     // 1: current input is a Gaussian plateau into the centre (fixed size), 0: square input
 
 /*** Switches for various pathways ***/
-	static const double DIFFUSION_SWITCH 	= 1;		// 2: ECS electrodiffusion, 1: extracellular diffusion between blocks, 0: none
-	static const double GJ_SWITCH 			= 0;		// 2: multiple ion astrocytic gap junctions, 1: just K+ astrocytic gap junctions, 0: none
+	static const double DIFFUSION_SWITCH 	= 2;		// 2: ECS electrodiffusion, 1: extracellular diffusion between blocks, 0: none
+	static const double GJ_SWITCH 			= 1;		// 2: multiple ion astrocytic gap junctions, 1: just K+ astrocytic gap junctions, 0: none
 	static const double GluSwitch			= 1;		// 1: glutamate is released with current stimulation, 0: no glutamate
 	static const double NOswitch			= 1;		// 1: NO is produced in the NVU, 0: no NO production at all
     static const double trpv_switch	    	= 1;		// 1: TRPV4 channel is active, 0: completely closed (no flux)
     static const double O2switch			= 1;		// 1: Oxygen is limited, 0: oxygen is plentiful (default 1)
 
+/*** Curvature constants ***/
+    static const double r_th = 3.1831;
+    static const double n_th = 2;
+    static const double a_th = 5.5133;
+	static const double eta_th = 1.3170;
+    
 /*** Commonly changed model parameters ***/
 
     /* Normal conditions (neurovascular coupling - stimulation then vasodilation) */
@@ -452,9 +458,13 @@
 	static const int i_h4	   	   = 64;
 	static const int i_h5	   	   = 65;
 	static const int i_h6	   	   = 66;
+	
+	// Curvature variables (not time dependent)
+	static const int i_curvature  = 67;
+	static const int i_coup = 68;
 
 // Number of ODEs
-    static const int NEQ       = 67;
+    static const int NEQ       = 69;
 
 
 

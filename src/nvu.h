@@ -59,6 +59,9 @@ void   nvu_rhs(double t, double x, double y, double p, double *u, double *du, nv
 // Tidy up routine. Free anything allocated in nvu_init here
 void  *nvu_free(nvu_workspace *nvu_w);
 
+// Theta function (curvature)
+double theta_function(double x, double y);
+
 // Time-varying input pressure function
 double nvu_p0(double t);
 

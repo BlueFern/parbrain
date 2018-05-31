@@ -555,8 +555,28 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 	//PVS:
     du[i_ca_p]		= -flu_J_TRPV_k / VR_pa + flu_VOCC_i / VR_ps - Ca_decay_k * (state_ca_p - Capmin_k);
 
+    du[i_curvature] = 0;
+    du[i_coup] = 0;
 
 }
+
+
+// Theta (curvature) spatially varied
+double theta_function(double x, double y)
+{
+    double theta_min = 0;	// positive curvature
+    double theta_max = M_PI; // negative curvature
+    double ampl = 2;
+    double ramp = 0.0003;
+    double x_centre = 0; 
+    double y_centre = 0;
+    double theta1 = fmin(1.0, ampl * (exp(-((pow((x - x_centre), 2) + pow((y - y_centre), 2)) / (2 * pow(ramp, 2))))));
+
+    double theta = theta_max*theta1;
+
+    return theta;
+}
+
 
 // Time-varying pressure at the root of the tree. 1 is nominal value. If
 // you want to work in unscaled units, make sure you *multiply* by P0
@@ -775,5 +795,6 @@ void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w)
 		u0[i_h5]     	= 0.1210;
 		u0[i_h6]     	= 0.9961;
 
-
+		u0[i_curvature]	= cos(theta_function(x,y))/(pow(r_th,2) * (n_th + cos(theta_function(x,y)))); // Gaussian curvature over x,y coordinates
+		u0[i_coup]		= 1/(pow(a_th,2)) * pow(( cosh(eta_th) - n_th + pow(a_th,2)* (cos(theta_function(x,y))/(pow(r_th,2) * (n_th + cos(theta_function(x,y))))) / cos(theta_function(x,y)) ) , 2); // Diffusion scaling rate
 }
