@@ -29,11 +29,11 @@ int main(int argc, char **argv)
     // If optional command line arguments are passed change the default final time and output timestep.
     if (argc > 3)
     {
-    	odews->tf = atoi(argv[2]);
+    	odews->tf = atoi(argv[3]);
     }
     if (argc > 4)
     {
-    	odews->dtwrite = (double) 1/atoi(argv[3]);
+    	odews->dtwrite = (double) 1/atoi(argv[4]);
     }
     
     
