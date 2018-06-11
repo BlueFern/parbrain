@@ -31,7 +31,7 @@ workspace * workspace_init(int argc, char **argv)
     set_domain_neighbours(W->rank, W->mglobal, W->nglobal, W->domain_neighbours);
 
 	compute_symbol_cholesky(W);            		// Precompute symbolic factorisations
-    W->nvu_w = nvu_init();           				// Initialise ODE parameter workspace
+    W->nvu_w = nvu_init(argc, argv);           				// Initialise ODE parameter workspace
 
     set_block_neighbours(W->nlocal, W->mlocal, W->nvu_w); // Calculate neighbours indices for each block.
     set_edge_indices(W->nlocal, W->mlocal, W->nvu_w); 	// Calculate the indices of all four edges.
@@ -144,9 +144,9 @@ void init_parallel(workspace *W, int argc, char **argv)
     W->N    = NTREE;
     W->Nsub = NSUB;
 
-    if (argc > 1)
+    if (argc > 2)
     {
-        W->N = atoi(argv[1]); // N has been specified at command line
+        W->N = atoi(argv[2]); // N has been specified at command line
     }
 
     W->N0 = (int) round(log2((double) W->n_procs));

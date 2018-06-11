@@ -6,13 +6,15 @@
 
 // nvu_init: this user-supplied function does any precomputation required
 // for the model.
-nvu_workspace *nvu_init(void)
+nvu_workspace *nvu_init(int argc, char **argv)
 {
     nvu_workspace *nvu_w;
 
     // Initialise the workspace
     nvu_w = malloc(sizeof *nvu_w);
     nvu_w->neq = NEQ;
+    
+//    printf("NEQ = %d\n", NEQ);
 
     // Sparsity patterns (approximated by matrices full of 1s)
     int dfdp_pattern[nvu_w->neq],i;
@@ -67,48 +69,58 @@ nvu_workspace *nvu_init(void)
 	
     /***** Obtain theta map from csv file and input into data_theta array for use in theta(x,y) function later    ****/
     
-    if (CURVATURE_SWITCH == 1) 
+    if (CURVATURE_SWITCH) 
     {
-	// How many NVUs on each side of tissue slice
-	int row     = pow(pow(2,NTREE-1),0.5);
-    
-	// Convert row number to string
-	char* row_str;
-	row_str = (char*)malloc(3 * sizeof(char));
-	sprintf(row_str, "%d", row);
-	
-	// Generate file name based on number of NVUs
-    char* tempfilename = concat("thetamap",row_str);
-    char* filename = concat(tempfilename,".csv");
-    printf("Using %s\n",filename);
-    
-	FILE *inFile = fopen(filename, "r");
-	free(tempfilename);
-	free(filename);
+		// How many NVUs on each side of tissue slice
+		int row     = pow(pow(2,NTREE-1),0.5);// + 1e-9;
+		
+		// Convert row number to string
+		char* row_str;
+		row_str = (char*)malloc(4 * sizeof(char));
+		sprintf(row_str, "%d", row);
+		
+		// Generate file name based on number of NVUs
+//		char* tempfilename = concat("thetamap",row_str);
+//		char* filename = concat(tempfilename,".csv");
+//		printf("Using curvature mapping %s\n",filename);
+		
+		// Get thetamap from command line
+	    if (argc > 1)
+	    {
+	    	char* filename = argv[1];
+			FILE *inFile = fopen(filename, "r");
+			free(filename);
+			
+			// Allocate space
+			double **data_theta;
+			data_theta = (double **)malloc(row * sizeof(double *));
+			for (int i = 0; i < row; ++i)
+			{
+				data_theta[i] = (double *)malloc(row * sizeof(double));
+			}
+		
+			int i_th,j_th;
+			double temp;
+			
+			for(j_th = 0; i_th < row; i_th++)
+			{
+				for(i_th = 0; j_th < row; j_th++)
+				{
+				int warning = fscanf(inFile,"%lf%*[, \t\n]",&temp);  		// reads number from csv/txt file and puts it in temp, stopping at delimiters (comma, space, tab or \n)
+				data_theta[i_th][j_th] = temp;					// puts number into data_theta array
+	//			printf("%f ",temp);
+				}
+	//		printf("\n");
+			}
+			
+			nvu_w->data_theta = data_theta;
+	    }
+	    else
+	    {
+	    	printf("Warning: you need to enter a file name for the theta map since CURVATURESWITCH is on!\n");
+	    	exit(EXIT_SUCCESS);
+	    }
 
-	// Allocate space
-	double **data_theta;
-	data_theta = (double **)malloc(row * sizeof(double *));
-	for (int i = 0; i < row; ++i)
-	{
-		data_theta[i] = (double *)malloc(row * sizeof(double));
-	}
-	
-	int i_th,j_th;
-	double temp;
-	
-	for(i_th = 0; i_th < row; i_th++)
-	{
-		for(j_th = 0; j_th < row; j_th++)
-		{
-		int warning = fscanf(inFile,"%lf%*[, \t\n]",&temp);  		// reads number from csv/txt file and puts it in temp, stopping at delimiters (comma, space, tab or \n)
-		data_theta[i_th][j_th] = temp;					// puts number into data_theta array
-//		printf("%f ",temp);
-		}
-//	printf("\n");
-	}
-	
-	nvu_w->data_theta = data_theta;
     }
 
     return nvu_w;
@@ -609,32 +621,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 
 }
 
-void read_csv(int row, int col, char *filename, double **data){
-	FILE *file;
-	file = fopen(filename, "r");
-
-	int i = 0;
-    char line[4098];
-	while (fgets(line, 4098, file) && (i < row))
-    {
-    	// double row[ssParams->nreal + 1];
-        char* tmp = strdup(line);
-
-	    int j = 0;
-	    const char* tok;
-	    for (tok = strtok(line, "\t"); tok && *tok; j++, tok = strtok(NULL, "\t\n"))
-	    {
-	        data[i][j] = atof(tok);
-	        printf("%f\t", data[i][j]);
-	    }
-	    printf("\n");
-
-        free(tmp);
-        i++;
-    }
-}
-
-// Theta (curvature) spatially varied ***change
+// Theta (curvature) 
 double theta_function(double x, double y, nvu_workspace *nvu_w)
 {
 	double** data_theta = nvu_w->data_theta; // data from csv mapping
@@ -645,7 +632,7 @@ double theta_function(double x, double y, nvu_workspace *nvu_w)
 	
 	int i,j; // Coordinates for the tissue slice
 	
-	// Convert x,y into i,j, add small number 1e-9 to somehow fix issue in converting double to int
+	// Convert x,y (from paraview stuff) into i,j (from 1 up to num_nvus!!) and add small number 1e-9 to somehow fix issue in converting double to int?
 	i = (x + 0.0002*(row-1))/0.0004 + 1e-9;
 	j = (y + 0.0002*(col-1))/0.0004 + 1e-9;
 
@@ -685,16 +672,32 @@ double current_input(double t, double x, double y)
     double I_strength 	= I_STRENGTH;
     double t_up   		= T_STIM_0;
     double t_down 		= T_STIM_END;
-
-    double ampl = 2;
-    double ramp = 0.00075; //0.0035 for N=13;
-    double x_centre = 0;
-    double y_centre = 0;
     double current_space;
+
+	// Number of NVUs along the side of the tissue slice
+	int num_nvus     = pow(pow(2,NTREE-1),0.5);
+
+	// Scaling of Gaussian input
+    double ampl = 6;
+    double ramp = 0.0004; 
+    double sigx = 4;
+    double sigy = 1;
+    
+	// Centre of stimulus in terms of x,y coordinates ****
+    double i = 0;
+    double j = -25; 
+    
+    // Convert to matrix indices
+    double i_centre = i + num_nvus/2 - 1;
+	double j_centre = j + num_nvus/2 - 1;
+    
+	// Convert to paraview coordinates where each block is length 0.0004
+    double x_centre = -0.0002*(num_nvus-1)+0.0004*i_centre;
+    double y_centre = -0.0002*(num_nvus-1)+0.0004*j_centre;
 
     if (SPATIAL_CHOICE)
 	{
-    current_space = fmin(1.0, ampl * (exp(-((pow((x - x_centre), 2) + pow((y - y_centre), 2)) / (2 * pow(ramp, 2))))));
+    current_space = fmin(1.0, ampl * (exp(-((pow((x - x_centre), 2)/(2*pow(sigx,2)) + pow((y - y_centre), 2)/(2*pow(sigy,2)) ) / (2 * pow(ramp, 2))))));
 	}
     else
     {
@@ -780,16 +783,6 @@ double ECS_input(double t, double x, double y)
     double ECS_out = ECS_max * ECS_space * ECS_time;
 
     return ECS_out;
-}
-
-// Function for concatenating strings
-char* concat(const char *s1, const char *s2)
-{
-    char *result = malloc(strlen(s1)+strlen(s2)+1);//+1 for the null-terminator
-    //in real code you would check for errors in malloc here
-    strcpy(result, s1);
-    strcat(result, s2);
-    return result;
 }
 
 // Initial conditions. If you want spatial inhomegeneity, make it a
@@ -882,13 +875,17 @@ void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w)
 		u0[i_h5]     	= 0.1210;
 		u0[i_h6]     	= 0.9961;
 		
-	    if (CURVATURE_SWITCH == 1) 
+		u0[i_current]	= current_input(T_STIM_0,x,y); // Plot current input map at the time when the input starts
+		
+	    if (CURVATURE_SWITCH) 
 	    {
-			u0[i_curvature]	= cos(theta_function(x,y,nvu_w))/(pow(r_th,2) * (n_th + cos(theta_function(x,y,nvu_w)))); // Gaussian curvature over x,y coordinates
-			u0[i_coup]		= 10/(pow(a_th,2)) * pow(( cosh(eta_th) - n_th + pow(a_th,2)* (cos(theta_function(x,y,nvu_w))/(pow(r_th,2) * (n_th + cos(theta_function(x,y,nvu_w))))) / cos(theta_function(x,y,nvu_w)) ) , 2); // Diffusion scaling rate
+	    	u0[i_theta]		= theta_function(x,y,nvu_w); 	// Theta over the tissue slice
+			u0[i_curvature]	= 1/pow(r_th,2) - (n_th / pow(a_th,2)) * ( n_th - cos(theta_function(x,y,nvu_w)) ); // Gaussian curvature over x,y coordinates
+			u0[i_coup]		= (M_PI/a_th) * ( cosh(eta_th) - cos(theta_function(x,y,nvu_w)) ); // Diffusion scaling rate
 	    }
 	    else
 	    {
+	    	u0[i_theta]		= 0;
 	    	u0[i_curvature]	= 0;
 			u0[i_coup]		= 1;
 	    }

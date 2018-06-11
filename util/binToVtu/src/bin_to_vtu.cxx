@@ -2,6 +2,8 @@
 Converts the data from the simulate script into vtu files for Paraview
 */
 
+// After modifying make sure to run make in util/binToVtu!!!!!!!!!!!!!
+
 #include <stdio.h>
 
 #include <sstream>
@@ -331,7 +333,7 @@ int main(int argc, char *argv[])
 
 	// 4. Add binary data as attributes to cells:
 
-	char const *var_names[] = {"R", "v_k", "Na_k", "K_k", "HCO3_k", "Cl_k", "Na_s", "K_s", "HCO3_s", "K_p", "w_k", "Ca_i", "s_i", "v_i", "w_i", "IP3_i", "K_i", "Ca_j", "s_j", "v_j", "IP3_j", "Mp", "AMp", "AM", "NO_n", "NO_k", "NO_i", "NO_j", "cGMP", "eNOS", "nNOS", "Ca_n", "E_b", "E_6c", "Ca_k", "s_k", "h_k", "IP3_k", "eet_k", "m_k", "Ca_p", "v_sa", "v_d", "K_sa", "Na_sa", "K_d", "Na_d", "K_e", "Na_e", "Buff_e", "O2", "CBV", "HbR", "m1", "m2", "m3", "m4", "m5", "m6", "m7", "m8", "h1", "h2", "h3", "h4", "h5", "h6", "Gaussian Curvature","Diffusion scaling","D_CBF", "BOLD", "HBT", "HBO", "CRMO2"};
+	char const *var_names[] = {"R", "v_k", "Na_k", "K_k", "HCO3_k", "Cl_k", "Na_s", "K_s", "HCO3_s", "K_p", "w_k", "Ca_i", "s_i", "v_i", "w_i", "IP3_i", "K_i", "Ca_j", "s_j", "v_j", "IP3_j", "Mp", "AMp", "AM", "NO_n", "NO_k", "NO_i", "NO_j", "cGMP", "eNOS", "nNOS", "Ca_n", "E_b", "E_6c", "Ca_k", "s_k", "h_k", "IP3_k", "eet_k", "m_k", "Ca_p", "v_sa", "v_d", "K_sa", "Na_sa", "K_d", "Na_d", "K_e", "Na_e", "Buff_e", "O2", "CBV", "HbR", "m1", "m2", "m3", "m4", "m5", "m6", "m7", "m8", "h1", "h2", "h3", "h4", "h5", "h6", "Current Input", "Theta", "GaussianCurvature", "DiffusionScaling", "D_CBF", "BOLD", "HBT", "HBO", "CRMO2"};
 
 	int extra_output = 5; // number of extra output variables (BOLD,CBF,HBT,HBO,CMRO2), see below
 	int n_output = n_state_vars + extra_output;
@@ -508,8 +510,22 @@ int main(int argc, char *argv[])
 
 				for (int i = 0; i < n_lines; i++)
 				{
-					flowVar[0]->InsertNextValue( 100*(temp_array_tree[i] * pow(2, ((n_levels - level - 1))) - 4.015)/4.015); //*** scales the blood flow relative to baseline of 4.015 and gives as percentage change
-					flowVar_unscaled[0]->InsertNextValue(temp_array_tree[i]);
+//					flowVar[0]->InsertNextValue( temp_array_tree[i] * pow(2, ((n_levels - level - 1)))); 
+					
+					//*** scales the blood flow relative to baseline, different baselines depending on N_tree
+					if (N_tree == 13)
+					{
+						flowVar[0]->InsertNextValue( 100*(temp_array_tree[i] * pow(2, ((n_levels - level - 1))) - 16.3)/16.3); 
+					}
+					else if (N_tree == 15)
+					{
+						flowVar[0]->InsertNextValue( 100*(temp_array_tree[i] * pow(2, ((n_levels - level - 1))) - 66.6)/66.6); 
+					}
+					else
+					{
+						flowVar[0]->InsertNextValue( temp_array_tree[i] * pow(2, ((n_levels - level - 1)))); 
+					}
+						flowVar_unscaled[0]->InsertNextValue(temp_array_tree[i]);
 				}
 			}
 

@@ -4,15 +4,15 @@
 // Optional command line arguments for parBrainSim: N, T_FINAL, DT_PSEC (in that order). If none specified then the following are used.
 
 /*** Run parameters ***/
-    static const double T_FINAL        	= 20;        // Final run time
-	static const double T_STIM_0       	= 2;        // Start time for stimulation
-	static const double T_STIM_END     	= 3;        // End time for stimulation
+    static const double T_FINAL        	= 1;        // Final run time
+	static const double T_STIM_0       	= 0;        // Start time for stimulation
+	static const double T_STIM_END     	= 2;        // End time for stimulation
     static const int    DT_PSEC       	= 10;       // Time step for writing to file (and screen)
     static const int 	NTREE          	= 13;         // Number of levels in the H-tree (where the tissue slice has 2^(N-1) tissue blocks)
     static const int 	NSUB           	= 1;         // Subtree size (easiest to just keep as 1)
 	static const double P_TOP			= 4175;	     // Pressure at the top of the tree, chosen so that the drop over the terminating arterioles is around 18.2 Pa to match with the single NVU model.
 									  	  	  	  	 // For NTREE=3, P_TOP=4100 Pa. For NTREE=7, P_TOP=4160 Pa. For NTREE=13, P_TOP=4175
-	static const int 	SPATIAL_CHOICE	= 0;	     // 1: current input is a Gaussian plateau into the centre (fixed size), 0: square input
+	static const int 	SPATIAL_CHOICE	= 1;	     // 1: current input is a Gaussian plateau, 0: square input into centre
 
 /*** Switches for various pathways ***/
 	static const double DIFFUSION_SWITCH 	= 2;		// 2: ECS electrodiffusion, 1: extracellular diffusion between blocks, 0: none
@@ -23,7 +23,7 @@
     static const double O2switch			= 1;		// 1: Oxygen is limited, 0: oxygen is plentiful (default 1)
 
 /*** Curvature constants ***/
-    static const double CURVATURE_SWITCH = 1;	// Flat surface if 0, curvy (taken from csv map) if 1
+    static const int CURVATURE_SWITCH = 1;	// Flat surface if 0, curvy (taken from csv map) if 1
     
     static const double r_th = 3.1831;	// Minor radius of torus
     static const double n_th = 4;		// Major:Minor radius ratio - Decreasing n (but must have n>1) increases how curvy the surface will be (higher max and min), also modifies a_th and eta_th!!!
@@ -461,12 +461,15 @@
 	static const int i_h5	   	   = 65;
 	static const int i_h6	   	   = 66;
 	
+	static const int i_current		= 67;
+	
 	// Curvature variables (not time dependent)
-	static const int i_curvature  = 67;
-	static const int i_coup = 68;
+	static const int i_theta  = 68;
+	static const int i_curvature  = 69;
+	static const int i_coup = 70;
 
 // Number of ODEs
-    static const int NEQ       = 69;
+    static const int NEQ       = 71;
 
 
 

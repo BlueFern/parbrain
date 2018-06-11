@@ -55,7 +55,7 @@ typedef struct nvu_workspace {
 } nvu_workspace;
 
 // Initialisation routine. Gets called once before simulation
-nvu_workspace* nvu_init(void);
+nvu_workspace* nvu_init(int argc, char **argv);
 
 // Right hand side routine for one block
 void   nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_workspace *nvu_w);
