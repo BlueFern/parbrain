@@ -4,15 +4,15 @@
 // Optional command line arguments for parBrainSim: N, T_FINAL, DT_PSEC (in that order). If none specified then the following are used.
 
 /*** Run parameters ***/
-    static const double T_FINAL        	= 1;        // Final run time
-	static const double T_STIM_0       	= 0;        // Start time for stimulation
+    static const double T_FINAL        	= 50;        // Final run time
+	static const double T_STIM_0       	= 1;        // Start time for stimulation
 	static const double T_STIM_END     	= 2;        // End time for stimulation
     static const int    DT_PSEC       	= 10;       // Time step for writing to file (and screen)
     static const int 	NTREE          	= 13;         // Number of levels in the H-tree (where the tissue slice has 2^(N-1) tissue blocks)
     static const int 	NSUB           	= 1;         // Subtree size (easiest to just keep as 1)
 	static const double P_TOP			= 4175;	     // Pressure at the top of the tree, chosen so that the drop over the terminating arterioles is around 18.2 Pa to match with the single NVU model.
 									  	  	  	  	 // For NTREE=3, P_TOP=4100 Pa. For NTREE=7, P_TOP=4160 Pa. For NTREE=13, P_TOP=4175
-	static const int 	SPATIAL_CHOICE	= 1;	     // 1: current input is a Gaussian plateau, 0: square input into centre
+	static const int 	SPATIAL_CHOICE	= 1;	     // 1: current input is a Gaussian plateau at (x_centre, y_centre), 0: square input into centre
 
 /*** Switches for various pathways ***/
 	static const double DIFFUSION_SWITCH 	= 2;		// 2: ECS electrodiffusion, 1: extracellular diffusion between blocks, 0: none
@@ -33,7 +33,7 @@
 /*** Commonly changed model parameters ***/
 
     /* Normal conditions (neurovascular coupling - stimulation then vasodilation) */
-//	static const double I_STRENGTH		= 0.022;	  	// [A] strength of current input (default 0.022)
+//	static const double I_STRENGTH		= 0.022;	  	// strength of current input (default 0.022)
 //    static const double SC_coup	        = 11.5;         // scaling factor for the change in SC K+ concentration based on extracellular K+ concentration (default 11.5)
 //    static const double Imax		    = 0.013*6;         // rate of the ATP pump (default 0.013*6)
 //    static const double gNaleak_sa	    = 6.2378e-5;       // channel conductances, change depending on Imax, see OO-NVU for other values
@@ -44,7 +44,7 @@
 //    static const double gleak_d	        = 10*6.2961e-5;
 
     /* Cortical spreading depression conditions (stimulation then vasoconstriction), also should change T_STIM_END so that the stimulus is only 1 sec long */
-	static const double I_STRENGTH		= 0.006;	  	// [A] strength of current input (default 0.022)
+	static const double I_STRENGTH		= 0.006;	  	// strength of current input (default 0.022)
     static const double SC_coup	        = 1;         // scaling factor for the change in SC K+ concentration based on extracellular K+ concentration (default 11.5)
     static const double Imax		    = 0.013;         // rate of the ATP pump (default 0.013*6)
     static const double gNaleak_sa	    = 9.5999e-6;       // channel conductances, change depending on Imax, see OO-NVU for other values

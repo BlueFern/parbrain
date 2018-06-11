@@ -102,15 +102,15 @@ nvu_workspace *nvu_init(int argc, char **argv)
 			int i_th,j_th;
 			double temp;
 			
-			for(j_th = 0; i_th < row; i_th++)
+			for(j_th = 0; j_th < row; j_th++)
 			{
-				for(i_th = 0; j_th < row; j_th++)
+				for(i_th = 0; i_th < row; i_th++)
 				{
 				int warning = fscanf(inFile,"%lf%*[, \t\n]",&temp);  		// reads number from csv/txt file and puts it in temp, stopping at delimiters (comma, space, tab or \n)
 				data_theta[i_th][j_th] = temp;					// puts number into data_theta array
-	//			printf("%f ",temp);
+//				printf("%f ",temp);
 				}
-	//		printf("\n");
+//			printf("\n");
 			}
 			
 			nvu_w->data_theta = data_theta;
@@ -630,9 +630,9 @@ double theta_function(double x, double y, nvu_workspace *nvu_w)
 	int row     = pow(pow(2,NTREE-1),0.5);
 	int col     = pow(pow(2,NTREE-1),0.5);
 	
-	int i,j; // Coordinates for the tissue slice
+	int i,j; // Indices of the theta array
 	
-	// Convert x,y (from paraview stuff) into i,j (from 1 up to num_nvus!!) and add small number 1e-9 to somehow fix issue in converting double to int?
+	// Convert x,y (from paraview stuff) into i,j and add small number 1e-9 to somehow fix issue in converting double to int
 	i = (x + 0.0002*(row-1))/0.0004 + 1e-9;
 	j = (y + 0.0002*(col-1))/0.0004 + 1e-9;
 
@@ -687,7 +687,7 @@ double current_input(double t, double x, double y)
     double i = 0;
     double j = -25; 
     
-    // Convert to matrix indices
+    // Convert to array indices
     double i_centre = i + num_nvus/2 - 1;
 	double j_centre = j + num_nvus/2 - 1;
     
@@ -697,7 +697,7 @@ double current_input(double t, double x, double y)
 
     if (SPATIAL_CHOICE)
 	{
-    current_space = fmin(1.0, ampl * (exp(-((pow((x - x_centre), 2)/(2*pow(sigx,2)) + pow((y - y_centre), 2)/(2*pow(sigy,2)) ) / (2 * pow(ramp, 2))))));
+    	current_space = fmin(1.0, ampl * (exp(-((pow((x - x_centre), 2)/(2*pow(sigx,2)) + pow((y - y_centre), 2)/(2*pow(sigy,2)) ) / (2 * pow(ramp, 2))))));
 	}
     else
     {
