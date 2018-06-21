@@ -73,23 +73,13 @@ nvu_workspace *nvu_init(int argc, char **argv)
     {
 		// How many NVUs on each side of tissue slice
 		int row     = pow(pow(2,NTREE-1),0.5);// + 1e-9;
-		
-		// Convert row number to string
-//		char* row_str;
-//		row_str = (char*)malloc(4 * sizeof(char));
-//		sprintf(row_str, "%d", row);
-		
-		// Generate file name based on number of NVUs
-//		char* tempfilename = concat("thetamap",row_str);
-//		char* filename = concat(tempfilename,".csv");
-//		printf("Using curvature mapping %s\n",filename);
-		
+
 		// Get thetamap from command line
 	    if (argc > 4)
 	    {
 	    	char* filename = argv[4];
 			FILE *inFile = fopen(filename, "r");
-			free(filename);
+//			free(filename);
 			
 			// Allocate space
 			double **data_theta;
