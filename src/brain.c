@@ -144,9 +144,9 @@ void init_parallel(workspace *W, int argc, char **argv)
     W->N    = NTREE;
     W->Nsub = NSUB;
 
-    if (argc > 2)
+    if (argc > 1)
     {
-        W->N = atoi(argv[2]); // N has been specified at command line
+        W->N = atoi(argv[1]); // N has been specified at command line
     }
 
     W->N0 = (int) round(log2((double) W->n_procs));

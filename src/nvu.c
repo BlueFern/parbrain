@@ -75,9 +75,9 @@ nvu_workspace *nvu_init(int argc, char **argv)
 		int row     = pow(pow(2,NTREE-1),0.5);// + 1e-9;
 		
 		// Convert row number to string
-		char* row_str;
-		row_str = (char*)malloc(4 * sizeof(char));
-		sprintf(row_str, "%d", row);
+//		char* row_str;
+//		row_str = (char*)malloc(4 * sizeof(char));
+//		sprintf(row_str, "%d", row);
 		
 		// Generate file name based on number of NVUs
 //		char* tempfilename = concat("thetamap",row_str);
@@ -85,9 +85,9 @@ nvu_workspace *nvu_init(int argc, char **argv)
 //		printf("Using curvature mapping %s\n",filename);
 		
 		// Get thetamap from command line
-	    if (argc > 1)
+	    if (argc > 4)
 	    {
-	    	char* filename = argv[1];
+	    	char* filename = argv[4];
 			FILE *inFile = fopen(filename, "r");
 			free(filename);
 			
@@ -677,15 +677,15 @@ double current_input(double t, double x, double y)
 	// Number of NVUs along the side of the tissue slice
 	int num_nvus     = pow(pow(2,NTREE-1),0.5);
 
-	// Scaling of Gaussian input
-    double ampl = 6;
-    double ramp = 0.0004; 
-    double sigx = 4;
+	// Scaling of Gaussian input ****
+    double ampl = 6; 
+    double ramp = 0.0004;
+    double sigx = 1;//4;
     double sigy = 1;
     
 	// Centre of stimulus in terms of x,y coordinates ****
-    double i = 0;
-    double j = -25; 
+    double i = 0;//25;//0;
+    double j = -29;//-46;//-29;
     
     // Convert to array indices
     double i_centre = i + num_nvus/2 - 1;
