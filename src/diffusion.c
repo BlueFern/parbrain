@@ -16,8 +16,27 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
     double state_Cl_k = u[i_Cl_k];	// Astrocytic chlorine in our block.
     double state_Ca_k = u[i_ca_k];	// Astrocytic calcium in our block.
     
-    // Curvature
-    double diffusion_scaling = u[i_coup];
+    // Curvature ***********
+    double diffusion_scaling;
+    if (t> theta_t_on && THETA_SWITCH)  // To make the whole area the same theta value after theta_t_on (for wave segment simulations)
+    {
+		double theta = theta_all_space;
+		diffusion_scaling = (M_PI/a_th) * ( cosh(eta_th) - cos(theta) );
+//		printf("C = %1.2f\n", diffusion_scaling);
+	}
+	else
+	{
+	    // *** REMOVE!
+	    if (u[i_coup] < 0.7 && TEMP_SWITCH)
+        {
+            diffusion_scaling = 0.1;
+//            diffusion_scaling = u[i_coup] - 0.3; // if C < 0.8?
+        }
+        else
+        {
+            diffusion_scaling = u[i_coup];
+        }
+	}
 
     // Iterate over all neighbours.
     for(int neigh_idx = 0; neigh_idx < NUM_NEIGHBOURS; neigh_idx++)

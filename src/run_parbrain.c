@@ -58,6 +58,7 @@ int main(int argc, char **argv)
     {
     	printf("Reminder that usage: mpirun -np <number of cores> %s <Number of levels in tree> <Final time> <Number of outputs per second> <Theta map filename (if using)>\n", argv[0]);
     	printf("ECS diffusion: %1.f, Gap junctions: %1.f\n", DIFFUSION_SWITCH, GJ_SWITCH);
+    	printf("SPATIAL_CHOICE %d\n", SPATIAL_CHOICE);
     }
 
     // Print out the adjacency matrix A containing the structure of the H tree
@@ -91,7 +92,9 @@ int main(int argc, char **argv)
         {
             printf("%4d%4d%4d%12.4e%4d%4d%12.4e%12.4e%12.4e\n", odews->W->N, odews->W->Nsub, odews->W->n_procs, tf - t0, odews->W->fevals, odews->W->jacupdates, odews->W->tfeval, odews->W->tjacupdate, odews->W->tjacfactorize);
         }
-        
+
+        printf("ECS diffusion: %1.f, Gap junctions: %1.f\n", DIFFUSION_SWITCH, GJ_SWITCH);
+        printf("SPATIAL_CHOICE %d\n", SPATIAL_CHOICE);
         printf("Directory: %s, ECS diffusion: %1.f, Gap junctions: %1.f\n", odews->W->dirName, DIFFUSION_SWITCH, GJ_SWITCH);
     }
 

@@ -513,18 +513,18 @@ int main(int argc, char *argv[])
 //					flowVar[0]->InsertNextValue( temp_array_tree[i] * pow(2, ((n_levels - level - 1)))); 
 					
 					//*** scales the blood flow relative to baseline, different baselines depending on N_tree
-					if (N_tree == 13)
-					{
-						flowVar[0]->InsertNextValue( 100*(temp_array_tree[i] * pow(2, ((n_levels - level - 1))) - 16.3)/16.3); 
-					}
-					else if (N_tree == 15)
-					{
-						flowVar[0]->InsertNextValue( 100*(temp_array_tree[i] * pow(2, ((n_levels - level - 1))) - 66.6)/66.6); 
-					}
+                    if (N_tree > 12)
+                    {
+                        flowVar[0]->InsertNextValue( 100*(temp_array_tree[i] * pow(2, ((n_levels - level - 1))) - 16.3)/16.3); // N=13
+//                        printf("13: N=%d\n", N_tree);
+                    }
 					else
-					{
-						flowVar[0]->InsertNextValue( temp_array_tree[i] * pow(2, ((n_levels - level - 1)))); 
-					}
+                    {
+                        flowVar[0]->InsertNextValue( 100*(temp_array_tree[i] * pow(2, ((n_levels - level - 1))) - 4.016)/4.016); // N=11
+//                        printf("11: N=%d\n", N_tree);
+                    }
+
+//						flowVar[0]->InsertNextValue( temp_array_tree[i] * pow(2, ((n_levels - level - 1))));
 						flowVar_unscaled[0]->InsertNextValue(temp_array_tree[i]);
 				}
 			}

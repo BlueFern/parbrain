@@ -114,11 +114,11 @@ void back_euler(ode_workspace *odews)
         	total_t += difftime(end_t, start_t);
         	start_t = end_t;
 
-        	// Output progress in terms of percentage remaining, time elapsed and estimated time remaining
-//        	if (W->rank == 0 && fmod(t,1)<odews->dt)
-//        	{
+        	// Output progress in terms of time step and time elapsed
+        	if (W->rank == 0 && fmod(t,1)<odews->dt)
+        	{
         		printf("Time: %4.2f  | %4d min %2d sec elapsed\n", t, (int)(total_t / 60), ((int)total_t % 60));
-//        	}
+        	}
 
         }
     }

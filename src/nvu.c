@@ -79,7 +79,6 @@ nvu_workspace *nvu_init(int argc, char **argv)
 	    {
 	    	char* filename = argv[4];
 			FILE *inFile = fopen(filename, "r");
-//			free(filename);
 			
 			// Allocate space
 			double **data_theta;
@@ -605,7 +604,9 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 	//PVS:
     du[i_ca_p]		= -flu_J_TRPV_k / VR_pa + flu_VOCC_i / VR_ps - Ca_decay_k * (state_ca_p - Capmin_k);
 
-    // Curvature variables - don't change with time but added as ODEs for convenience
+    du[i_current] = 0;
+    // Curvature variables - don't change with time but added as ODEs for convenience when outputting to paraview
+    du[i_theta] = 0;
     du[i_curvature] = 0;
     du[i_coup] = 0;
 
@@ -669,30 +670,30 @@ double current_input(double t, double x, double y)
 
 	// Scaling of Gaussian input ****
     double ampl = 6; 
-    double ramp = 0.0004;
+    double ramp = 0.0002;
     double sigx = 1;//4;
     double sigy = 1;
     
 	// Centre of stimulus in terms of x,y coordinates ****
-    double i = 0;//25;//0;
-    double j = -29;//-46;//-29;
+    double i_c = 6;//25;//0;
+    double j_c = 5;//-46;//-29;
     
     // Convert to array indices
-    double i_centre = i + num_nvus/2 - 1;
-	double j_centre = j + num_nvus/2 - 1;
+    double i_centre = i_c + num_nvus/2 - 1;
+	double j_centre = j_c + num_nvus/2 - 1;
     
 	// Convert to paraview coordinates where each block is length 0.0004
     double x_centre = -0.0002*(num_nvus-1)+0.0004*i_centre;
     double y_centre = -0.0002*(num_nvus-1)+0.0004*j_centre;
 
-    if (SPATIAL_CHOICE)
+    if (SPATIAL_CHOICE) // Gaussian input
 	{
     	current_space = fmin(1.0, ampl * (exp(-((pow((x - x_centre), 2)/(2*pow(sigx,2)) + pow((y - y_centre), 2)/(2*pow(sigy,2)) ) / (2 * pow(ramp, 2))))));
 	}
     else
     {
-    // in centre square with 'radius'=6 blocks
-        if ( fmax(fabs(x),fabs(y)) <= (6*0.0004 - 0.0002))
+    // in rectangle of custom size and location
+        if (   (fabs(x) < 0.0012) && (y < -0.0047)  )
 	//    if (x <= 0 && y <= 0)
 		{
 			current_space = 1;
@@ -869,7 +870,8 @@ void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w)
 		
 	    if (CURVATURE_SWITCH) 
 	    {
-	    	u0[i_theta]		= theta_function(x,y,nvu_w); 	// Theta over the tissue slice
+
+            u0[i_theta] = theta_function(x, y, nvu_w);    // Theta over the tissue slice
 			u0[i_curvature]	= 1/pow(r_th,2) - (n_th / pow(a_th,2)) * ( n_th - cos(theta_function(x,y,nvu_w)) ); // Gaussian curvature over x,y coordinates
 			u0[i_coup]		= (M_PI/a_th) * ( cosh(eta_th) - cos(theta_function(x,y,nvu_w)) ); // Diffusion scaling rate
 	    }

@@ -4,7 +4,7 @@
 // Optional command line arguments for parBrainSim: N, T_FINAL, DT_PSEC (in that order). If none specified then the following are used.
 
 /*** Run parameters ***/
-    static const double T_FINAL        	= 1;        // Final run time
+    static const double T_FINAL        	= 50;        // Final run time
 	static const double T_STIM_0       	= 1;        // Start time for stimulation
 	static const double T_STIM_END     	= 2;        // End time for stimulation
     static const int    DT_PSEC       	= 10;       // Time step for writing to file (and screen)
@@ -12,7 +12,7 @@
     static const int 	NSUB           	= 1;         // Subtree size (easiest to just keep as 1)
 	static const double P_TOP			= 4175;	     // Pressure at the top of the tree, chosen so that the drop over the terminating arterioles is around 18.2 Pa to match with the single NVU model.
 									  	  	  	  	 // For NTREE=3, P_TOP=4100 Pa. For NTREE=7, P_TOP=4160 Pa. For NTREE=13, P_TOP=4175. For NTREE=15, P_TOP=4180.
-	static const int 	SPATIAL_CHOICE	= 1;	     // 1: current input is a Gaussian plateau at (x_centre, y_centre), 0: square input into centre
+	static const int 	SPATIAL_CHOICE	= 1;	     // 1: current input is a Gaussian plateau at (x_centre, y_centre), 0: rectangular input (custom - see nvu.c)
 
 /*** Switches for various pathways ***/
 	static const double DIFFUSION_SWITCH 	= 2;		// 2: ECS electrodiffusion, 1: extracellular diffusion between blocks, 0: none
@@ -23,12 +23,22 @@
     static const double O2switch			= 1;		// 1: Oxygen is limited, 0: oxygen is plentiful (default 1)
 
 /*** Curvature constants ***/
+
+    static const int TEMP_SWITCH = 1;  // To REMOVE ***
+
     static const int CURVATURE_SWITCH = 1;	// Flat surface if 0, curvy (taken from csv map) if 1
-    
-    static const double r_th = 3.1831;	// Minor radius of torus
-    static const double n_th = 2;		// Major:Minor radius ratio - Decreasing n (but must have n>1) increases how curvy the surface will be (higher max and min), also modifies a_th and eta_th!!!
-    static const double a_th = 5.5133;	// a = r*sqrt(n^2-1)
-	static const double eta_th = 1.317;// eta = atanh(sqrt(n^2-1)/n)
+    static const int THETA_SWITCH = 0;      // To switch the surface to a single theta value at t=7 (see diffusion.c)
+        static const int theta_all_space = 1.5; // Value to change to at theta_t_on if switch is on
+        static const int theta_t_on = 7.4;       // Time to switch to single theta over whole slice
+
+    static const double r_th = 3.1831;	// Minor radius of torus r = 20/(2*pi)
+    static const double n_th = 2;//4;		// Major:Minor radius ratio - Decreasing n (but must have n>1) increases how curvy the surface will be (higher max and min), also modifies a_th and eta_th!!!
+    static const double a_th = 5.5133;//5.5133;   //12.3281;	// a = r*sqrt(n^2-1)
+	static const double eta_th = 1.317;//1.317;  //2.0634;// eta = atanh(sqrt(n^2-1)/n)
+
+	        // n = 2: a = 5.5133, eta = 1.317
+	        // n = 4: a = 12.3281, eta = 2.0634
+	        // n = 8: a = 25.2651, eta = 2.7687
     
 /*** Commonly changed model parameters ***/
 
