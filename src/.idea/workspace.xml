@@ -25,17 +25,17 @@
       <file leaf-file-name="nvu.c" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/nvu.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="581">
-              <caret line="683" column="4" lean-forward="true" selection-start-line="683" selection-start-column="4" selection-end-line="683" selection-end-column="4" />
+            <state relative-caret-position="191">
+              <caret line="678" column="19" selection-start-line="678" selection-start-column="19" selection-end-line="678" selection-end-column="19" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="diffusion.c" pinned="false" current-in-tab="true">
+      <file leaf-file-name="diffusion.c" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/diffusion.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="390">
-              <caret line="35" column="9" selection-start-line="35" selection-start-column="9" selection-end-line="35" selection-end-column="9" />
+            <state relative-caret-position="465">
+              <caret line="31" column="35" selection-start-line="31" selection-start-column="34" selection-end-line="31" selection-end-column="35" />
             </state>
           </provider>
         </entry>
@@ -49,11 +49,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="constants.h" pinned="false" current-in-tab="false">
+      <file leaf-file-name="constants.h" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/constants.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="360">
-              <caret line="24" column="29" lean-forward="true" selection-start-line="24" selection-start-column="29" selection-end-line="24" selection-end-column="29" />
+            <state relative-caret-position="390">
+              <caret line="26" column="36" selection-start-line="26" selection-start-column="36" selection-end-line="26" selection-end-column="36" />
             </state>
           </provider>
         </entry>
@@ -61,8 +61,8 @@
       <file leaf-file-name="run_parbrain.c" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/run_parbrain.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1020">
-              <caret line="68" column="7" selection-start-line="68" selection-start-column="7" selection-end-line="68" selection-end-column="7" />
+            <state relative-caret-position="869">
+              <caret line="58" column="140" selection-start-line="58" selection-start-column="140" selection-end-line="58" selection-end-column="171" />
             </state>
           </provider>
         </entry>
@@ -91,8 +91,8 @@
       <file leaf-file-name="bin_to_vtu.cxx" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/../util/binToVtu/src/bin_to_vtu.cxx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="330">
-              <caret line="187" lean-forward="true" selection-start-line="187" selection-end-line="187" />
+            <state relative-caret-position="2805">
+              <caret line="187" selection-start-line="187" selection-end-line="187" />
               <folding>
                 <element signature="e#1213#1262#0" expanded="true" />
                 <element signature="e#11518#11756#0" expanded="true" />
@@ -119,6 +119,7 @@
       <find>is_tissue</find>
       <find>i_current</find>
       <find>elapsed</find>
+      <find>fe</find>
     </findStrings>
   </component>
   <component name="IdeDocumentHistory">
@@ -130,9 +131,9 @@
         <option value="$PROJECT_DIR$/../util/binToVtu/src/bin_to_vtu.cxx" />
         <option value="$PROJECT_DIR$/run_parbrain.c" />
         <option value="$PROJECT_DIR$/solver.c" />
-        <option value="$PROJECT_DIR$/constants.h" />
         <option value="$PROJECT_DIR$/diffusion.c" />
         <option value="$PROJECT_DIR$/nvu.c" />
+        <option value="$PROJECT_DIR$/constants.h" />
       </list>
     </option>
   </component>
@@ -216,11 +217,13 @@
       <workItem from="1531095813924" duration="26000" />
       <workItem from="1531260121587" duration="1236000" />
       <workItem from="1531350930484" duration="12622000" />
+      <workItem from="1533847045226" duration="5860000" />
+      <workItem from="1534291628968" duration="2087000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="68664000" />
+    <option name="totallyTimeSpent" value="86551000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-1" y="299" width="1922" height="1055" extended-state="6" />
@@ -576,20 +579,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/nvu.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1020">
-          <caret line="68" column="22" selection-start-line="68" selection-start-column="22" selection-end-line="68" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/run_parbrain.c">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1020">
-          <caret line="68" column="7" selection-start-line="68" selection-start-column="7" selection-end-line="68" selection-end-column="7" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/solver.c">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1740">
@@ -599,8 +588,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/../util/binToVtu/src/bin_to_vtu.cxx">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="330">
-          <caret line="187" lean-forward="true" selection-start-line="187" selection-end-line="187" />
+        <state relative-caret-position="2805">
+          <caret line="187" selection-start-line="187" selection-end-line="187" />
           <folding>
             <element signature="e#1213#1262#0" expanded="true" />
             <element signature="e#11518#11756#0" expanded="true" />
@@ -609,24 +598,38 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/nvu.c">
+    <entry file="file://$PROJECT_DIR$/nvu.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="581">
-          <caret line="683" column="4" lean-forward="true" selection-start-line="683" selection-start-column="4" selection-end-line="683" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/constants.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="360">
-          <caret line="24" column="29" lean-forward="true" selection-start-line="24" selection-start-column="29" selection-end-line="24" selection-end-column="29" />
+        <state relative-caret-position="1020">
+          <caret line="68" column="22" selection-start-line="68" selection-start-column="22" selection-end-line="68" selection-end-column="22" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/diffusion.c">
       <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="465">
+          <caret line="31" column="35" selection-start-line="31" selection-start-column="34" selection-end-line="31" selection-end-column="35" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nvu.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="191">
+          <caret line="678" column="19" selection-start-line="678" selection-start-column="19" selection-end-line="678" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/run_parbrain.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="869">
+          <caret line="58" column="140" selection-start-line="58" selection-start-column="140" selection-end-line="58" selection-end-column="171" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/constants.h">
+      <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="390">
-          <caret line="35" column="9" selection-start-line="35" selection-start-column="9" selection-end-line="35" selection-end-column="9" />
+          <caret line="26" column="36" selection-start-line="26" selection-start-column="36" selection-end-line="26" selection-end-column="36" />
         </state>
       </provider>
     </entry>

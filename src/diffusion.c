@@ -18,7 +18,7 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
     
     // Curvature ***********
     double diffusion_scaling;
-    if (t> theta_t_on && THETA_SWITCH)  // To make the whole area the same theta value after theta_t_on (for wave segment simulations)
+    if (t> theta_t_on && THETA_SWITCH)  // To make the whole area the same theta value after theta_t_on (for wave segment or constant curvature simulations)
     {
 		double theta = theta_all_space;
 		diffusion_scaling = (M_PI/a_th) * ( cosh(eta_th) - cos(theta) );
@@ -27,7 +27,7 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
 	else
 	{
 	    // *** REMOVE!
-	    if (u[i_coup] < 0.7 && TEMP_SWITCH)
+	    if (u[i_coup] < 0.9 && TEMP_SWITCH)
         {
             diffusion_scaling = 0.1;
 //            diffusion_scaling = u[i_coup] - 0.3; // if C < 0.8?

@@ -24,17 +24,17 @@
 
 /*** Curvature constants ***/
 
-    static const int TEMP_SWITCH = 1;  // To REMOVE ***
+    static const int TEMP_SWITCH = 0;  // To REMOVE ***
 
     static const int CURVATURE_SWITCH = 1;	// Flat surface if 0, curvy (taken from csv map) if 1
     static const int THETA_SWITCH = 0;      // To switch the surface to a single theta value at t=7 (see diffusion.c)
         static const int theta_all_space = 1.5; // Value to change to at theta_t_on if switch is on
-        static const int theta_t_on = 7.4;       // Time to switch to single theta over whole slice
+        static const int theta_t_on = 0;       // Time to switch to single theta over whole slice
 
-    static const double r_th = 3.1831;	// Minor radius of torus r = 20/(2*pi)
-    static const double n_th = 2;//4;		// Major:Minor radius ratio - Decreasing n (but must have n>1) increases how curvy the surface will be (higher max and min), also modifies a_th and eta_th!!!
-    static const double a_th = 5.5133;//5.5133;   //12.3281;	// a = r*sqrt(n^2-1)
-	static const double eta_th = 1.317;//1.317;  //2.0634;// eta = atanh(sqrt(n^2-1)/n)
+    static const double r_th = 3.1831;	    // Minor radius of torus r = 20/(2*pi)
+    static const double n_th = 1.5;     	// Major:Minor radius ratio - Decreasing n (but must have n>1) increases how curvy the surface will be (higher max and min), also modifies a_th and eta_th!!!
+    static const double a_th = 3.5588;     //(n=2) 5.5133;   //(n=4) 12.3281;	// a = r*sqrt(n^2-1)
+	static const double eta_th = 0.9624;    //(n=2) 1.317;  //(n=4) 2.0634;// eta = atanh(sqrt(n^2-1)/n)
 
 	        // n = 2: a = 5.5133, eta = 1.317
 	        // n = 4: a = 12.3281, eta = 2.0634

@@ -675,8 +675,8 @@ double current_input(double t, double x, double y)
     double sigy = 1;
     
 	// Centre of stimulus in terms of x,y coordinates ****
-    double i_c = 6;//25;//0;
-    double j_c = 5;//-46;//-29;
+    double i_c = -8;//25;//0;
+    double j_c = -5;//-46;//-29;
     
     // Convert to array indices
     double i_centre = i_c + num_nvus/2 - 1;
@@ -693,7 +693,10 @@ double current_input(double t, double x, double y)
     else
     {
     // in rectangle of custom size and location
-        if (   (fabs(x) < 0.0012) && (y < -0.0047)  )
+        if (   (fabs(x) < 0.001) && (y < -0.0047)  )
+//            if (   (fabs(x) < 0.0011) && (fabs(y) < 0.0011)  )
+//        if ( fmax(fabs(x),fabs(y)) <= (3*0.0004 - 0.0002))
+//        if (y < -0.0047)
 	//    if (x <= 0 && y <= 0)
 		{
 			current_space = 1;
