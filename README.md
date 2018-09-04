@@ -11,7 +11,7 @@ NVU 2.1 contains the following pathways:
 
 The NVU model contains extracellular electrodiffusion of K+ and Na+ and an astrocytic K+ gap junction network throughout the tissue slice. Both normal neurovascular coupling and pathological conditions (cortical spreading depression) can be simulated. 
 
-The model can also simulate the spatially varied Gaussian curvature of the cortex which affects the extracellular diffusion rate. This is an optional input.
+The model can also simulate the spatially varied Gaussian curvature of the cortex which affects the extracellular diffusion rate. This is an optional input and can be turned off in the constants.h file.
 
 For further information on the NVU model refer to the following papers:
 * Mathias, E., Kenny, A., Plank, M. J., & David, T. (2018). Integrated models of neurovascular coupling and BOLD signals: Responses for varying neural activations. NeuroImage, 174(March), 69–86. http://doi.org/10.1016/j.neuroimage.2018.03.010
@@ -23,7 +23,6 @@ For further information on the NVU model refer to the following papers:
 And for further information on the parallel implementation refer to the following papers:
 * Kenny, A., Zakkaroff, C., Plank, M. J., & David, T. (2018). Massively parallel simulations of neurovascular coupling with extracellular diffusion. Journal of Computational Science, 24, 116–124. http://doi.org/10.1016/j.jocs.2017.07.001
 * Dormanns, K., Brown, R. G., & David, T. (2015). Neurovascular coupling: a parallel implementation. Frontiers in Computational Neuroscience, 9, 109. http://doi.org/10.3389/fncom.2015.00109
-
 
 Inputs to the Model
 ===================
@@ -54,7 +53,6 @@ Requirements:
 * CXsparse (for sparse matrices)
 * MPI (for core to core communication)
 
-
 How to Run
 ==========
 `mpirun -np <number_of_processors> <directory>/parBrainSim <number_of_levels> <final_time> <output per second> <curvature map (if using)>`
@@ -62,7 +60,10 @@ How to Run
 Where the program "parBrainSim" is located in the build directory. `<number_of_levels>` is the vascular tree size ,`<final_time>` is the final output time, and `<output per second>` is the number of times per second the data is saved. These are optional arguments. By default these are set in the constants.h file. If the parameter `CURVATURE_SWITCH` is set to 1 in constants.h then the name of the curvature map (in either txt or csv format), <curvature map (if using)>, is required.
 
 This program outputs a directory `<data_directory>` with multiple data files (info.dat, tissueBlocks.dat, pressure.dat and flow.dat).
-	
+
+Modifying the Model
+===================
+Any changes to model parameters can be made in the constants.h file in the src directory, then re-compile the code.	
 
 How to View Binary Data
 ================

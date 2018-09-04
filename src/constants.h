@@ -4,45 +4,24 @@
 // Optional command line arguments for parBrainSim: N, T_FINAL, DT_PSEC (in that order). If none specified then the following are used.
 
 /*** Run parameters ***/
-    static const double T_FINAL        	= 50;        // Final run time
-	static const double T_STIM_0       	= 1;        // Start time for stimulation
-	static const double T_STIM_END     	= 2;        // End time for stimulation
+    static const double T_FINAL        	= 50;       // Final run time
+	static const double T_STIM_0       	= 1;        // Start time for neuronal stimulation
+	static const double T_STIM_END     	= 2;        // End time for neuronal stimulation
     static const int    DT_PSEC       	= 10;       // Time step for writing to file (and screen)
-    static const int 	NTREE          	= 13;         // Number of levels in the H-tree (where the tissue slice has 2^(N-1) tissue blocks)
-    static const int 	NSUB           	= 1;         // Subtree size (easiest to just keep as 1)
-	static const double P_TOP			= 4175;	     // Pressure at the top of the tree, chosen so that the drop over the terminating arterioles is around 18.2 Pa to match with the single NVU model.
-									  	  	  	  	 // For NTREE=3, P_TOP=4100 Pa. For NTREE=7, P_TOP=4160 Pa. For NTREE=13, P_TOP=4175. For NTREE=15, P_TOP=4180.
-	static const int 	SPATIAL_CHOICE	= 1;	     // 1: current input is a Gaussian plateau at (x_centre, y_centre), 0: rectangular input (custom - see nvu.c)
+    static const int 	NTREE          	= 11;       // Number of levels in the H-tree (where the tissue slice has 2^(N-1) tissue blocks)
+	static const double P_TOP			= 4170;	    // Pressure at the top of the tree, chosen so that the drop over the terminating arterioles is around 18.2 Pa to match with the single NVU model.
+									  	  	  	  	// For NTREE = 3, P_TOP = 4100 Pa. For NTREE = 7, P_TOP = 4160 Pa. For NTREE = 11, P_TOP = 4170 Pa. For NTREE = 13, P_TOP = 4175.
+	static const int 	SPATIAL_CHOICE	= 1;	    // 1: current input is a Gaussian plateau at (x_centre, y_centre), 0: rectangular input (see current_input function in nvu.c)
 
 /*** Switches for various pathways ***/
 	static const double DIFFUSION_SWITCH 	= 2;		// 2: ECS electrodiffusion, 1: extracellular diffusion between blocks, 0: none
-	static const double GJ_SWITCH 			= 0;		// 2: multiple ion astrocytic gap junctions, 1: just K+ astrocytic gap junctions, 0: none
+	static const double GJ_SWITCH 			= 0;		// 2: multiple ion astrocytic gap junctions (currently not working), 1: just K+ astrocytic gap junctions, 0: none
 	static const double GluSwitch			= 1;		// 1: glutamate is released with current stimulation, 0: no glutamate
 	static const double NOswitch			= 1;		// 1: NO is produced in the NVU, 0: no NO production at all
     static const double trpv_switch	    	= 1;		// 1: TRPV4 channel is active, 0: completely closed (no flux)
     static const double O2switch			= 1;		// 1: Oxygen is limited, 0: oxygen is plentiful (default 1)
 
-/*** Curvature constants ***/
-
-    static const int TEMP_SWITCH = 0;  // To REMOVE ***
-
-    static const int CURVATURE_SWITCH = 1;	// Flat surface if 0, curvy (taken from csv map) if 1
-    static const int THETA_SWITCH = 0;      // To switch the surface to a single theta value at t=7 (see diffusion.c)
-        static const int theta_all_space = 1.5; // Value to change to at theta_t_on if switch is on
-        static const int theta_t_on = 0;       // Time to switch to single theta over whole slice
-
-    static const double r_th = 3.1831;	    // Minor radius of torus r = 20/(2*pi)
-    static const double n_th = 1.5;     	// Major:Minor radius ratio - Decreasing n (but must have n>1) increases how curvy the surface will be (higher max and min), also modifies a_th and eta_th!!!
-    static const double a_th = 3.5588;     //(n=2) 5.5133;   //(n=4) 12.3281;	// a = r*sqrt(n^2-1)
-	static const double eta_th = 0.9624;    //(n=2) 1.317;  //(n=4) 2.0634;// eta = atanh(sqrt(n^2-1)/n)
-
-	        // n = 2: a = 5.5133, eta = 1.317
-	        // n = 4: a = 12.3281, eta = 2.0634
-	        // n = 8: a = 25.2651, eta = 2.7687
-    
-/*** Commonly changed model parameters ***/
-
-    /* Normal conditions (neurovascular coupling - stimulation then vasodilation) */
+/* Normal conditions (neurovascular coupling - stimulation then vasodilation) */
 //	static const double I_STRENGTH		= 0.022;	  	// strength of current input (default 0.022)
 //    static const double SC_coup	        = 11.5;         // scaling factor for the change in SC K+ concentration based on extracellular K+ concentration (default 11.5)
 //    static const double Imax		    = 0.013*6;         // rate of the ATP pump (default 0.013*6)
@@ -53,8 +32,8 @@
 //    static const double gKleak_d	    = 2.1987e-4;
 //    static const double gleak_d	        = 10*6.2961e-5;
 
-    /* Cortical spreading depression conditions (stimulation then vasoconstriction), also should change T_STIM_END so that the stimulus is only 1 sec long */
-	static const double I_STRENGTH		= 0.006;	  	// strength of current input (default 0.022)
+/* Cortical spreading depression conditions (stimulation then vasoconstriction), change T_STIM_END so that the stimulus is only 1 sec long */
+    static const double I_STRENGTH		= 0.006;	  	// strength of current input (default 0.022)
     static const double SC_coup	        = 1;         // scaling factor for the change in SC K+ concentration based on extracellular K+ concentration (default 11.5)
     static const double Imax		    = 0.013;         // rate of the ATP pump (default 0.013*6)
     static const double gNaleak_sa	    = 9.5999e-6;       // channel conductances, change depending on Imax, see OO-NVU for other values
@@ -64,10 +43,30 @@
     static const double gKleak_d	    = 3.4564e-5;
     static const double gleak_d	        = 10*1.0187e-5;
 
-    static const double D_Ke      = 3.8e-9;  // [m^2/s] The diffusion rate of ECS K+
-    static const double D_Nae     = 2.5e-9;  // [m^2/s] The diffusion rate of ECS Na+
-	static const double D_gap	  = 3.1e-9; // [m^2/s] effective diffusion rate for K+ via gap junctions, D_Kgap = A_ef * P_K / R_k = 3.7e-9 * 5e-8 / 6e-8 = 3.1e-9 
+/*** Curvature constants ***/
+
+    static const int CURVATURE_SWITCH = 0;	// Flat surface if 0, curvy (taken from curvature map) if 1
+    static const int THETA_SWITCH = 0;      // 1: To switch the surface to a single theta value at t = theta_t_on, 0: no switch
+    static const int theta_all_space = 1.5; // Value to change to at theta_t_on if THETA_SWITCH is on
+    static const int theta_t_on = 0;        // Time to switch to single theta over whole slice if THETA_SWITCH is on
+
+    static const double r_th = 3.1831;	    // Minor radius of torus r = 20/(2*pi), do not change
+    static const double n_th = 2;     	    // Major:Minor radius ratio, do not change unless you know what you're doing
+    static const double a_th = 5.5133;     	// a = r*sqrt(n^2-1)
+	static const double eta_th = 1.317;     // eta = atanh(sqrt(n^2-1)/n)
+
+	        // n = 1.5: a = 3.5588, eta = 0.9624
+	        // n = 2: a = 5.5133, eta = 1.317
+	        // n = 4: a = 12.3281, eta = 2.0634
+	        // n = 8: a = 25.2651, eta = 2.7687
     
+/*** Commonly changed model parameters ***/
+
+
+
+    static const double D_Ke            = 3.8e-9;  // [m^2/s] The diffusion rate of ECS K+
+    static const double D_Nae           = 2.5e-9;  // [m^2/s] The diffusion rate of ECS Na+
+	static const double D_gap	        = 3.1e-9; // [m^2/s] effective diffusion rate for K+ via gap junctions, D_Kgap = A_ef * P_K / R_k = 3.7e-9 * 5e-8 / 6e-8 = 3.1e-9
     static const double wallMech	    = 1.7;          // rate of wall mechanics (default 1.7)
     static const double J_PLC 		    = 0.11; 	    // 0.11 for steady state or 0.3 for oscillations
 	
@@ -82,7 +81,7 @@
         //static const double CBF_0		  = 0.0295
 
 /*** Model parameters ***/
-        
+    static const int 	NSUB           	= 1;        // Subtree size (easiest to just keep as 1)
     static const double R_decay         = 0.15;  	    // [s^-1] rate of decay of K+ in the PVS (default 0.15)
 
 // General constants:

@@ -96,7 +96,7 @@ nvu_workspace *nvu_init(int argc, char **argv)
 				for(i_th = 0; i_th < row; i_th++)
 				{
 				int warning = fscanf(inFile,"%lf%*[, \t\n]",&temp);  		// reads number from csv/txt file and puts it in temp, stopping at delimiters (comma, space, tab or \n)
-				data_theta[i_th][j_th] = temp;					// puts number into data_theta array
+				data_theta[i_th][j_th] = temp;					            // puts number into data_theta array
 //				printf("%f ",temp);
 				}
 //			printf("\n");
@@ -106,7 +106,7 @@ nvu_workspace *nvu_init(int argc, char **argv)
 	    }
 	    else
 	    {
-	    	printf("Warning: you need to enter a file name for the theta map since CURVATURESWITCH is on!\n");
+	    	printf("Warning: you need to enter a file name for the theta map since CURVATURE_SWITCH is on!\n");
 	    	exit(EXIT_SUCCESS);
 	    }
 
@@ -488,7 +488,7 @@ void nvu_rhs(double t, double x, double y, double p, double *u, double *du, nvu_
 	CMRO2_init 		= CBF_init * P_02;
 	//OEF 			= CMRO2 * E_0 / CBF;
 
-	// Not actually used here - used in bin_to_vtu
+	// Not actually used here - used in bin_to_vtu but here for reference
 	//BOLD 			= 100 * V_0 * ( a_1 * (1 - state_HbR/HbR_0) - a_2 * (1 - state_CBV/CBV_0) ); // divides HbR, CBV and CBF by initial values, will depend on J_PLC
 	//CBF_change	= (CBF - CBF_0)/CBF_0;
 	//CBF_N			= CBF/CBF_0;
@@ -671,12 +671,12 @@ double current_input(double t, double x, double y)
 	// Scaling of Gaussian input ****
     double ampl = 6; 
     double ramp = 0.0002;
-    double sigx = 1;//4;
+    double sigx = 1;
     double sigy = 1;
     
-	// Centre of stimulus in terms of x,y coordinates ****
-    double i_c = -8;//25;//0;
-    double j_c = -5;//-46;//-29;
+	// Centre of stimulus in terms of x,y coordinates where the centre is (0,0) **
+    double i_c = 0;
+    double j_c = 0;
     
     // Convert to array indices
     double i_centre = i_c + num_nvus/2 - 1;
@@ -686,7 +686,7 @@ double current_input(double t, double x, double y)
     double x_centre = -0.0002*(num_nvus-1)+0.0004*i_centre;
     double y_centre = -0.0002*(num_nvus-1)+0.0004*j_centre;
 
-    if (SPATIAL_CHOICE) // Gaussian input
+    if (SPATIAL_CHOICE) // Gaussian input centered at (x_centre, y_centre)
 	{
     	current_space = fmin(1.0, ampl * (exp(-((pow((x - x_centre), 2)/(2*pow(sigx,2)) + pow((y - y_centre), 2)/(2*pow(sigy,2)) ) / (2 * pow(ramp, 2))))));
 	}
@@ -730,8 +730,8 @@ double PLC_input(double t, double x, double y)
     double t_up   = 1000;
     double t_down = 9000;
     double ampl = 3;
-    double ramp = 0.003;//0.002;
-    double x_centre = 0; // 0.0008 -> n_bif = 7; python: ((((2**(n_bif-1))**0.5)/4)*0.0004)
+    double ramp = 0.003;
+    double x_centre = 0;
     double y_centre = 0;
     double PLC_space = fmin(1.0, ampl * (exp(-((pow((x - x_centre), 2) + pow((y - y_centre), 2)) / (2 * pow(ramp, 2))))));
     double PLC_time = 0.5 * tanh((t - t_up) / 0.05) - 0.5 * tanh((t - t_down) / 0.05);
@@ -784,7 +784,7 @@ double ECS_input(double t, double x, double y)
 // need to fill in the entries
 void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w)
 {
-		// Current ICs optimised for J_PLC = 0.11!!
+		// Current ICs optimised for J_PLC = 0.11!! So that simulations begin at steady state. Changing J_PLC changes the steady state
 		u0[i_radius]  = 1.1485;
 
 	    u0[i_v_k]     = -88.9;
@@ -873,7 +873,6 @@ void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w)
 		
 	    if (CURVATURE_SWITCH) 
 	    {
-
             u0[i_theta] = theta_function(x, y, nvu_w);    // Theta over the tissue slice
 			u0[i_curvature]	= 1/pow(r_th,2) - (n_th / pow(a_th,2)) * ( n_th - cos(theta_function(x,y,nvu_w)) ); // Gaussian curvature over x,y coordinates
 			u0[i_coup]		= (M_PI/a_th) * ( cosh(eta_th) - cos(theta_function(x,y,nvu_w)) ); // Diffusion scaling rate
@@ -884,6 +883,5 @@ void nvu_ics(double *u0, double x, double y, nvu_workspace *nvu_w)
 	    	u0[i_curvature]	= 0;
 			u0[i_coup]		= 1;
 	    }
-//		printf("x:%f y:%f theta:%f curvature:%f C:%f\n",x,y,theta_function(x,y,nvu_w),u0[i_curvature],u0[i_coup]);
 
 }

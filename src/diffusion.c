@@ -18,24 +18,14 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
     
     // Curvature ***********
     double diffusion_scaling;
-    if (t> theta_t_on && THETA_SWITCH)  // To make the whole area the same theta value after theta_t_on (for wave segment or constant curvature simulations)
+    if (t> theta_t_on && THETA_SWITCH)  // To make the whole area the same theta value after theta_t_on (for wave segment or constant curvature simulations, see constants.h)
     {
 		double theta = theta_all_space;
 		diffusion_scaling = (M_PI/a_th) * ( cosh(eta_th) - cos(theta) );
-//		printf("C = %1.2f\n", diffusion_scaling);
 	}
 	else
 	{
-	    // *** REMOVE!
-	    if (u[i_coup] < 0.9 && TEMP_SWITCH)
-        {
-            diffusion_scaling = 0.1;
-//            diffusion_scaling = u[i_coup] - 0.3; // if C < 0.8?
-        }
-        else
-        {
-            diffusion_scaling = u[i_coup];
-        }
+	    diffusion_scaling = u[i_coup];
 	}
 
     // Iterate over all neighbours.
@@ -82,9 +72,6 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
     	// Calculate the flux.
     	double flu_diff_K 	= (D_Ke / pow(delta_x,2)) * (neighbour_K_e - state_K_e);
     	double flu_diff_Na 	= (D_Nae / pow(delta_x,2)) * (neighbour_Na_e - state_Na_e);
-    	
-//    	double flu_GJ_K 	= (D_gap / pow(delta_x,2)) * (neighbour_K_k - state_K_k);
-//    	double flu_GJ_K 	= (D_gap / pow(delta_x,2)) * ( ((z_K * Farad)/(R_gas * Temp)) 	* ( (neighbour_K_k + state_K_k)/2 ) 		* (neighbour_v_k - state_v_k) );
     	    	
     	double flu_GJ_K 	= (D_gap / pow(delta_x,2)) * (  (neighbour_K_k - state_K_k) 		+ ((z_K * Farad)/(R_gas * Temp)) 	* ( (neighbour_K_k + state_K_k)/2 ) 		* (neighbour_v_k - state_v_k) );
     	double flu_GJ_Na 	= (D_gap / pow(delta_x,2)) * (  (neighbour_Na_k - state_Na_k) 		+ ((z_Na * Farad)/(R_gas * Temp)) 	* ( (neighbour_Na_k + state_Na_k)/2 ) 		* (neighbour_v_k - state_v_k) );
@@ -101,6 +88,7 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
     		
 			du[i_K_e] += diffusion_scaling * flu_diff_K;
 			du[i_Na_e] += diffusion_scaling * flu_diff_Na;
+
 	//    	// As these two variables contain the term "SC_coup * du[K_e] * 1e3", they must also be updated!
 			du[i_K_s] += SC_coup * diffusion_scaling * flu_diff_K * 1e3;
 			du[i_Na_s] += -SC_coup * diffusion_scaling * flu_diff_K * 1e3;
@@ -112,11 +100,6 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
     		double average_K_e = (neighbour_K_e + state_K_e)/2;
     		double average_Na_e = (neighbour_Na_e + state_Na_e)/2;
     		double Delta_v_e =  -(R_gas * Temp) / Farad * ( z_K * D_Ke * Delta_K_e + z_Na * D_Nae * Delta_Na_e ) / ( pow(z_K,2) * D_Ke * average_K_e + pow(z_Na,2) * D_Nae * average_Na_e );
-    		  	
-//    		if (fmod(t,1)<1e-5)
-//    		{
-//    		printf("t %f, Dv %f, v_k %f\n", t, Delta_v_e, state_v_k);
-//    		}
     		
         	// Calculate the flux.
         	double flu_diff_K 	= (D_Ke / pow(delta_x,2)) * (  Delta_K_e + ((z_K * Farad)/(R_gas * Temp)) * ( average_K_e * Delta_v_e ) );
@@ -128,14 +111,13 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
 			du[i_K_s] += SC_coup * diffusion_scaling * flu_diff_K * 1e3;
 			du[i_Na_s] += -SC_coup * diffusion_scaling * flu_diff_K * 1e3;
     	}
-    	if (GJ_SWITCH == 1) // Just K gap junctions
+    	if (GJ_SWITCH == 1) // Just K+ gap junctions
     	{
     		du[i_K_k] 		+= flu_GJ_K;
     		du[i_Cl_k] 		+= z_K * flu_GJ_K;
-//    		printf("t %f, before dv %f\n", t, du[i_v_k]);
     		du[i_v_k] 		+= gam * (z_K * flu_GJ_K);
     	}
-    	else if (GJ_SWITCH == 2) // All ion gap junctions
+    	else if (GJ_SWITCH == 2) // All ion gap junctions, CURRENTLY NOT WORKING
     	{	
     		du[i_K_k] 		+= flu_GJ_K;
 //    		du[i_Na_k] 		+= flu_GJ_Na;
@@ -145,7 +127,6 @@ void diffusion(int block_number, double t, double *u, double *du, nvu_workspace 
     		du[i_v_k] 		+= gam * ( z_K * flu_GJ_K + z_Ca * flu_GJ_Ca);
 //    		du[i_Cl_k] 		+= z_Na * flu_GJ_Na + z_HCO3 * flu_GJ_HCO3 + z_Ca * flu_GJ_Ca;//
 //    		du[i_v_k] 		+= gam * ( z_Na * flu_GJ_Na + z_HCO3 * flu_GJ_HCO3 + z_Cl * flu_GJ_Cl + z_Ca * flu_GJ_Ca);
-    		
     	}
     }
 }
